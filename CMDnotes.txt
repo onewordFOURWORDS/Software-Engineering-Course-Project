@@ -12,46 +12,49 @@ pip install flask-login
 pip install email-validator
 
 
-# set flask environment
-set FLASK_APP=ssbm.py
+#start python and verify package
 
-# to prevent needing to set environment again
-(venv) $ pip install python-dotenv
-
-# in .flaskenv file
-FLASK_APP=ssbm.py
-
+python3
+import flask
 
 ----- end setup -------
 
 
 
+
+------ testing and upkeep -------
+
 CMD prompt:
 
 #navigate to repo
 #activate environment
-#run flask
-cd C:\Users\User\OneDrive\Documents\GitHub\csc450fa22-project-team-1-1
+
+cd C:\Users\User\...
 450venv\Scripts\activate
+
+# run flask to start web page host
 flask run
+ 
+exit() 
+
+# run flask shell for more db options
+flask shell
+
+exit()
 
 
-#start python and verify package
-python3
-import flask
-
-
+----------- python db interaction ------------------
 
 # database updating after db changes (CMD)
 flask db migrate -m "dev comment"
 flask db upgrade
 
 
-# enter flask shell (CMD)
+# enter flask shell, auto loads db elements (CMD) 
 flask shell
 
 
-#adding data (in shell)
+# adding data (in shell)
 u = User(username='susan', email='susan@example.com')
 db.session.add(u)
 db.session.commit()
@@ -60,14 +63,13 @@ db.session.commit()
 db.sesion.rollback()
 
 
-
-
------------ python db calls ------------------
-
-#db testing (python3) if not in flask shell
+# db testing (python3) if not in flask shell
 from app import db
 from app.models import User, Team, League
 
+
+
+# various shell commands and expected results
 >>> users = User.query.all()
 >>> users
 [<User john>, <User susan>]
@@ -107,10 +109,10 @@ from app.models import User, Team, League
 >>> User.query.order_by(User.username.desc()).all()
 [<User susan>, <User john>]
 
--------------- end calls ----------------
+-------------- end db interaction ----------------
 
 
-
+--------------- end testing and upkeep ----------------------
 
 
 
