@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm  # dont worry if pycharm gives a warning here
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField  # dont worry if pycharm gives a warning here
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, DateField  # dont worry if pycharm gives a warning here
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo  # dont worry if pycharm gives a warning here
 from app.models import User
 
@@ -36,8 +36,9 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Please use a different email address.')
 
-class TournamentCreation(FlaskForm):
+class TournamentCreationForm(FlaskForm):
     tournamentName = StringField('TournamentName', validators=[DataRequired()])
-    tournamentDate = StringField('TournamentDate', validators=[DataRequired()])
     tournamentLocation = StringField('TournamentLocation', validators=[DataRequired()])
+    tournamentDate = DateField('TournamentDate', format='%Y-%m-%d', validators=[DataRequired()])
+    submit = SubmitField('Create Tournament')
 

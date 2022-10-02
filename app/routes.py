@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, TournamentCreationForm
 from flask_login import current_user, login_user, logout_user, login_required  # dont worry if pycharm gives a warning here
-from app.models import User
+from app.models import Tournament, User
 from werkzeug.urls import url_parse
 
 
@@ -76,20 +76,16 @@ def TeamCreation():
 
     return redirect(url_for('TeamCreation'))
 
-@app.route('/TournamentCreation')
+@app.route('/TournamentCreation', methods=['GET', 'POST'])
 def TournamentCreation():
-    form = TournamentCreation()
+    form = TournamentCreationForm()
     if form.validate_on_submit():
-        tournament = Tournament.query.filter_by(tournamentName=form.tournamentName.data).first()
-        if tournament is None:
-            flash('Please enter a tournament name')
-            return redirect(url_for('TournamentCreation'))
-        login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('index')
-        return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+        tournament = Tournament(tournamentName=form.tournamentName.data, tournamentDate=form.tournamentDate.data, tournamentLocation=form.tournamentLocation.data )
+        db.session.add(tournament)
+        db.session.commit()
+        flash('Congratulations, you have created a tournament!')
+        return redirect(url_for('index'))
+    return render_template('TournamentCreation.html', title='Tournament Creation', form=form)
     return redirect(url_for('TournamentCreation'))
 
 
