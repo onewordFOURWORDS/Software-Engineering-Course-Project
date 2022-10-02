@@ -80,6 +80,19 @@ class Team(db.Model):
     def __repr__(self):
         return '<Team {}>'.format(self.teamName)
 
+class Tournament(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tournamentName = db.Column(db.String(140), index=True, unique=True)
+    tournamentDate = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    tournamentLocation = db.Column(db.String(200))
+    tournamentLeague = db.Column(db.Integer, db.ForeignKey('league.id'))
+
+    
+
+
+
+
+
 
 
 

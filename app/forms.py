@@ -15,7 +15,7 @@ class TeamCreation(FlaskForm):
     teamname = StringField('Team Name', validators=[DataRequired()])
     coachID = IntegerField('Username', validators=[DataRequired()])
     submit = SubmitField('Submit New Team')
-    league = db.Column(db.Integer, db.ForeignKey('league.id'))
+    # league = db.Column(db.Integer, db.ForeignKey('league.id'))
 
 
 class RegistrationForm(FlaskForm):
@@ -35,3 +35,9 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+class TournamentCreation(FlaskForm):
+    tournamentName = StringField('TournamentName', validators=[DataRequired()])
+    tournamentDate = StringField('TournamentDate', validators=[DataRequired()])
+    tournamentLocation = StringField('TournamentLocation', validators=[DataRequired()])
+

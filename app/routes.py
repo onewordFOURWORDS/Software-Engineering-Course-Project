@@ -76,6 +76,22 @@ def TeamCreation():
 
     return redirect(url_for('TeamCreation'))
 
+@app.route('/TournamentCreation')
+def TournamentCreation():
+    form = TournamentCreation()
+    if form.validate_on_submit():
+        tournament = Tournament.query.filter_by(tournamentName=form.tournamentName.data).first()
+        if tournament is None:
+            flash('Please enter a tournament name')
+            return redirect(url_for('TournamentCreation'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+    return redirect(url_for('TournamentCreation'))
+
 
 '''This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 
 lines above the function are decorators, a unique feature of the Python language. A decorator modifies the function 
