@@ -1,0 +1,9 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hello, Welcome to SSBM {{ current_user.username }}!</h1>
+    {% for creators in creators %}
+    <div><p>Created by: <b>{{ creators.creator.username }}</b></p></div>
+    {% endfor %}
+{% endblock %}
