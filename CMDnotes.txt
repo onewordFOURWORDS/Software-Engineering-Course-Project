@@ -29,8 +29,13 @@ CMD prompt:
 #navigate to repo
 #activate environment
 
+Windows
 cd C:\Users\User\...
 450venv\Scripts\activate
+
+# Linux
+# Also have to make install executable (chmod +x)
+. 450venv\bin\activate
 
 # run flask to start web page host
 flask run
