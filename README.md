@@ -16,7 +16,7 @@ Nick Perfetuo
 * setup a virtual environment so you don't overwrite your global python installs:
   * python -m venv $venv_name
   * Then, on mac or linux:
-    * $venv_name/bin/activate
+    * . $venv_name/bin/activate
   * Or on windows:
     * $venv_name\Setup\Activate
 * pip install -r requirements.txt
