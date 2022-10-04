@@ -88,6 +88,13 @@ def TournamentCreation():
     return render_template('TournamentCreation.html', title='Tournament Creation', form=form)
     return redirect(url_for('TournamentCreation'))
 
+@app.route('/TournamentDashboard')
+def TournamentDashboard():
+    return render_template('TournamentDashboard.html', title='Tournament Dashboard')
+
+@app.route('/TournamentPage')
+def TournamentPage():
+    return render_template('TournamentPage.html', title='Tournament Page')
 
 '''This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 
 lines above the function are decorators, a unique feature of the Python language. A decorator modifies the function 
