@@ -1,5 +1,6 @@
 # These are the API functions for the User Management component
 
+
 def get_signed_in_user():
     """
     Return the user object that is currently signed in. Raises an exception if no user is signed in.
@@ -7,6 +8,7 @@ def get_signed_in_user():
     :return: user object
     """
     return
+
 
 def is_user_signed_in():
     """
