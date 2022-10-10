@@ -25,6 +25,14 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.tournamentPicture.label }}<br>
+            {{ form.tournamentPicture }}<br>
+            {% for error in form.tournamentPicture.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

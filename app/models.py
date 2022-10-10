@@ -1,3 +1,4 @@
+from sqlalchemy import true
 from app import db, login
 from datetime import datetime
 from flask_login import UserMixin  # dont worry if pycharm gives a warning here
@@ -90,3 +91,4 @@ class Tournament(db.Model):
     tournamentDate = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     tournamentLocation = db.Column(db.String(200))
     tournamentLeague = db.Column(db.Integer, db.ForeignKey("league.id"))
+    tournamentPicture = db.Column(db.String(), nullable = True)

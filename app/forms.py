@@ -6,6 +6,7 @@ from wtforms import (
     SubmitField,
     IntegerField,
     DateField,
+    FileField,
 )  # dont worry if pycharm gives a warning here
 from wtforms.validators import (
     ValidationError,
@@ -56,4 +57,5 @@ class TournamentCreationForm(FlaskForm):
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
     )
+    tournamentPicture = FileField("Tournament Picture")
     submit = SubmitField("Create Tournament")

@@ -76,7 +76,7 @@ def TeamCreation():
     return redirect(url_for("TeamCreation"))
 
 
-@app.route("/TournamentCreation", methods=["GET", "POST"])
+@app.route("/TournamentCreation", methods=["GET", "POST"], enctype="multipart/form-data")
 def TournamentCreation():
     form = TournamentCreationForm()
     if form.validate_on_submit():
@@ -84,6 +84,7 @@ def TournamentCreation():
             tournamentName=form.tournamentName.data,
             tournamentDate=form.tournamentDate.data,
             tournamentLocation=form.tournamentLocation.data,
+            tournamentPicture=form.tournamentPicture.data
         )
         db.session.add(tournament)
         db.session.commit()
@@ -97,7 +98,8 @@ def TournamentCreation():
 
 @app.route("/TournamentDashboard")
 def TournamentDashboard():
-    return render_template("TournamentDashboard.html", title="Tournament Dashboard")
+    tournaments = Tournament.query.all()
+    return render_template("TournamentDashboard.html", title="Tournament Dashboard", tournaments = tournaments)
 
 
 @app.route("/TournamentPage")
