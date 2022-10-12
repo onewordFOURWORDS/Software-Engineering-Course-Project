@@ -6,7 +6,6 @@ from wtforms import (
     SubmitField,
     IntegerField,
     DateField,
-    FileField,
 )  # dont worry if pycharm gives a warning here
 from wtforms.validators import (
     ValidationError,
@@ -15,6 +14,7 @@ from wtforms.validators import (
     EqualTo,
 )  # dont worry if pycharm gives a warning here
 from app.models import User
+from flask_wtf.file import FileField
 
 
 class LoginForm(FlaskForm):
@@ -54,6 +54,7 @@ class RegistrationForm(FlaskForm):
 class TournamentCreationForm(FlaskForm):
     tournamentName = StringField("TournamentName", validators=[DataRequired()])
     tournamentLocation = StringField("TournamentLocation", validators=[DataRequired()])
+    tournamentLeague = StringField("League Name", validators=[DataRequired()])
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
     )

@@ -18,17 +18,22 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <select name="league" method="GET" action="/">
+            {% for league in leagues %}
+                <option value="{{league.leagueName}}" SELECTED>{{league.leagueName}}</option>"
+            {% endfor %}
+        </select>
         <p>
-            {{ form.tournamentDate.label }}<br>
-            {{ form.tournamentDate(size=32) }}<br>
-            {% for error in form.tournamentDate.errors %}
+            {{ form.tournamentLeague.label }}<br>
+            {{ form.tournamentLeague(size=64) }}<br>
+            {% for error in form.tournamentLeague.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.tournamentPicture.label }}<br>
-            {{ form.tournamentPicture }}<br>
-            {% for error in form.tournamentPicture.errors %}
+            {{ form.tournamentDate.label }}<br>
+            {{ form.tournamentDate(size=32) }}<br>
+            {% for error in form.tournamentDate.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>

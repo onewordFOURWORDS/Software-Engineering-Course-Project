@@ -7,7 +7,7 @@ from flask_login import (
     logout_user,
     login_required,
 )  # dont worry if pycharm gives a warning here
-from app.models import Tournament, User
+from app.models import Tournament, User, League
 from werkzeug.urls import url_parse
 
 
@@ -76,22 +76,28 @@ def TeamCreation():
     return redirect(url_for("TeamCreation"))
 
 
-@app.route("/TournamentCreation", methods=["GET", "POST"], enctype="multipart/form-data")
+@app.route("/TournamentCreation", methods=["GET", "POST"])
 def TournamentCreation():
+    leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
+        league = League(
+            leagueName = form.tournamentLeague.data,
+        )
+        db.session.add(league)
+        db.session.commit()
         tournament = Tournament(
             tournamentName=form.tournamentName.data,
             tournamentDate=form.tournamentDate.data,
             tournamentLocation=form.tournamentLocation.data,
-            tournamentPicture=form.tournamentPicture.data
+            tournamentLeague = league.id
         )
         db.session.add(tournament)
         db.session.commit()
         flash("Congratulations, you have created a tournament!")
         return redirect(url_for("index"))
     return render_template(
-        "TournamentCreation.html", title="Tournament Creation", form=form
+        "TournamentCreation.html", title="Tournament Creation", form=form, leagues = leagues
     )
     return redirect(url_for("TournamentCreation"))
 
@@ -99,7 +105,8 @@ def TournamentCreation():
 @app.route("/TournamentDashboard")
 def TournamentDashboard():
     tournaments = Tournament.query.all()
-    return render_template("TournamentDashboard.html", title="Tournament Dashboard", tournaments = tournaments)
+    leagues = League.query.all()
+    return render_template("TournamentDashboard.html", title="Tournament Dashboard", tournaments = tournaments, leagues = leagues)
 
 
 @app.route("/TournamentPage")

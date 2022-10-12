@@ -64,7 +64,8 @@ class User(UserMixin, db.Model):
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     leagueName = db.Column(db.String(64))
-    teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
+    leagueTeams = db.relationship("Team", backref="teamReference", lazy="dynamic")
+    leagueTournaments = db.relationship("Tournament", backref="league")
 
     def __repr__(self):
         return "<League {}>".format(self.leagueName)
@@ -91,4 +92,9 @@ class Tournament(db.Model):
     tournamentDate = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     tournamentLocation = db.Column(db.String(200))
     tournamentLeague = db.Column(db.Integer, db.ForeignKey("league.id"))
-    tournamentPicture = db.Column(db.String(), nullable = True)
+
+    def __repr__(self):
+        return "<Tournament {}>".format(self.tournamentName)
+    
+    
+

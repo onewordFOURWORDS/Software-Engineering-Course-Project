@@ -4,10 +4,13 @@
 {% block content %}
     <h1>Hello, Welcome to SSBM {{ current_user.username }}!</h1>
     {% for tournament in tournaments%}
-    <div><p>Tournament Name: {{tournament.tournamentName }}</b></p></div>
+    <div><p>Tournament Name: <a href="{{ url_for('TournamentPage') }}">{{tournament.tournamentName }}</a></b></p></div>
     <div><p>Tournament Date: {{tournament.tournamentDate }}</b></p></div>
     <div><p>Tournament Location: {{tournament.tournamentLocation }}</b></p></div>
+    <div><p>Tournament League: {{tournament.tournamentLeague }}</b></p></div>
     </b>
     {% endfor %}
+
+ 
     
 {% endblock %}
