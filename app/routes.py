@@ -78,6 +78,13 @@ def TeamCreation():
 
 @app.route("/TournamentCreation", methods=["GET", "POST"])
 def TournamentCreation():
+    """
+    If the league box is blank, we will take whichever league was selected from the dropdown for the 
+    tournament tournament league, otherwise this function will create a new league based off of the 
+    name they put in and assign the tournament to that league. The tournament is then created based
+    off all of the information put in. 
+
+    """
     leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
