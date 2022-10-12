@@ -52,9 +52,9 @@ class RegistrationForm(FlaskForm):
 
 
 class TournamentCreationForm(FlaskForm):
-    tournamentName = StringField("TournamentName", validators=[DataRequired()])
-    tournamentLocation = StringField("TournamentLocation", validators=[DataRequired()])
-    tournamentLeague = StringField("League Name", validators=[DataRequired()])
+    tournamentName = StringField("Tournament Name", validators=[DataRequired()])
+    tournamentLocation = StringField("Tournament Location", validators=[DataRequired()])
+    tournamentLeague = StringField("Or Create A New League")
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
     )

@@ -81,19 +81,36 @@ def TournamentCreation():
     leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
-        league = League(
-            leagueName = form.tournamentLeague.data,
-        )
-        db.session.add(league)
-        db.session.commit()
-        tournament = Tournament(
+
+        if request.method == "POST":            
+            leagueString = request.form['league']
+            league = League.query.filter_by(leagueName=leagueString).first()
+        # If the league box is blank, we will take whichever league was selected from the dropdown for the 
+        # tournament tournament league, otherwise this function will create a new league based off of the 
+        # name they put in and assign the tournament to that league. 
+        if form.tournamentLeague.data == '':
+            tournament = Tournament(
             tournamentName=form.tournamentName.data,
             tournamentDate=form.tournamentDate.data,
             tournamentLocation=form.tournamentLocation.data,
             tournamentLeague = league.id
         )
-        db.session.add(tournament)
-        db.session.commit()
+            db.session.add(tournament)
+            db.session.commit()
+        else:
+            league = League(
+                leagueName = form.tournamentLeague.data,
+            )
+            db.session.add(league)
+            db.session.commit()
+            tournament = Tournament(
+                tournamentName=form.tournamentName.data,
+                tournamentDate=form.tournamentDate.data,
+                tournamentLocation=form.tournamentLocation.data,
+                tournamentLeague = league.id
+            )
+            db.session.add(tournament)
+            db.session.commit()
         flash("Congratulations, you have created a tournament!")
         return redirect(url_for("index"))
     return render_template(
