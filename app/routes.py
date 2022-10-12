@@ -119,7 +119,7 @@ def TournamentCreation():
             db.session.add(tournament)
             db.session.commit()
         flash("Congratulations, you have created a tournament!")
-        return redirect(url_for("TournamentPage"))
+        return redirect(url_for('TournamentPage', tournament=tournament.tournamentName))
     return render_template(
         "TournamentCreation.html", title="Tournament Creation", form=form, leagues = leagues
     )
@@ -137,7 +137,9 @@ def TournamentDashboard():
 def TournamentPage():
     tournamentString = request.args.get('tournament', None)
     tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
-    return render_template("TournamentPage.html", title="Tournament Page", tournament = tournament )
+    leagueID = tournament.tournamentLeague
+    league = League.query.filter_by(id=leagueID).first()
+    return render_template("TournamentPage.html", title="Tournament Page", tournament = tournament, league = league)
 
 
 @app.route("/team/<team_ID>", methods=["GET"])
