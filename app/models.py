@@ -63,7 +63,7 @@ class User(UserMixin, db.Model):
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    leagueName = db.Column(db.String(64))
+    leagueName = db.Column(db.String(64), unique=True)
     leagueTeams = db.relationship("Team", backref="teamReference", lazy="dynamic")
     leagueTournaments = db.relationship("Tournament", backref="league")
 
