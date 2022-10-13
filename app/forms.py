@@ -57,3 +57,9 @@ class TournamentCreationForm(FlaskForm):
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
     )
     submit = SubmitField("Create Tournament")
+
+
+class RequestPermissionForm(FlaskForm):
+    request_coach = BooleanField("Make me a coach!")
+    request_admin = BooleanField("Make me an admin!")
+

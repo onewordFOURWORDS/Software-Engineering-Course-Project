@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hello, Welcome to SSBM {{ current_user.username }}!</h1>
-    {% for creators in creators %}
-    <div><p>Created by: <b>{{ creators.creator.username }}</b></p></div>
+    <h1>all users: </h1>
+    {% for users in users %}
+    <div><p>user: <b>{{ users.username }}</b> coach: {{ users.isCoach }} admin: {{ users.isAdmin }}</p></div>
     {% endfor %}
 {% endblock %}

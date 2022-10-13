@@ -66,8 +66,8 @@ def register():
 
 @app.route("/dbtest")
 def dbtest():
-
-    return redirect(url_for("dbtest"))
+    users = db.session.query(User).all()
+    return render_template("dbtest.html", title="db tests", users=users)
 
 
 @app.route("/TeamCreation")
