@@ -90,6 +90,7 @@ def TournamentCreation():
     if form.validate_on_submit():
 
         if request.method == "POST":            
+            tournamentState = request.form['state']
             leagueString = request.form['league']
             league = League.query.filter_by(leagueName=leagueString).first()
         # If the league box is blank, we will take whichever league was selected from the dropdown for the 
@@ -99,7 +100,7 @@ def TournamentCreation():
             tournament = Tournament(
             tournamentName=form.tournamentName.data,
             tournamentDate=form.tournamentDate.data,
-            tournamentLocation=form.tournamentLocation.data,
+            tournamentLocation=form.tournamentLocation.data + ","+ " " + tournamentState,
             tournamentLeague = league.id
         )
             db.session.add(tournament)
@@ -113,7 +114,7 @@ def TournamentCreation():
             tournament = Tournament(
                 tournamentName=form.tournamentName.data,
                 tournamentDate=form.tournamentDate.data,
-                tournamentLocation=form.tournamentLocation.data,
+                tournamentLocation=form.tournamentLocation.data + ","+ " " + tournamentState ,
                 tournamentLeague = league.id
             )
             db.session.add(tournament)

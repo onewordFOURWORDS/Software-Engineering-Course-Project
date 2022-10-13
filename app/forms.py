@@ -54,14 +54,14 @@ class RegistrationForm(FlaskForm):
 
 """
 I set up validators for all tournament creation fields. For tournament name, it must be unique, has to have something inside the field, and can only
-be letters, numbers, dashes and underscores. Tournament location has the same, except it doesnt have to be unique. Might set
+be letters, numbers, dashes and underscores. Same for league. Tournament location has the same, except it doesnt have to be unique. Might set
 regex for tournament league in the future, but for now, it can be empty, but it still has the same regex as others. Tournament date
 must be set in the present or future, users should not be able to make a tournament in the past. 
 """
 class TournamentCreationForm(FlaskForm):
     tournamentName = StringField("Tournament Name", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
-    tournamentLocation = StringField("Tournament Location", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
-    tournamentLeague = StringField("Or Create A New League", validators=[Regexp(regex=r'[ A-Za-z0-9_-]*$')])
+    tournamentLocation = StringField("Tournament City", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
+    tournamentLeague = StringField("Or Create A New League", validators=[Regexp(regex=r'[ A-Za-z0-9_-]*$')], render_kw={"placeholder": "Please leave empty if you do not wish to create a league!"})
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]    
     )
@@ -74,6 +74,11 @@ class TournamentCreationForm(FlaskForm):
         tournamentString = tournamentName
         if Tournament.query.filter_by(tournamentName=tournamentString.data).first():
             raise ValidationError("Tournament name is already taken. Please choose a different name.")
+
+    def validate_tournamentLeague(form, tournamentLeague):
+        leagueString = tournamentLeague
+        if League.query.filter_by(leagueName=leagueString.data).first():
+            raise ValidationError("League already exists. Choose existing league or create a unique league. ")
         
 
     submit = SubmitField("Create Tournament")
