@@ -1,36 +1,39 @@
 <!doctype html>
 <html>
-    <head>
-      {% if title %}
-      <title>{{ title }}</title>
-      {% else %}
-      <title>SSBM</title>
-      {% endif %}
-    </head>
-    <body>
-        <div>
-            SSBM:
-            <a href="{{ url_for('index') }}">Home</a>
-            {% if current_user.is_anonymous %}
-            <a href="{{ url_for('login') }}">Login</a>
-            {% else %}
-            <a href="{{ url_for('logout') }}">Logout</a>
-            <a href="{{ url_for('TournamentCreation') }}">Create Tournament</a>
-            <a href="{{ url_for('TournamentDashboard') }}">Tournament Dashboard</a>
-            <a href="{{ url_for('TournamentPage') }}">Tournament Profile Page</a>
-            <a href="{{ url_for('league') }}">View League!</a>
-            {% endif %}
-        </div>
-        <hr>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
+
+<head>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>SSBM</title>
+    {% endif %}
+</head>
+
+<body>
+    <div>
+        <img src="/static/images/SSBM_Logo_01.gif" , alt="SSBM_Logo_01.gif" />
+        <a href="{{ url_for('index') }}">Home</a>
+        {% if current_user.is_anonymous %}
+        <a href="{{ url_for('login') }}">Login</a>
+        {% else %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('TournamentCreation') }}">Create Tournament</a>
+        <a href="{{ url_for('TournamentDashboard') }}">Tournament Dashboard</a>
+        <a href="{{ url_for('TournamentPage') }}">Tournament Profile Page</a>
+        <a href="{{ url_for('league') }}">View League!</a>
         {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
-    </body>
+    </div>
+    <hr>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</body>
+
 </html>
