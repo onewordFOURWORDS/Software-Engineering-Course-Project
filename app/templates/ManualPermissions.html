@@ -2,16 +2,15 @@
 
 {% block content %}
     <h1>Hello, {{ current_user.username }}! coach: {{ current_user.isCoach }} admin: {{ current_user.isAdmin }}</h1>
+    <p>see list of all registered users</p>
     {% for users in users %}
     <div><p>user: <b>{{ users.username }}</b> UID: {{ users.id }} coach: {{ users.isCoach }} admin: {{ users.isAdmin }}</p></div>
     {% endfor %}
-
+    <p>make permissions changes</p>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
-        <p>{{ form.request_coach() }} {{ form.request_coach.label }}</p>
-        <p>{{ form.remove_coach() }} {{ form.remove_coach.label }}</p>
-        <p>{{ form.request_admin() }} {{ form.request_admin.label }}</p>
-        <p>{{ form.remove_admin() }} {{ form.remove_admin.label }}</p>
+        <p>{{ form.userID() }} {{ form.userID.label }}</p>
+        <p>{{ form.actions() }} {{ form.actions.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
     <p>{{ tval }}</p>
