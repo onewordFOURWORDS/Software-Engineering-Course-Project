@@ -1,7 +1,7 @@
 from sqlalchemy import true
 from app import db, login
 from datetime import datetime
-from flask_login import UserMixin  # dont worry if pycharm gives a warning here
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 """

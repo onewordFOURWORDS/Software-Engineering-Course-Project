@@ -1,7 +1,9 @@
 .idea/
 450venv/
+venv/
 ssbm/
 __pycache__/
 *.pyc
 *.pyo
 scratch.txt
+migrations/README
