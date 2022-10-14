@@ -53,10 +53,11 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Please use a different email address.")
 
 """
-I set up validators for all tournament creation fields. For tournament name, it must be unique, has to have something inside the field, and can only
-be letters, numbers, dashes and underscores. Same for league. Tournament location has the same, except it doesnt have to be unique. Might set
+Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
+Tournament location has the same, except it doesnt have to be unique. Might set
 regex for tournament league in the future, but for now, it can be empty, but it still has the same regex as others. Tournament date
-must be set in the present or future, users should not be able to make a tournament in the past. 
+must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
+are creating one.
 """
 class TournamentCreationForm(FlaskForm):
     tournamentName = StringField("Tournament Name", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
@@ -69,11 +70,6 @@ class TournamentCreationForm(FlaskForm):
     def validate_tournamentDate(form, tournamentDate):
         if tournamentDate.data < date.today():
             raise ValidationError("Date must be set in the future.")
-
-    def validate_tournamentName(form, tournamentName):
-        tournamentString = tournamentName
-        if Tournament.query.filter_by(tournamentName=tournamentString.data).first():
-            raise ValidationError("Tournament name is already taken. Please choose a different name.")
 
     def validate_tournamentLeague(form, tournamentLeague):
         leagueString = tournamentLeague
