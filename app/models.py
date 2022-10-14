@@ -5,8 +5,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 """
-classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
-the resulting db is testable in shell and saved to a local file, no need for hosting
+classes are defined by extending the db.model class. DB is managed with postgres
 """
 
 following = db.Table(
@@ -26,6 +25,12 @@ class User(UserMixin, db.Model):
     lastName = db.Column(db.String(64))
     address = db.Column(db.String(140))
     phoneNumber = db.Column(db.String(64))
+
+    # using boolean for testing purposes, may create coach and admin subclasses later
+    isCoach = db.Column(db.Boolean, default=0)
+    isAdmin = db.Column(db.Boolean, default=0)
+    coachApproveID = db.Column(db.Integer)
+    adminApproveID = db.Column(db.Integer)
 
     followed = db.relationship(
         "User",

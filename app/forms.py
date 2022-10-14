@@ -6,6 +6,7 @@ from wtforms import (
     SubmitField,
     IntegerField,
     DateField,
+    SelectField
 )  # dont worry if pycharm gives a warning here
 from wtforms.validators import (
     ValidationError,
@@ -78,3 +79,19 @@ class TournamentCreationForm(FlaskForm):
         
 
     submit = SubmitField("Create Tournament")
+
+
+class RequestPermissionForm(FlaskForm):
+    request_coach = BooleanField("Make me a coach!")
+    request_admin = BooleanField("Make me an admin!")
+    remove_coach = BooleanField("Un-Make me a coach!")
+    remove_admin = BooleanField("Un-Make me an admin!")
+    submit = SubmitField("Submit changes")
+
+
+class ManualPermissionsForm(FlaskForm):
+    userID = IntegerField("User ID", validators=[DataRequired()])
+    actions = SelectField("permission actions", choices=[(1,'approve coach'),(2, 'deny coach'),(3, 'approve admin'),(4, 'deny admin')])
+    submit = SubmitField("Submit changes")
+
+
