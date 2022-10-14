@@ -1,14 +1,20 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, TournamentCreationForm
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    TournamentCreationForm,
+    RequestPermissionForm,
+)
 from flask_login import (
     current_user,
     login_user,
     logout_user,
     login_required,
-)  # dont worry if pycharm gives a warning here
+)
 from app.models import Tournament, User
 from werkzeug.urls import url_parse
+from app.permissions import *
 
 
 @app.route("/")
@@ -64,16 +70,10 @@ def register():
     return render_template("register.html", title="Register", form=form)
 
 
-@app.route("/dbtest")
-def dbtest():
-    users = db.session.query(User).all()
-    return render_template("dbtest.html", title="db tests", users=users)
-
-
 @app.route("/TeamCreation")
 def TeamCreation():
 
-    return redirect(url_for("TeamCreation"))
+    return render_template("TeamCreation.html", title="Team Creation")
 
 
 @app.route("/TournamentCreation", methods=["GET", "POST"])
@@ -92,7 +92,6 @@ def TournamentCreation():
     return render_template(
         "TournamentCreation.html", title="Tournament Creation", form=form
     )
-    return redirect(url_for("TournamentCreation"))
 
 
 @app.route("/TournamentDashboard")
@@ -120,6 +119,24 @@ def match(match_ID: int):
 @app.route("/league", methods=["GET"])
 def league():
     return render_template("league.html")
+
+
+@app.route("/dbtest", methods=["GET", "POST"])
+def dbtest():
+    form = RequestPermissionForm()
+    users = db.session.query(User).all()
+    tval = "none"
+    if form.validate_on_submit():
+        if form.request_coach.data:
+            approve_coach(current_user, current_user)
+        elif form.remove_coach.data:
+            deny_coach(current_user, current_user)
+        if form.request_admin.data:
+            approve_admin(current_user, current_user)
+        elif form.remove_admin.data:
+            deny_admin(current_user, current_user)
+        #db.session.commit()
+    return render_template("dbtest.html", title="db tests", form=form, users=users, tval=tval)
 
 
 """This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 

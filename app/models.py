@@ -28,6 +28,8 @@ class User(UserMixin, db.Model):
     # using boolean for testing purposes, may create coach and admin subclasses later
     isCoach = db.Column(db.Boolean, default=0)
     isAdmin = db.Column(db.Boolean, default=0)
+    coachApproveID = db.Column(db.Integer)
+    adminApproveID = db.Column(db.Integer)
 
     followed = db.relationship(
         "User",

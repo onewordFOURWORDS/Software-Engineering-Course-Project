@@ -62,4 +62,8 @@ class TournamentCreationForm(FlaskForm):
 class RequestPermissionForm(FlaskForm):
     request_coach = BooleanField("Make me a coach!")
     request_admin = BooleanField("Make me an admin!")
+    remove_coach = BooleanField("Un-Make me a coach!")
+    remove_admin = BooleanField("Un-Make me an admin!")
+    submit = SubmitField("Submit changes")
+
 
