@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% set active_page = "team_creation" %}
 
 {% block content %}
+    <h1>Team Creation Page</h1>
+    <script>
+        document.querySelector("#team_creation_link").classList.toggle("active");
+    </script>
 {% endblock %}

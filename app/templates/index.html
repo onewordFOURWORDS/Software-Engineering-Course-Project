@@ -6,5 +6,7 @@
     {% for creators in creators %}
     <div><p>Created by: <b>{{ creators.creator.username }}</b></p></div>
     {% endfor %}
-    
+    <script>
+        document.querySelector("#home_link").classList.toggle("active");
+    </script>
 {% endblock %}

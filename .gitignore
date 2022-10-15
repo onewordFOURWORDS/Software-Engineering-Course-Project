@@ -7,3 +7,6 @@ __pycache__/
 *.pyo
 scratch.txt
 migrations/README
+.vscode/
+.DS_STORE
+app/.DS_STORE
