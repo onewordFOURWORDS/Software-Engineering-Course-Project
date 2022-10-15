@@ -1,0 +1,33 @@
+<nav class="mx-5">
+    <h2 class="mt-3">SSBM</h2>
+    <ul class="nav justify-content-end">
+        <li class="nav-item">
+            {# TODO: Fix current page thing to actually be dynamic. #}
+            <a class="nav-link active" aria-current="page" href="{{ url_for("index") }}">Home</a>
+        </li>
+        {% if current_user.is_anonymous %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("login") }}">Login</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("TournamentDashboard")}}">Tournament Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("league")}}">View League Info</a>
+        </li>
+        {# TODO: Modify this later to also check to see if they already have a team? #}
+        {% if current_user.is_admin() or current_user.is_coach() %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("create_team")}}">Create a New Team</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for("logout")}}">Logout</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>

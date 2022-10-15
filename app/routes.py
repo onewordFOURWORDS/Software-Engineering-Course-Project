@@ -6,14 +6,13 @@ from flask_login import (
     login_user,
     logout_user,
     login_required,
-)  # dont worry if pycharm gives a warning here
+)
 from app.models import Tournament, User
 from werkzeug.urls import url_parse
 
 
 @app.route("/")
 @app.route("/index")
-@login_required
 def index():
     creators = [
         {"creator": {"username": "Max"}},
@@ -70,14 +69,8 @@ def dbtest():
     return redirect(url_for("dbtest"))
 
 
-@app.route("/TeamCreation")
-def TeamCreation():
-
-    return redirect(url_for("TeamCreation"))
-
-
-@app.route("/TournamentCreation", methods=["GET", "POST"])
-def TournamentCreation():
+@app.route("/tournament_creation", methods=["GET", "POST"])
+def tournament_creation():
     form = TournamentCreationForm()
     if form.validate_on_submit():
         tournament = Tournament(
@@ -90,9 +83,9 @@ def TournamentCreation():
         flash("Congratulations, you have created a tournament!")
         return redirect(url_for("index"))
     return render_template(
-        "TournamentCreation.html", title="Tournament Creation", form=form
+        "tournament_creation.html", title="Tournament Creation", form=form
     )
-    return redirect(url_for("TournamentCreation"))
+    return redirect(url_for("tournament_creation"))
 
 
 @app.route("/TournamentDashboard")
@@ -120,6 +113,12 @@ def match(match_ID: int):
 @app.route("/league", methods=["GET"])
 def league():
     return render_template("league.html")
+
+
+@app.route("/create_team", methods=["GET", "POST"])
+@login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
+def create_team():
+    return render_template("team_creation.html", title="Register a New Team")
 
 
 """This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 

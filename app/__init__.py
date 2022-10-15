@@ -1,20 +1,29 @@
 from flask import Flask
 from config import Config
-from flask_sqlalchemy import SQLAlchemy  # dont worry if pycharm gives a warning here
-from flask_migrate import Migrate  # dont worry if pycharm gives a warning here
-from flask_login import LoginManager  # dont worry if pycharm gives a warning here
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from jinja2 import Environment, FileSystemLoader
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
-login.login_view = 'login'
+login.login_view = "login"
+
+# Register permissions functions here so they can be used
+# within Jinja templates
+from app.models import User
+
+env = Environment(loader=FileSystemLoader("./app/templates"))
+env.globals["is_admin"] = User.is_admin
+env.globals["is_coach"] = User.is_coach
 
 from app import routes, models
 
 
-'''The script above simply creates the application object as an instance of class Flask imported from the flask 
+"""The script above simply creates the application object as an instance of class Flask imported from the flask 
 package. The __name__ variable passed to the Flask class is a Python predefined variable, which is set to the name of 
 the module in which it is used. Flask uses the location of the module passed here as a starting point when it needs 
 to load associated resources such as template files, which I will cover in Chapter 2. For all practical purposes, 
@@ -29,4 +38,4 @@ package.
 Another peculiarity is that the routes module is imported at the bottom and not at the top of the script as it is 
 always done. The bottom import is a workaround to circular imports, a common problem with Flask applications. You are 
 going to see that the routes module needs to import the app variable defined in this script, so putting one of the 
-reciprocal imports at the bottom avoids the error that results from the mutual references between these two files. '''
+reciprocal imports at the bottom avoids the error that results from the mutual references between these two files. """

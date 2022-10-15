@@ -2,6 +2,7 @@ from app import db, login
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from app.permissions import is_admin, is_coach
 
 """
 classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
@@ -58,6 +59,16 @@ class User(UserMixin, db.Model):
     @login.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
+    # Having these be instance methods on Users makes it easy to use these within
+    # Jinja. Just returning true for now so I can test my team creation stuff.
+    def is_admin(self):
+        print("is_admin being called...")
+        return True
+
+    def is_coach(self):
+        print("is_coach being called...")
+        return True
 
 
 class League(db.Model):

@@ -4,6 +4,7 @@ all logged-in users will have an associated user ID in the DB
 permissions are also held in DB
 
 """
+from app import app
 
 
 def request_coach(user):
@@ -85,7 +86,8 @@ def is_coach(user):
     :return: bool representing if user is coach
     """
     # TODO query db
-    return
+    print("is_coach is being called.")
+    return True
 
 
 def is_admin(user):
@@ -95,4 +97,5 @@ def is_admin(user):
     :return: bool representing if user is admin
     """
     # TODO query db
-    return
+    print("is_admin is being called")
+    return True
