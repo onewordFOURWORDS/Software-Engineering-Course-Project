@@ -1,9 +1,9 @@
-from app import app, db, login
 from datetime import datetime
 from flask_login import UserMixin
 from time import time
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
+from app import app, db, login
 
 """
 classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
@@ -46,16 +46,24 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.hashedPassword, password)
 
-    def get_reset_password_token(self, expires_in=600):
+    def get_reset_password_token(self, expires_in=1200):
         return jwt.encode(
-            {'reset_passsword': self.id, 'exp': time() + expires_in},
-            app.config['SECRET_KEY'], algorithm='HS256')
+            {"reset_password": self.id, "exp": time() + expires_in},
+            app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
 
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token, app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['reset_password']
+            print(
+                jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+                    "reset_password"
+                ]
+            )
+            id = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+                "reset_password"
+            ]
         except:
             return
         return User.query.get(id)
@@ -71,9 +79,10 @@ class User(UserMixin, db.Model):
     def is_following(self, team):
         return self.followed.filter(following.c.following_id == team.id).count() > 0
 
-    @login.user_loader
-    def load_user(id):
-        return User.query.get(int(id))
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 
 class League(db.Model):
