@@ -13,7 +13,9 @@ from wtforms.validators import (
     Email,
     EqualTo,
 )
-from app.models import User
+from app.models import User, Tournament, League
+from flask_wtf.file import FileField
+from datetime import date
 
 
 class LoginForm(FlaskForm):
@@ -55,10 +57,61 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Please use a different email address.")
 
 
+"""
+Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
+Tournament location has the same, except it doesnt have to be unique. Might set
+regex for tournament league in the future, but for now, it can be empty, but it still has the same regex as others. Tournament date
+must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
+are creating one.
+"""
+
+
 class TournamentCreationForm(FlaskForm):
-    tournamentName = StringField("TournamentName", validators=[DataRequired()])
-    tournamentLocation = StringField("TournamentLocation", validators=[DataRequired()])
+    tournamentName = StringField(
+        "Tournament Name",
+        validators=[
+            DataRequired(),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="Tournament name must not contain any special characters.",
+            ),
+        ],
+    )
+    tournamentLocation = StringField(
+        "Tournament City",
+        validators=[
+            DataRequired(),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="City name must not contain any special characters.",
+            ),
+        ],
+    )
+    tournamentLeague = StringField(
+        "Or Create A New League",
+        validators=[
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="League name must not contain any special characters.",
+            )
+        ],
+        render_kw={
+            "placeholder": "Please leave empty if you do not wish to create a league!"
+        },
+    )
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
     )
+
+    def validate_tournamentDate(form, tournamentDate):
+        if tournamentDate.data < date.today():
+            raise ValidationError("Date must be set in the future.")
+
+    def validate_tournamentLeague(form, tournamentLeague):
+        leagueString = tournamentLeague
+        if League.query.filter_by(leagueName=leagueString.data).first():
+            raise ValidationError(
+                "League already exists. Choose existing league or create a unique league. "
+            )
+
     submit = SubmitField("Create Tournament")
