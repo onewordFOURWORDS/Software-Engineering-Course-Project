@@ -86,8 +86,7 @@ def is_coach(user):
     :return: bool representing if user is coach
     """
     # TODO query db
-    print("is_coach is being called.")
-    return True
+    return
 
 
 def is_admin(user):
@@ -97,5 +96,4 @@ def is_admin(user):
     :return: bool representing if user is admin
     """
     # TODO query db
-    print("is_admin is being called")
-    return True
+    return

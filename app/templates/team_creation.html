@@ -1,7 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Team Creation Page</h1>
+    <div class="container my-5">
+        <h2 class="my-3">Register a new team:</h2>
+        <form action="" method="POST">
+            {{ form.csrf_token }}
+            <div class="my-4">
+                {{ form.team_name.label }} {{ form.team_name(size=64) }}
+                {% for error in form.team_name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <div class="my-4">
+                {{ form.user_is_coach.label }} {{ form.user_is_coach }}
+            </div>
+            {# TODO: only show this if the above checkbox is unticked. #}
+            <div class="my-4">
+                <p>Coach dropdown here</p>
+            </div>
+            <div class="my-4">
+                <p>This will be the league select dropdown</p>
+            </div>
+            {# TODO: make this not ugly once it works. #}
+            <div>{{ form.submit() }}</div>
+        </form>
+    </div>
     <script>
         document.querySelector("#team_creation_link").classList.toggle("active");
     </script>

@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm  # dont worry if pycharm gives a warning here
+from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
     PasswordField,
@@ -6,13 +6,13 @@ from wtforms import (
     SubmitField,
     IntegerField,
     DateField,
-)  # dont worry if pycharm gives a warning here
+)
 from wtforms.validators import (
     ValidationError,
     DataRequired,
     Email,
     EqualTo,
-)  # dont worry if pycharm gives a warning here
+)
 from app.models import User
 
 
@@ -23,10 +23,15 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Sign In")
 
 
-class TeamCreation(FlaskForm):
-    teamname = StringField("Team Name", validators=[DataRequired()])
-    coachID = IntegerField("Username", validators=[DataRequired()])
-    submit = SubmitField("Submit New Team")
+class TeamCreationForm(FlaskForm):
+    team_name = StringField("Team Name", validators=[DataRequired()])
+    user_is_coach = BooleanField("I will be coaching this team:", default="checked")
+
+    # coachID = IntegerField(
+    #     "Username", validators=[DataRequired()]
+    # )  # I have no idea why deleting this breaks the form atm. This is tightly linked with models and the sqlalchemy definitions,
+    # has something to do with what's being expected there.
+    submit = SubmitField("Register")
     # league = db.Column(db.Integer, db.ForeignKey('league.id'))
 
 

@@ -63,18 +63,16 @@ class User(UserMixin, db.Model):
     # Having these be instance methods on Users makes it easy to use these within
     # Jinja. Just returning true for now so I can test my team creation stuff.
     def is_admin(self):
-        print("is_admin being called...")
         return True
 
     def is_coach(self):
-        print("is_coach being called...")
         return True
 
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     leagueName = db.Column(db.String(64))
-    teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
+    # teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
 
     def __repr__(self):
         return "<League {}>".format(self.leagueName)
@@ -82,14 +80,15 @@ class League(db.Model):
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    teamName = db.Column(db.String(140), index=True, unique=True)
-    headCoach = db.Column(db.Integer, db.ForeignKey("user.id"))
-    league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    totalScore = db.Column(db.Integer)
-    totalScoreAgainst = db.Column(db.Integer)
-    totalWins = db.Column(db.Integer)
-    totalLosses = db.Column(db.Integer)
-    tournaments = db.Column(db.Integer)
+    team_name = db.Column(db.String(140), index=True, unique=True)
+    user_is_coach = db.Column(db.Boolean)
+    # coach = db.Column(db.Integer, db.ForeignKey("user.id"))
+    # league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    # totalScore = db.Column(db.Integer)
+    # totalScoreAgainst = db.Column(db.Integer)
+    # totalWins = db.Column(db.Integer)
+    # totalLosses = db.Column(db.Integer)
+    # tournaments = db.Column(db.Integer)
 
     def __repr__(self):
         return "<Team {}>".format(self.teamName)

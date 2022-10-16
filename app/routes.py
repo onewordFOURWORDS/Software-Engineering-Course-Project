@@ -1,13 +1,18 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, TournamentCreationForm
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    TournamentCreationForm,
+    TeamCreationForm,
+)
 from flask_login import (
     current_user,
     login_user,
     logout_user,
     login_required,
 )
-from app.models import Tournament, User
+from app.models import Tournament, User, Team
 from werkzeug.urls import url_parse
 
 
@@ -85,7 +90,6 @@ def tournament_creation():
     return render_template(
         "tournament_creation.html", title="Tournament Creation", form=form
     )
-    return redirect(url_for("tournament_creation"))
 
 
 @app.route("/TournamentDashboard")
@@ -118,14 +122,14 @@ def league():
 @app.route("/create_team", methods=["GET", "POST"])
 @login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
 def create_team():
-    return render_template("team_creation.html", title="Register a New Team")
-
-
-"""This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 
-lines above the function are decorators, a unique feature of the Python language. A decorator modifies the function 
-that follows it. A common pattern with decorators is to use them to register functions as callbacks for certain 
-events. In this case, the @app.route decorator creates an association between the URL given as an argument and the 
-function. In this example there are two decorators, which associate the URLs / and /index to this function. This 
-means that when a web browser requests either of these two URLs, Flask is going to invoke this function and pass the 
-return value of it back to the browser as a response. If this does not make complete sense yet, it will in a little 
-bit when you run this application. """
+    form = TeamCreationForm()
+    if form.validate_on_submit():
+        team = Team(
+            team_name=form.team_name.data, user_is_coach=form.user_is_coach.data
+        )
+        db.session.add(team)
+        db.session.commit()
+        flash("Congratulations, you have registered a new team!")
+        # TODO: have this redirect to the new team page once it's implemented
+        return redirect(url_for("index"))
+    return render_template("team_creation.html", title="Register a New Team", form=form)
