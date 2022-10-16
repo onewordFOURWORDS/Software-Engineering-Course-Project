@@ -60,8 +60,7 @@ class Team:
 
 
 class Tournament:
-    def __init__(self, date: datetime.date, location: str, division, tournamentWinner: Team,
-                 registeredTeams: [Team]):
+    def __init__(self, date: datetime.date, location: str, division, tournamentWinner: Team):
         self.date = date
         self.location = location
         self.division = division
