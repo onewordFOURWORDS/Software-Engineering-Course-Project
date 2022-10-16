@@ -64,6 +64,8 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash("Congratulations, you are now a registered user!")
+        # TODO: Upon successful registration, log the user in and take them to the homepage
+        # # instead of making them log in manually.
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -187,6 +189,8 @@ def league():
 @app.route("/create_team", methods=["GET", "POST"])
 @login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
 def create_team():
+    # TODO: update this later when coach and admin classes are defined.
+    coaches = User.query.filter_by(_is_coach=True)
     form = TeamCreationForm()
     if form.validate_on_submit():
         team = Team(
@@ -197,4 +201,6 @@ def create_team():
         flash("Congratulations, you have registered a new team!")
         # TODO: have this redirect to the new team page once it's implemented
         return redirect(url_for("index"))
-    return render_template("team_creation.html", title="Register a New Team", form=form)
+    return render_template(
+        "team_creation.html", title="Register a New Team", form=form, coaches=coaches
+    )

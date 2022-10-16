@@ -16,7 +16,16 @@
             </div>
             {# TODO: only show this if the above checkbox is unticked. #}
             <div class="my-4">
-                <p>Coach dropdown here</p>
+                <label for="coach-select">Select a coach:</label>
+                <select name="coaches" id="coach-select">
+                    {# TODO: Change me eventually. You'll want this to be "for coach in coaches" once
+                     there is a coaches table. for now, we're just going through the users
+                     and seeing who has the boolean "_is_coach" set to true. #}
+                    {% for coach in coaches %}
+                        # TODO: Change me once registration is fixed, needs first name + last name.
+                        <option value="{{coach.username}}">{{ coach.username }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="my-4">
                 <p>This will be the league select dropdown</p>

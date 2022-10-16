@@ -27,6 +27,14 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(64))
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
+    # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
+    # team management stuff. Also, think about better names for these, just using the leading underscore
+    # to avoid collision with the is_admin() and is_coach() methods, which I created to call within Jinja
+    # templates even though they are a bit unpythonic. Can I just check the values of these props from
+    # within the templates instead of registering the functions?
+    # Look into this later, for now, it works...
+    _is_admin = db.Column(db.Boolean, default=False)
+    _is_coach = db.Column(db.Boolean, default=True)
 
     followed = db.relationship(
         "User",
@@ -64,10 +72,11 @@ class User(UserMixin, db.Model):
     # Having these be instance methods on Users makes it easy to use these within
     # Jinja. Just returning true for now so I can test my team creation stuff.
     def is_admin(self):
-        return True
+        return self._is_admin
 
     def is_coach(self):
-        return True
+        # print(self)
+        return self._is_coach
 
 
 class League(db.Model):
