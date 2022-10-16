@@ -7,12 +7,7 @@ from wtforms import (
     IntegerField,
     DateField,
 )
-from wtforms.validators import (
-    ValidationError,
-    DataRequired,
-    Email,
-    EqualTo,
-)
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
 from app.models import User, Tournament, League
 from flask_wtf.file import FileField
 from datetime import date

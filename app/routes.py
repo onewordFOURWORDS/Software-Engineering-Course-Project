@@ -74,8 +74,8 @@ def dbtest():
     return redirect(url_for("dbtest"))
 
 
-@app.route("/TournamentCreation", methods=["GET", "POST"])
-def TournamentCreation():
+@app.route("/tournament_creation", methods=["GET", "POST"])
+def tournament_creation():
     """
     If the league box is blank, we will take whichever league was selected from the dropdown for the
     tournament tournament league, otherwise this function will create a new league based off of the
@@ -92,7 +92,7 @@ def TournamentCreation():
             # to create a league.
             if not League.query.all() and form.tournamentLeague.data == "":
                 flash("Please create a league for your tournament!")
-                return redirect(url_for("TournamentCreation"))
+                return redirect(url_for("tournament_creation"))
             tournamentState = request.form["state"]
             if League.query.all():
                 leagueString = request.form["league"]
@@ -132,7 +132,7 @@ def TournamentCreation():
         flash("Congratulations, you have created a tournament!")
         return redirect(url_for("TournamentPage", tournament=tournament.tournamentName))
     return render_template(
-        "TournamentCreation.html",
+        "tournament_creation.html",
         title="Tournament Creation",
         form=form,
         leagues=leagues,
