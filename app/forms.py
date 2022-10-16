@@ -60,9 +60,9 @@ must be set in the present or future, users should not be able to make a tournam
 are creating one.
 """
 class TournamentCreationForm(FlaskForm):
-    tournamentName = StringField("Tournament Name", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
-    tournamentLocation = StringField("Tournament City", validators=[DataRequired(), Regexp(regex=r'[ A-Za-z0-9_-]*$')])
-    tournamentLeague = StringField("Or Create A New League", validators=[Regexp(regex=r'[ A-Za-z0-9_-]*$')], render_kw={"placeholder": "Please leave empty if you do not wish to create a league!"})
+    tournamentName = StringField("Tournament Name", validators=[DataRequired(), Regexp(regex=r'[ \'A-Za-z0-9]*$', message="Tournament name must not contain any special characters.")])
+    tournamentLocation = StringField("Tournament City", validators=[DataRequired(), Regexp(regex=r'[ \'A-Za-z0-9]*$', message="City name must not contain any special characters.")])
+    tournamentLeague = StringField("Or Create A New League", validators=[Regexp(regex=r'[ \'A-Za-z0-9]*$', message="League name must not contain any special characters.")], render_kw={"placeholder": "Please leave empty if you do not wish to create a league!"})
     tournamentDate = DateField(
         "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]    
     )
