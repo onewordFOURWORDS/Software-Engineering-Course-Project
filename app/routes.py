@@ -15,6 +15,7 @@ from flask_login import (
 from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
+from app.team_management import get_teams_in_league
 
 
 @app.route("/")
@@ -190,7 +191,7 @@ def match(match_ID: int):
 
 @app.route("/league", methods=["GET"])
 def league():
-    teams = Team.query.all()
+    teams = get_teams_in_league(current_user.league_id)
     return render_template("league.html", teams=teams)
 
 

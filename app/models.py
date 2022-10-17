@@ -78,6 +78,13 @@ class User(UserMixin, db.Model):
         # print(self)
         return self._is_coach
 
+    @property
+    def league_id(self):
+        """
+        Looks up users affiliated league (based on their team affiliation)
+        """
+        return Team.query.filter_by(id=self.affiliated_team).first().league
+
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
