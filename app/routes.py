@@ -14,6 +14,7 @@ from flask_login import (
 )
 from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
+from wtforms.fields.core import Label
 
 
 @app.route("/")
@@ -103,7 +104,7 @@ def tournament_creation():
             tournamentState = request.form["state"]
             if League.query.all():
                 leagueString = request.form["league"]
-                league = League.query.filter_by(leagueName=leagueString).first()
+                league = League.query.filter_by(league_name=leagueString).first()
         # If the league box is blank, we will take whichever league was selected from the dropdown for the
         # tournament tournament league, otherwise this function will create a new league based off of the
         # name they put in and assign the tournament to that league.
@@ -121,7 +122,7 @@ def tournament_creation():
             db.session.commit()
         else:
             league = League(
-                leagueName=form.tournamentLeague.data,
+                league_name=form.tournamentLeague.data,
             )
             db.session.add(league)
             db.session.commit()
@@ -200,7 +201,9 @@ def create_team():
     form = TeamCreationForm()
     if form.validate_on_submit():
         team = Team(
-            team_name=form.team_name.data, user_is_coach=form.user_is_coach.data
+            team_name=form.team_name.data,
+            coach=form.coach.data,
+            league=form.league.data,
         )
         db.session.add(team)
         db.session.commit()

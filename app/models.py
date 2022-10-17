@@ -81,19 +81,18 @@ class User(UserMixin, db.Model):
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    leagueName = db.Column(db.String(64))
+    league_name = db.Column(db.String(64))
     # teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
 
     def __repr__(self):
-        return "<League {}>".format(self.leagueName)
+        return "<League {}>".format(self.league_name)
 
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String(140), index=True, unique=True)
-    user_is_coach = db.Column(db.Boolean)
-    # coach = db.Column(db.Integer, db.ForeignKey("user.id"))
-    # league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    coach = db.Column(db.Integer, db.ForeignKey("user.id"))
+    league = db.Column(db.Integer, db.ForeignKey("league.id"))
     # totalScore = db.Column(db.Integer)
     # totalScoreAgainst = db.Column(db.Integer)
     # totalWins = db.Column(db.Integer)

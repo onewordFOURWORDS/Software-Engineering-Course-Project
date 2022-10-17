@@ -6,7 +6,9 @@ from wtforms import (
     SubmitField,
     IntegerField,
     DateField,
+    SelectField,
 )
+from flask_login import current_user
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
 from app.models import User, Tournament, League
 from flask_wtf.file import FileField
@@ -22,14 +24,22 @@ class LoginForm(FlaskForm):
 
 class TeamCreationForm(FlaskForm):
     team_name = StringField("Team Name", validators=[DataRequired()])
-    user_is_coach = BooleanField("I will be coaching this team:", default="checked")
-
-    # coachID = IntegerField(
-    #     "Username", validators=[DataRequired()]
-    # )  # I have no idea why deleting this breaks the form atm. This is tightly linked with models and the sqlalchemy definitions,
-    # has something to do with what's being expected there.
+    # TODO: probably write a get_coaches(league) fcn, 2nd time I've done this.
+    # waiting on decisions as to how we're handling Leagues.
+    coaches = User.query.filter_by(_is_coach=True)
+    # TODO: Figure out a better way to do this. I want the current user to be the top option.
+    # or to have a checkbox "I'm coaching this team" and then show/hide the dropdown with the other options.
+    # but I've been fussing with this for ages and it's not working, so just keep going for now as is...
+    coaches_list = []
+    for coach in coaches:
+        coaches_list.append((coach.id, coach.full_name))
+    coach = SelectField("Select your coach: ", choices=coaches_list)
+    leagues = League.query.all()
+    league_list = []
+    for league in leagues:
+        league_list.append((league.id, league.league_name))
+    league = SelectField("Select your league: ", choices=league_list)
     submit = SubmitField("Register")
-    # league = db.Column(db.Integer, db.ForeignKey('league.id'))
 
 
 class RegistrationForm(FlaskForm):
@@ -106,7 +116,7 @@ class TournamentCreationForm(FlaskForm):
 
     def validate_tournamentLeague(form, tournamentLeague):
         leagueString = tournamentLeague
-        if League.query.filter_by(leagueName=leagueString.data).first():
+        if League.query.filter_by(league_name=leagueString.data).first():
             raise ValidationError(
                 "League already exists. Choose existing league or create a unique league. "
             )
