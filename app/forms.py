@@ -77,4 +77,4 @@ class TournamentCreationForm(FlaskForm):
             raise ValidationError("League already exists. Choose existing league or create a unique league. ")
         
 
-    submit = SubmitField("Create Tournament")
+    submit = SubmitField("Submit")

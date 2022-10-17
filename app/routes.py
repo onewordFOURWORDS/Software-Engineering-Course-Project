@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, session
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, TournamentCreationForm
 from flask_login import (
@@ -88,7 +88,7 @@ def TournamentCreation():
     leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
-
+        formdata = session.get('formdata', None)
         if request.method == "POST":            
             # If the database has no current leagus and they do not put one in the box, it will take them back to the page asking
             # to create a league. 
@@ -151,12 +151,24 @@ def TournamentPage():
             return redirect(url_for('EditTournament', tournament=tournament.tournamentName))
     return render_template("TournamentPage.html", title="Tournament Page", tournament = tournament, league = league)
 
-@app.route("/EditTournament")
+@app.route("/EditTournament", methods=["GET", "POST"])
 def EditTournament():
-    tournamentString = request.args.get('tournament', None)
-    tournaments = Tournament.query.all()
+    form = TournamentCreationForm()
     leagues = League.query.all()
-    return render_template("EditTournament.html", title="Tournament Management", tournaments = tournaments, leagues = leagues)
+    tournamentString = request.args.get('tournament', None)
+    tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
+    form.tournamentName.data = tournament.tournamentName
+    form.tournamentDate.data = tournament.tournamentDate
+    form.tournamentLocation.data = tournament.tournamentLocation[:-4]
+    tournament_state = tournament.tournamentLocation[len(tournament.tournamentLocation)-2:]
+    leagueID = tournament.tournamentLeague
+    league = League.query.filter_by(id=leagueID).first()
+    tournament_league = league.leagueName
+
+
+
+    return render_template("EditTournament.html", title="Tournament Management", form=form, leagues = leagues, tournament_state = tournament_state,
+    tournament_league = tournament_league )
 
 
 @app.route("/team/<team_ID>", methods=["GET"])

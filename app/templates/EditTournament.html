@@ -1,5 +1,107 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Tournament Management </h1>
+<h1>Tournament Management</h1>
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.tournamentName.label }}<br>
+        {{ form.tournamentName(size=64) }}<br>
+        {% for error in form.tournamentName.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.tournamentLocation.label }}<br>
+        {{ form.tournamentLocation(size=64) }}<br>
+        {% for error in form.tournamentLocation.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    State
+    <select name="state" method="POST" action="/">
+        <option value="AL" {% if tournament_state=="AL" %} selected {% endif %}>Alabama</option>
+        <option value="AK" {% if tournament_state=="AK" %} selected {% endif %}>Alaska</option>
+        <option value="AZ" {% if tournament_state=="AZ" %} selected {% endif %}>Arizona</option>
+        <option value="AR" {% if tournament_state=="AR" %} selected {% endif %}>Arkansas</option>
+        <option value="CA" {% if tournament_state=="CA" %} selected {% endif %}>California</option>
+        <option value="CO" {% if tournament_state=="CO" %} selected {% endif %}>Colorado</option>
+        <option value="CT" {% if tournament_state=="CT" %} selected {% endif %}>Connecticut</option>
+        <option value="DE" {% if tournament_state=="DE" %} selected {% endif %}>Delaware</option>
+        <option value="DC" {% if tournament_state=="DC" %} selected {% endif %}>District Of Columbia</option>
+        <option value="FL" {% if tournament_state=="FL" %} selected {% endif %}>Florida</option>
+        <option value="GA" {% if tournament_state=="GA" %} selected {% endif %}>Georgia</option>
+        <option value="HI" {% if tournament_state=="HI" %} selected {% endif %}>Hawaii</option>
+        <option value="ID" {% if tournament_state=="ID" %} selected {% endif %}>Idaho</option>
+        <option value="IL" {% if tournament_state=="IL" %} selected {% endif %}>Illinois</option>
+        <option value="IN" {% if tournament_state=="IN" %} selected {% endif %}>Indiana</option>
+        <option value="IA" {% if tournament_state=="IA" %} selected {% endif %}>Iowa</option>
+        <option value="KS" {% if tournament_state=="KS" %} selected {% endif %}>Kansas</option>
+        <option value="KY" {% if tournament_state=="KY" %} selected {% endif %}>Kentucky</option>
+        <option value="LA" {% if tournament_state=="LA" %} selected {% endif %}>Louisiana</option>
+        <option value="ME" {% if tournament_state=="ME" %} selected {% endif %}>Maine</option>
+        <option value="MD" {% if tournament_state=="MD" %} selected {% endif %}>Maryland</option>
+        <option value="MA" {% if tournament_state=="MA" %} selected {% endif %}>Massachusetts</option>
+        <option value="MI" {% if tournament_state=="MI" %} selected {% endif %}>Michigan</option>
+        <option value="MN" {% if tournament_state=="MN" %} selected {% endif %}>Minnesota</option>
+        <option value="MS" {% if tournament_state=="MS" %} selected {% endif %}>Mississippi</option>
+        <option value="MO" {% if tournament_state=="MO" %} selected {% endif %}>Missouri</option>
+        <option value="MT" {% if tournament_state=="MT" %} selected {% endif %}>Montana</option>
+        <option value="NE" {% if tournament_state=="NE" %} selected {% endif %}>Nebraska</option>
+        <option value="NV" {% if tournament_state=="NV" %} selected {% endif %}>Nevada</option>
+        <option value="NH" {% if tournament_state=="NH" %} selected {% endif %}>New Hampshire</option>
+        <option value="NJ" {% if tournament_state=="NJ" %} selected {% endif %}>New Jersey</option>
+        <option value="NM" {% if tournament_state=="NM" %} selected {% endif %}>New Mexico</option>
+        <option value="NY" {% if tournament_state=="NY" %} selected {% endif %}>New York</option>
+        <option value="NC" {% if tournament_state=="NC" %} selected {% endif %}>North Carolina</option>
+        <option value="ND" {% if tournament_state=="ND" %} selected {% endif %}>North Dakota</option>
+        <option value="OH" {% if tournament_state=="OH" %} selected {% endif %}>Ohio</option>
+        <option value="OK" {% if tournament_state=="OK" %} selected {% endif %}>Oklahoma</option>
+        <option value="OR" {% if tournament_state=="OR" %} selected {% endif %}>Oregon</option>
+        <option value="PA" {% if tournament_state=="PA" %} selected {% endif %}>Pennsylvania</option>
+        <option value="RI" {% if tournament_state=="RI" %} selected {% endif %}>Rhode Island</option>
+        <option value="SC" {% if tournament_state=="SC" %} selected {% endif %}>South Carolina</option>
+        <option value="SD" {% if tournament_state=="SD" %} selected {% endif %}>South Dakota</option>
+        <option value="TN" {% if tournament_state=="TN" %} selected {% endif %}>Tennessee</option>
+        <option value="TX" {% if tournament_state=="TX" %} selected {% endif %}>Texas</option>
+        <option value="UT" {% if tournament_state=="UT" %} selected {% endif %}>Utah</option>
+        <option value="VT" {% if tournament_state=="VT" %} selected {% endif %}>Vermont</option>
+        <option value="VA" {% if tournament_state=="VA" %} selected {% endif %}>Virginia</option>
+        <option value="WA" {% if tournament_state=="WA" %} selected {% endif %}>Washington</option>
+        <option value="WV" {% if tournament_state=="WV" %} selected {% endif %}>West Virginia</option>
+        <option value="WI" {% if tournament_state=="WI" %} selected {% endif %}>Wisconsin</option>
+        <option value="WY" {% if tournament_state=="WY" %} selected {% endif %}>Wyoming</option>
+    </select>
+    <br> <br>
+    Choose A Pre-Existing League
+    <select name="league" method="POST" action="/">
+        {% for league in leagues %}
+        {% if tournament_league==league.leagueName %}
+        <option value="{{league.leagueName}}" selected>
+            {{league.leagueName}}
+        </option>
+        {%else%}
+        <option value="{{league.leagueName}}">
+            {{league.leagueName}}
+        </option>
+        {% endif %}
+        {% endfor %}
+    </select>
+    <p>
+        {{ form.tournamentLeague.label }}<br>
+        {{ form.tournamentLeague(size=64) }}<br>
+        {% for error in form.tournamentLeague.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.tournamentDate.label }}<br>
+        {{ form.tournamentDate(size=32) }}<br>
+        {% for error in form.tournamentDate.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
 {% endblock %}
