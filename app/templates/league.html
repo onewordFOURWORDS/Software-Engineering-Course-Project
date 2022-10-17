@@ -1,20 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for team in teams %}
-        <div>
-            {# TODO: take if out if we figure out a better
-                way to deal with the None option on registration #}
-            {% if team.team_name != None %}
-                <h1>{{ team.team_name }}</h1>
-                <h2>Coached by: {{ team.coach_name }}</h2>
-                <h3>Competes in: {{ team.league_name }}</h3>
-                {# TODO: make path dynamic once we have user uploads for logos #}
-                <img src="{{ url_for('static', filename='user_uploads/wizard.png') }}" alt="Logo for {{ team.team_name }}" width=200 height=200>
-                <hr>
-            {% endif %}
-        </div>
-    {% endfor %}
+    {# If user has affiliated league, render teams in league #}
+    {% if teams != None %}
+        {% for team in teams %}
+            <div>
+                {# TODO: take if out if we figure out a better
+                    way to deal with the None option on registration #}
+                {% if team.team_name != None %}
+                    <h1>{{ team.team_name }}</h1>
+                    <h2>Coached by: {{ team.coach_name }}</h2>
+                    <h3>Competes in: {{ team.league_name }}</h3>
+                    {# TODO: make path dynamic once we have user uploads for logos #}
+                    <img src="{{ url_for('static', filename='user_uploads/wizard.png') }}" alt="Logo for {{ team.team_name }}" width=200 height=200>
+                    <hr>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {# TODO: Resume here, implement settings page for this.
+        Otherwise, take them to a settings page to choose a team #}
+    {% else %}
+        <h1>This page will show information for your team once you have chosen one!</h1>
+    {% endif%}
+
     <script>
         document.querySelector("#league_view_link").classList.toggle("active");
     </script>

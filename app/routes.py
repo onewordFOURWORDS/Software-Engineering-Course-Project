@@ -191,7 +191,14 @@ def match(match_ID: int):
 
 @app.route("/league", methods=["GET"])
 def league():
-    teams = get_teams_in_league(current_user.league_id)
+    # if the user doesn't have an affiliated team and league,
+    # the template will take them to a page to choose one
+    if current_user.league_id == None:
+        teams = None
+    # otherwise, it will display the teams in their league.
+    else:
+        teams = get_teams_in_league(current_user.league_id)
+
     return render_template("league.html", teams=teams)
 
 
