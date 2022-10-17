@@ -22,8 +22,9 @@
                      there is a coaches table. for now, we're just going through the users
                      and seeing who has the boolean "_is_coach" set to true. #}
                     {% for coach in coaches %}
-                        # TODO: Composite attribute?
-                        <option value="{{coach.full_name}}">{{ coach.full_name }}</option>
+                        {% if coach.id != current_user.id %}
+                            <option value="{{coach.full_name}}">{{ coach.full_name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>

@@ -207,5 +207,9 @@ def create_team():
         # TODO: have this redirect to the new team page once it's implemented
         return redirect(url_for("index"))
     return render_template(
-        "team_creation.html", title="Register a New Team", form=form, coaches=coaches
+        "team_creation.html",
+        title="Register a New Team",
+        form=form,
+        coaches=coaches,
+        current_user=current_user,
     )
