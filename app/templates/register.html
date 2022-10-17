@@ -46,6 +46,13 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.affiliated_team.label }}<br>
+            {{ form.affiliated_team }}<br>
+            {% for error in form.affiliated_team.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

@@ -21,12 +21,12 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     hashed_password = db.Column(db.String(128), default="password")
-    # teamsToFollow = db.Column(db.Column)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
     full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
+    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"), nullable=True)
     # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
     # team management stuff. Also, think about better names for these, just using the leading underscore
     # to avoid collision with the is_admin() and is_coach() methods, which I created to call within Jinja
@@ -70,7 +70,7 @@ class User(UserMixin, db.Model):
         return User.query.get(int(id))
 
     # Having these be instance methods on Users makes it easy to use these within
-    # Jinja. Just returning true for now so I can test my team creation stuff.
+    # Jinja.
     def is_admin(self):
         return self._is_admin
 

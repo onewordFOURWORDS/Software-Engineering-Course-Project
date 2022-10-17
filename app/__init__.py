@@ -14,13 +14,14 @@ login.login_view = "login"
 
 # Register permissions functions here so they can be used
 # within Jinja templates
-from app.models import User
+from app.models import *
 
 env = Environment(loader=FileSystemLoader("./app/templates"))
 env.globals["is_admin"] = User.is_admin
 env.globals["is_coach"] = User.is_coach
 
-from app import routes, models
+
+from app import routes
 
 """The script above simply creates the application object as an instance of class Flask imported from the flask 
 package. The __name__ variable passed to the Flask class is a Python predefined variable, which is set to the name of 

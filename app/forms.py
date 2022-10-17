@@ -10,7 +10,7 @@ from wtforms import (
 )
 from flask_login import current_user
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
-from app.models import User, Tournament, League
+from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
 
@@ -51,6 +51,17 @@ class RegistrationForm(FlaskForm):
     )
     first_name = StringField("First Name:", validators=[DataRequired()])
     last_name = StringField("Last Name:", validators=[DataRequired()])
+    teams = Team.query.all()
+    team_list = []
+    # TODO: fix me.
+    # add the none option.
+    team_list.append(("", "None"))
+    for team in teams:
+        team_list.append((team.id, team.team_name))
+    affiliated_team = SelectField(
+        "Choose a team to be affiliated with, or select None to set this up later: ",
+        choices=team_list,
+    )
     submit = SubmitField("Register")
 
     def validate_username(self, username):

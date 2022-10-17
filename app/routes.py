@@ -65,6 +65,7 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
+            affiliated_team=form.affiliated_team.data,
         )
         user.set_password(form.password.data)
         db.session.add(user)
