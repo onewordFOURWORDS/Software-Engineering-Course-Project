@@ -1,9 +1,8 @@
-from sqlalchemy import true
+from sqlalchemy.orm import column_property
 from app import db, login
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.permissions import is_admin, is_coach
 
 """
 classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
@@ -25,6 +24,7 @@ class User(UserMixin, db.Model):
     # teamsToFollow = db.Column(db.Column)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
+    full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
     # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my

@@ -22,8 +22,8 @@
                      there is a coaches table. for now, we're just going through the users
                      and seeing who has the boolean "_is_coach" set to true. #}
                     {% for coach in coaches %}
-                        # TODO: Change me once registration is fixed, needs first name + last name.
-                        <option value="{{coach.username}}">{{ coach.username }}</option>
+                        # TODO: Composite attribute?
+                        <option value="{{coach.full_name}}">{{ coach.full_name }}</option>
                     {% endfor %}
                 </select>
             </div>
