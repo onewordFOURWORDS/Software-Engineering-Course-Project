@@ -93,11 +93,6 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    # totalScore = db.Column(db.Integer)
-    # totalScoreAgainst = db.Column(db.Integer)
-    # totalWins = db.Column(db.Integer)
-    # totalLosses = db.Column(db.Integer)
-    # tournaments = db.Column(db.Integer)
 
     def __repr__(self):
         return "<Team {}>".format(self.teamName)
