@@ -14,13 +14,9 @@
             <div class="my-4">
                 {{ form.user_is_coach.label }} {{ form.user_is_coach }}
             </div>
-            {# TODO: only show this if the above checkbox is unticked. #}
-            <div class="my-4">
+            <div class="my-4 hidden" id="coach_dropdown">
                 <label for="coach-select">Select a coach:</label>
                 <select name="coaches" id="coach-select">
-                    {# TODO: Change me eventually. You'll want this to be "for coach in coaches" once
-                     there is a coaches table. for now, we're just going through the users
-                     and seeing who has the boolean "_is_coach" set to true. #}
                     {% for coach in coaches %}
                         {% if coach.id != current_user.id %}
                             <option value="{{coach.full_name}}">{{ coach.full_name }}</option>
@@ -31,10 +27,11 @@
             <div class="my-4">
                 <p>This will be the league select dropdown</p>
             </div>
-            {# TODO: make this not ugly once it works. #}
+            {# TODO: make this button not ugly. #}
             <div>{{ form.submit() }}</div>
         </form>
     </div>
+    <script src="{{ url_for('static', filename='js/create_team.js')}}"></script>
     <script>
         document.querySelector("#team_creation_link").classList.toggle("active");
     </script>

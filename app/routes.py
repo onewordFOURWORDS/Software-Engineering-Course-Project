@@ -194,7 +194,8 @@ def league():
 @app.route("/create_team", methods=["GET", "POST"])
 @login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
 def create_team():
-    # TODO: update this later when coach and admin classes are defined.
+    # TODO: Might want to update this later when coach and admin classes are
+    # defined/we have a coaches table.
     coaches = User.query.filter_by(_is_coach=True)
     form = TeamCreationForm()
     if form.validate_on_submit():
