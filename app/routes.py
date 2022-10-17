@@ -190,7 +190,8 @@ def match(match_ID: int):
 
 @app.route("/league", methods=["GET"])
 def league():
-    return render_template("league.html")
+    teams = Team.query.all()
+    return render_template("league.html", teams=teams)
 
 
 @app.route("/create_team", methods=["GET", "POST"])

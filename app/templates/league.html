@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>This page will display info for all teams in a registered user's league.</h1>
+    {% for team in teams %}
+        <div>
+            {# TODO: take if out if we figure out a better
+                way to deal with the None option on registration #}
+            {% if team.team_name != None %}
+                <h1>{{ team.team_name }}</h1>
+                <h2>Coached by: {{ team.coach_name }}</h2>
+                <h3>Competes in: {{ team.league_name }}</h3>
+                {# TODO: make path dynamic once we have user uploads for logos #}
+                <img src="{{ url_for('static', filename='user_uploads/wizard.png') }}" alt="Logo for {{ team.team_name }}" width=200 height=200>
+                <hr>
+            {% endif %}
+        </div>
+    {% endfor %}
     <script>
         document.querySelector("#league_view_link").classList.toggle("active");
     </script>

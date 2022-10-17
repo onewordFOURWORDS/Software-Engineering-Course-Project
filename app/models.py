@@ -102,6 +102,14 @@ class Team(db.Model):
     def __repr__(self):
         return "<Team {}>".format(self.teamName)
 
+    @property
+    def coach_name(self):
+        return User.query.filter_by(id=self.coach).first().full_name
+
+    @property
+    def league_name(self):
+        return League.query.filter_by(id=self.league).first().league_name
+
 
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
