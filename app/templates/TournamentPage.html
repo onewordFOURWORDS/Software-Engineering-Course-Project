@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Tournament Profile Page</h1>
-    <div><p>Tournament Name: {{tournament.tournamentName }}</a></b></p></div>
-    <div><p>Tournament Date: {{tournament.tournamentDate }}</b></p></div>
-    <div><p>Tournament Location: {{tournament.tournamentLocation }}</b></p></div>
-    <div><p>Tournament League: {{league.leagueName }}</b></p></div>
+<h1>Tournament Profile Page</h1>
+<div>
+    <p>Tournament Name: {{tournament.tournamentName }}</a></b></p>
+</div>
+<div>
+    <p>Tournament Date: {{tournament.tournamentDate }}</b></p>
+</div>
+<div>
+    <p>Tournament Location: {{tournament.tournamentLocation }}</b></p>
+</div>
+<div>
+    <p>Tournament League: {{league.leagueName }}</b></p>
+</div>
+<form method="POST">
+    <input type="submit" name="edit_button" value="Edit Tournament">
+</form>
+
 {% endblock %}

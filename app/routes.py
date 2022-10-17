@@ -140,13 +140,23 @@ def TournamentDashboard():
     return render_template("TournamentDashboard.html", title="Tournament Dashboard", tournaments = tournaments, leagues = leagues)
 
 
-@app.route("/TournamentPage",)
+@app.route("/TournamentPage", methods=["GET", "POST"])
 def TournamentPage():
     tournamentString = request.args.get('tournament', None)
     tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
     leagueID = tournament.tournamentLeague
     league = League.query.filter_by(id=leagueID).first()
+    if request.method == "POST":
+        if request.form["edit_button"]:
+            return redirect(url_for('EditTournament', tournament=tournament.tournamentName))
     return render_template("TournamentPage.html", title="Tournament Page", tournament = tournament, league = league)
+
+@app.route("/EditTournament")
+def EditTournament():
+    tournamentString = request.args.get('tournament', None)
+    tournaments = Tournament.query.all()
+    leagues = League.query.all()
+    return render_template("EditTournament.html", title="Tournament Management", tournaments = tournaments, leagues = leagues)
 
 
 @app.route("/team/<team_ID>", methods=["GET"])
