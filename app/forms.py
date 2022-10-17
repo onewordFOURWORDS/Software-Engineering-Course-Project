@@ -53,14 +53,13 @@ class RegistrationForm(FlaskForm):
     last_name = StringField("Last Name:", validators=[DataRequired()])
     teams = Team.query.all()
     team_list = []
-    # TODO: fix me.
-    # add the none option.
-    team_list.append(("", "None"))
+    # Where to add none option to db w/ id 0?
     for team in teams:
         team_list.append((team.id, team.team_name))
     affiliated_team = SelectField(
         "Choose a team to be affiliated with, or select None to set this up later: ",
         choices=team_list,
+        coerce=int,
     )
     submit = SubmitField("Register")
 

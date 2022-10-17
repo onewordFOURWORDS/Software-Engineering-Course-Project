@@ -26,7 +26,7 @@ class User(UserMixin, db.Model):
     full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
-    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"), nullable=True)
+    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"))
     # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
     # team management stuff. Also, think about better names for these, just using the leading underscore
     # to avoid collision with the is_admin() and is_coach() methods, which I created to call within Jinja
