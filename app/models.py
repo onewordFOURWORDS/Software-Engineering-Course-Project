@@ -21,12 +21,12 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    hashedPassword = db.Column(db.String(128), default="password")
+    hashed_password = db.Column(db.String(128), default="password")
     # teamsToFollow = db.Column(db.Column)
-    firstName = db.Column(db.String(64))
-    lastName = db.Column(db.String(64))
+    first_name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
     address = db.Column(db.String(140))
-    phoneNumber = db.Column(db.String(64))
+    phone_number = db.Column(db.String(64))
 
     followed = db.relationship(
         "User",
@@ -41,10 +41,10 @@ class User(UserMixin, db.Model):
         return "<User {}>".format(self.username)
 
     def set_password(self, password):
-        self.hashedPassword = generate_password_hash(password)
+        self.hashed_password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.hashedPassword, password)
+        return check_password_hash(self.hashed_password, password)
 
     def get_reset_password_token(self, expires_in=1200):
         return jwt.encode(
