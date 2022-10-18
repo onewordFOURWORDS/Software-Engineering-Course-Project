@@ -7,12 +7,15 @@ from wtforms import (
     IntegerField,
     DateField,
     SelectField,
+    FieldList,
+    FormField,
 )
 from flask_login import current_user
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
+from operator import itemgetter
 
 
 class LoginForm(FlaskForm):
@@ -42,6 +45,25 @@ class TeamCreationForm(FlaskForm):
     submit = SubmitField("Register")
 
 
+# TODO: Figure out nesting forms so this can be reused throughout the site.
+# For now just have a separate form for the league page.
+# class TeamSelectForm(FlaskForm):
+#     class Meta:
+#         csrf = False
+
+#     teams = Team.query.all()
+#     print("TeamSelectForm is at least being included.")
+#     team_list = []
+#     for team in teams:
+#         team_list.append((team.id, team.team_name))
+#     print(team_list)
+#     affiliated_team = SelectField(
+#         "Choose a team to be affiliated with, or select None to set this up later: ",
+#         choices=team_list.sort(),
+#         coerce=int,
+#     )
+
+
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -53,14 +75,16 @@ class RegistrationForm(FlaskForm):
     last_name = StringField("Last Name:", validators=[DataRequired()])
     teams = Team.query.all()
     team_list = []
-    # Where to add none option to db w/ id 0?
     for team in teams:
         team_list.append((team.id, team.team_name))
     affiliated_team = SelectField(
         "Choose a team to be affiliated with, or select None to set this up later: ",
-        choices=team_list,
+        choices=sorted(
+            team_list, key=itemgetter(0)
+        ),  # sort by ID, the first element in each tuple.
         coerce=int,
     )
+    # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
 
     def validate_username(self, username):
@@ -72,6 +96,27 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError("Please use a different email address.")
+
+
+class LeaguePageTeamSelectForm(FlaskForm):
+    teams = Team.query.all()
+    team_list = []
+    for team in teams:
+        # don't include None in this list, doesn't make any sense on this page.
+        # this might be an argument for keeping this form as a separate form, but we'll see.
+        # TODO: can still factor the team bit out into a get_all_teams or something
+        if team.id != 0:
+            team_list.append((team.id, team.team_name))
+    affiliated_team = SelectField(
+        "Choose a team to be affiliated with:",
+        choices=sorted(
+            team_list, key=itemgetter(0)
+        ),  # sort by ID, the first element in each tuple.
+        coerce=int,
+        validators=[DataRequired()],
+        validate_choice=False,
+    )
+    submit = SubmitField("Select Team")
 
 
 """

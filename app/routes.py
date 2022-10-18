@@ -1,6 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import (
+    LeaguePageTeamSelectForm,
     LoginForm,
     RegistrationForm,
     TournamentCreationForm,
@@ -189,17 +190,26 @@ def match(match_ID: int):
     return render_template("match.html")
 
 
-@app.route("/league", methods=["GET"])
+@app.route("/league", methods=["GET", "POST"])
 def league():
     # if the user doesn't have an affiliated team and league,
-    # the template will take them to a page to choose one
+    # the template will display a form so they can select one.
     if current_user.league_id == None:
         teams = None
+        form = LeaguePageTeamSelectForm()
+        # TODO: Resume here. This is never returning true. hmmm...
+        if form.validate_on_submit():
+            print("form is validating...")
+            user = current_user
+            user.affiliated_team = form.affiliated_team.data
+            db.session.commit()
+            return redirect(url_for("index"))
     # otherwise, it will display the teams in their league.
     else:
+        form = None
         teams = get_teams_in_league(current_user.league_id)
 
-    return render_template("league.html", teams=teams)
+    return render_template("league.html", teams=teams, form=form)
 
 
 @app.route("/create_team", methods=["GET", "POST"])

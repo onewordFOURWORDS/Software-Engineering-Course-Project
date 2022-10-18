@@ -20,7 +20,17 @@
     {# TODO: Resume here, implement settings page for this.
         Otherwise, take them to a settings page to choose a team #}
     {% else %}
-        <h1>This page will show information for your team once you have chosen one!</h1>
+        <h1>You currently are not affiliated with a team.</h1>
+        {% if form %}
+            <form "method="POST" class="my-4">
+                {{ form.csrf_token }}
+                {{ form.affiliated_team.label }} {{ form.affiliated_team }}
+                <p class="my-2"> {{ form.submit() }} </p>
+            </form>
+            {% if form.errors %}
+                {{ form.errors }}
+            {% endif %}
+        {% endif %}
     {% endif%}
 
     <script>
