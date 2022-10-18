@@ -8,7 +8,7 @@ class Config(object):
     # database uri should look like: postgresql://user:password@localhost:5432/database_name
     # you made need to change some of these variables if you didn't use the default settings when you installed postgres
     # locally.
-    PORT_NUMBER = 5432
+    PORT_NUMBER = 5433
     DB_NAME = "app"
     DB_USER = "postgres"
     SQLALCHEMY_DATABASE_URI = (
