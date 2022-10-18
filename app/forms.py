@@ -78,3 +78,21 @@ class TournamentCreationForm(FlaskForm):
         
 
     submit = SubmitField("Create Tournament")
+
+
+class SearchByDate(FlaskForm):
+    """
+    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
+    """
+    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
+    endDate = DateField("EndDate", format="%Y-%m-%d")
+
+
+    def validate_dates(form, startDate, endDate):
+        if endDate.data is None:
+            return
+        elif endDate.data < startDate:
+            raise ValidationError("Start date must be before end date.")
+    
+
+    submit = SubmitField("Search")
