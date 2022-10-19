@@ -86,18 +86,24 @@ class SearchByDate(FlaskForm):
     """
     startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
     endDate = DateField("EndDate", format="%Y-%m-%d")
-
-
-    def validate_dates(form, startDate, endDate):
-        if endDate.data == "":
-            return
-        elif endDate.data < startDate:
-            raise ValidationError("Start date must be before end date.")
-    
-
     submit = SubmitField("Search")
 
-    
+    def validate_dates(form, startDate, endDate):
+        # if no start date is specified then don't render template showing tournies
+        if startDate.data is None:
+            return False
+        # if this statement is reached then there is a specified start date.
+        # if end date is not specified then return true to show all tournies from start date on
+        elif endDate.data is None:
+            return True
+        # if both start and end dates are specified throw an error if the end comes before the start
+        # otherwise return true to show all tournies in range of start to end
+        elif endDate.data < startDate:
+            raise ValidationError("Start date must be before end date.")
+        else:
+            return True
+            
+
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Request Password Reset')
