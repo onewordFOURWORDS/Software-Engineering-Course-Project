@@ -233,12 +233,11 @@ def league():
         teams = None
         form = LeaguePageTeamSelectForm()
         # TODO: Resume here. This is never returning true. hmmm...
-        if form.validate_on_submit():
-            print("form is validating...")
+        if request.method == "POST" and form.validate_on_submit():
             user = current_user
             user.affiliated_team = form.affiliated_team.data
             db.session.commit()
-            return redirect(url_for("index"))
+            return redirect(url_for("league"))
     # otherwise, it will display the teams in their league.
     else:
         form = None
