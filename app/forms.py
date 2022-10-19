@@ -89,7 +89,7 @@ class SearchByDate(FlaskForm):
 
 
     def validate_dates(form, startDate, endDate):
-        if endDate.data is None:
+        if endDate.data == "":
             return
         elif endDate.data < startDate:
             raise ValidationError("Start date must be before end date.")

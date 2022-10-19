@@ -1,6 +1,9 @@
+from datetime import date
+from tracemalloc import start
+from xmlrpc.client import DateTime
 from flask import render_template, flash, redirect, url_for, request
-from app import app, db
-from app.forms import LoginForm, RegistrationForm, TournamentCreationForm
+from app import app, db, tournamentManagement
+from app.forms import LoginForm, RegistrationForm, SearchByDate, TournamentCreationForm
 from flask_login import (
     current_user,
     login_user,
@@ -133,14 +136,20 @@ def TournamentCreation():
     return redirect(url_for("TournamentCreation"))
 
 
-@app.route("/TournamentDashboard")
+@app.route("/TournamentDashboard", methods=["GET"])
 def TournamentDashboard():
-    tournaments = Tournament.query.all()
     leagues = League.query.all()
+    form = SearchByDate()
+    # if endDate is not specified then show all tournaments scheduled past start date
+    if form.endDate == "":
+        tournaments = Tournament.query.filter(Tournament.tournamentDate >= form.startDate.data).all()
+    # otherwise show tournaments inclusive from start to end 
+    else:
+        tournaments = Tournament.query.filter(Tournament.tournamentDate >= form.startDate.data & Tournament.tournamentDate <= form.endDate.data).all()
     return render_template("TournamentDashboard.html", title="Tournament Dashboard", tournaments = tournaments, leagues = leagues)
 
 
-@app.route("/TournamentPage",)
+@app.route("/TournamentPage")
 def TournamentPage():
     tournamentString = request.args.get('tournament', None)
     tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
