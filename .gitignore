@@ -3,7 +3,11 @@
 venv/
 ssbm/
 __pycache__/
+*.vscode
 *.pyc
 *.pyo
 scratch.txt
 migrations/README
+.DS_Store
+app/.DS_Store
+app/static/.DS_Store
