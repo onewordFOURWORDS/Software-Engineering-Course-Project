@@ -2,7 +2,10 @@ from sqlalchemy.orm import column_property
 from app import db, login
 from datetime import datetime
 from flask_login import UserMixin
+from time import time
+import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
+from app import app, db, login
 
 """
 classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
@@ -54,6 +57,28 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
 
+    def get_reset_password_token(self, expires_in=1200):
+        return jwt.encode(
+            {"reset_password": self.id, "exp": time() + expires_in},
+            app.config["SECRET_KEY"],
+            algorithm="HS256",
+        )
+
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            print(
+                jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+                    "reset_password"
+                ]
+            )
+            id = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+                "reset_password"
+            ]
+        except:
+            return
+        return User.query.get(id)
+
     def follow(self, team):
         if not self.is_following(team):
             self.followed.append(team)
@@ -65,25 +90,29 @@ class User(UserMixin, db.Model):
     def is_following(self, team):
         return self.followed.filter(following.c.following_id == team.id).count() > 0
 
-    @login.user_loader
-    def load_user(id):
-        return User.query.get(int(id))
 
-    # Having these be instance methods on Users makes it easy to use these within
-    # Jinja.
-    def is_admin(self):
-        return self._is_admin
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
-    def is_coach(self):
-        # print(self)
-        return self._is_coach
 
-    @property
-    def league_id(self):
-        """
-        Looks up users affiliated league (based on their team affiliation)
-        """
-        return Team.query.filter_by(id=self.affiliated_team).first().league
+# Having these be instance methods on Users makes it easy to use these within
+# Jinja.
+def is_admin(self):
+    return self._is_admin
+
+
+def is_coach(self):
+    # print(self)
+    return self._is_coach
+
+
+@property
+def league_id(self):
+    """
+    Looks up users affiliated league (based on their team affiliation)
+    """
+    return Team.query.filter_by(id=self.affiliated_team).first().league
 
 
 class League(db.Model):

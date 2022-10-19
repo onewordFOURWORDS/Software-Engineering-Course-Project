@@ -3,6 +3,7 @@
 venv/
 ssbm/
 __pycache__/
+*.vscode
 *.pyc
 *.pyo
 scratch.txt
