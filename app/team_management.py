@@ -1,4 +1,4 @@
-from models import Team, League, Tournament, Match
+from app.models import Team, League, Tournament
 from datetime import datetime
 
 # NOTE: Max here, still unsure how we're going to end up structuring the project in the end. These were all originally conceived
@@ -13,23 +13,24 @@ def change_league(team: Team, new_league: League):
     pass
 
 
-def get_upcoming_matches(
-    team: Team, start_time: datetime, end_time: datetime
-) -> list[Match]:
-    """
-    Gets a list of upcoming matches for a given time that fall between given start and end dates.
-    """
-    pass
+# def get_upcoming_matches(
+#     team: Team, start_time: datetime, end_time: datetime
+# ) -> list[Match]:
+#     """
+#     Gets a list of upcoming matches for a given time that fall between given start and end dates.
+#     """
+#     pass
 
 
-def get_finished_matches(
-    team: Team, start_time: datetime = None, end_time: datetime = None
-) -> list[Match]:
-    """
-    Gets a list of finished matches for a given team. By default, fetches all past matches.
-    Can specify start and end dates to return only matches from a given timeframe.
-    """
-    pass
+# TODO: Define model for match
+# def get_finished_matches(
+#     team: Team, start_time: datetime = None, end_time: datetime = None
+# ) -> list[Match]:
+#     """
+#     Gets a list of finished matches for a given team. By default, fetches all past matches.
+#     Can specify start and end dates to return only matches from a given timeframe.
+#     """
+#     pass
 
 
 def add_tournament(team: Team, tournament: Tournament):
@@ -60,11 +61,15 @@ def remove_team_from_league(team: Team, league: League):
     pass
 
 
-def get_teams_in_league(league: League) -> list[Team]:
+def get_teams_in_league(league_id: int) -> list[Team]:
     """
     Returns a list of all teams in a given league.
     """
-    pass
+    return Team.query.filter_by(league=league_id).all()
+
+
+def get_team_by_id(team_id: int) -> Team:
+    return Team.query.filter_by(id=team_id).first()
 
 
 def get_stats(team: Team):

@@ -7,21 +7,23 @@ from app.forms import (
     TournamentCreationForm,
     ResetPasswordRequestForm,
     ResetPasswordForm,
+    LeaguePageTeamSelectForm,
+    TeamCreationForm,
 )
-from app.models import Tournament, User
 from flask_login import (
     current_user,
     login_user,
     logout_user,
     login_required,
 )
-from app.models import Tournament, User, League
+from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
+from wtforms.fields.core import Label
+from app.team_management import get_teams_in_league, get_team_by_id
 
 
 @app.route("/")
 @app.route("/index")
-@login_required
 def index():
     creators = [
         {"creator": {"username": "Max"}},
@@ -63,11 +65,19 @@ def register():
         return redirect(url_for("index"))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            affiliated_team=form.affiliated_team.data,
+        )
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         flash("Congratulations, you are now a registered user!")
+        # TODO: Upon successful registration, log the user in and take them to the homepage
+        # # instead of making them log in manually.
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -110,14 +120,8 @@ def dbtest():
     return redirect(url_for("dbtest"))
 
 
-@app.route("/TeamCreation")
-def TeamCreation():
-
-    return redirect(url_for("TeamCreation"))
-
-
-@app.route("/TournamentCreation", methods=["GET", "POST"])
-def TournamentCreation():
+@app.route("/tournament_creation", methods=["GET", "POST"])
+def tournament_creation():
     """
     If the league box is blank, we will take whichever league was selected from the dropdown for the
     tournament tournament league, otherwise this function will create a new league based off of the
@@ -134,11 +138,11 @@ def TournamentCreation():
             # to create a league.
             if not League.query.all() and form.tournamentLeague.data == "":
                 flash("Please create a league for your tournament!")
-                return redirect(url_for("TournamentCreation"))
+                return redirect(url_for("tournament_creation"))
             tournamentState = request.form["state"]
             if League.query.all():
                 leagueString = request.form["league"]
-                league = League.query.filter_by(leagueName=leagueString).first()
+                league = League.query.filter_by(league_name=leagueString).first()
         # If the league box is blank, we will take whichever league was selected from the dropdown for the
         # tournament tournament league, otherwise this function will create a new league based off of the
         # name they put in and assign the tournament to that league.
@@ -156,7 +160,7 @@ def TournamentCreation():
             db.session.commit()
         else:
             league = League(
-                leagueName=form.tournamentLeague.data,
+                league_name=form.tournamentLeague.data,
             )
             db.session.add(league)
             db.session.commit()
@@ -174,12 +178,11 @@ def TournamentCreation():
         flash("Congratulations, you have created a tournament!")
         return redirect(url_for("TournamentPage", tournament=tournament.tournamentName))
     return render_template(
-        "TournamentCreation.html",
+        "tournament_creation.html",
         title="Tournament Creation",
         form=form,
         leagues=leagues,
     )
-    return redirect(url_for("TournamentCreation"))
 
 
 @app.route("/TournamentDashboard")
@@ -210,28 +213,61 @@ def TournamentPage():
     )
 
 
-@app.route("/team/<team_ID>", methods=["GET"])
+@app.route("/<team_ID>/team", methods=["GET", "POST"])
 # @login_required
 def team(team_ID: int):
-    # team = get_team_by_id(team_ID)
-    return render_template("teamInfo.html", title="Team Details", team=None)
+    team = get_team_by_id(team_ID)
+    return render_template("team_info.html", title=team.team_name, team=team)
 
 
-@app.route("/match/<match_ID>", methods=["GET"])
+@app.route("/<match_ID>/match", methods=["GET", "POST"])
 def match(match_ID: int):
     return render_template("match.html")
 
 
-@app.route("/league", methods=["GET"])
+@app.route("/league", methods=["GET", "POST"])
 def league():
-    return render_template("league.html")
+    # if the user doesn't have an affiliated team and league,
+    # the template will display a form so they can select one.
+    if current_user.league_id == None:
+        teams = None
+        form = LeaguePageTeamSelectForm()
+        # TODO: Resume here. This is never returning true. hmmm...
+        if request.method == "POST" and form.validate_on_submit():
+            user = current_user
+            user.affiliated_team = form.affiliated_team.data
+            db.session.commit()
+            return redirect(url_for("league"))
+    # otherwise, it will display the teams in their league.
+    else:
+        form = None
+        teams = get_teams_in_league(current_user.league_id)
+
+    return render_template("league.html", teams=teams, form=form)
 
 
-"""This view function is actually pretty simple, it just returns a greeting as a string. The two strange @app.route 
-lines above the function are decorators, a unique feature of the Python language. A decorator modifies the function 
-that follows it. A common pattern with decorators is to use them to register functions as callbacks for certain 
-events. In this case, the @app.route decorator creates an association between the URL given as an argument and the 
-function. In this example there are two decorators, which associate the URLs / and /index to this function. This 
-means that when a web browser requests either of these two URLs, Flask is going to invoke this function and pass the 
-return value of it back to the browser as a response. If this does not make complete sense yet, it will in a little 
-bit when you run this application. """
+@app.route("/create_team", methods=["GET", "POST"])
+@login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
+def create_team():
+    # TODO: Might want to update this later when coach and admin classes are
+    # defined/we have a coaches table.
+    coaches = User.query.filter_by(_is_coach=True)
+    form = TeamCreationForm()
+    if form.validate_on_submit():
+        team = Team(
+            team_name=form.team_name.data,
+            coach=form.coach.data,
+            league=form.league.data,
+        )
+        db.session.add(team)
+        db.session.commit()
+        flash("Congratulations, you have registered a new team!")
+        # TODO: have this redirect to the new team page once it's implemented
+        return redirect(url_for("index"))
+    return render_template(
+        "team_creation.html",
+        title="Register a New Team",
+        form=form,
+        coaches=coaches,
+        current_user=current_user,
+    )

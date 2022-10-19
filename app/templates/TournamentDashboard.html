@@ -9,13 +9,13 @@
     <div><p>Tournament Location: {{tournament.tournamentLocation }}</b></p></div>
     {% for league in leagues%}
         {% if league.id == tournament.tournamentLeague %}
-            <div><p>Tournament League: {{league.leagueName}}</b></p></div>
+            <div><p>Tournament League: {{league.league_name}}</b></p></div>
 
         {% endif %}
     </b>
     {% endfor %}
     {% endfor %}
-
- 
-    
+    <script>
+        document.querySelector("#tournament_dashboard_link").classList.toggle("active");
+    </script>
 {% endblock %}
