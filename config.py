@@ -8,7 +8,7 @@ class Config(object):
     # database uri should look like: postgresql://user:password@localhost:5432/database_name
     # you made need to change some of these variables if you didn't use the default settings when you installed postgres
     # locally.
-    PORT_NUMBER = 5432
+    PORT_NUMBER = 5433
     DB_NAME = "app"
     DB_USER = "postgres"
     SQLALCHEMY_DATABASE_URI = (
@@ -21,4 +21,4 @@ class Config(object):
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS") is not None
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    ADMINS = ["tdh7200@uncw.edu"]
+    ADMINS = ["support@supersickbracketmaker.tech"]

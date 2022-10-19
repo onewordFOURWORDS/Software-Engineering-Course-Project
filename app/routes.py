@@ -1,14 +1,21 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
-from app.forms import LoginForm, RegistrationForm, TournamentCreationForm, ResetPasswordRequestForm, ResetPasswordForm
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    TournamentCreationForm,
+    ResetPasswordRequestForm,
+    ResetPasswordForm,
+)
 from app.models import Tournament, User
 from flask_login import (
     current_user,
     login_user,
     logout_user,
     login_required,
-)  # dont worry if pycharm gives a warning here
+)
+from app.models import Tournament, User, League
 from werkzeug.urls import url_parse
 
 
@@ -65,35 +72,36 @@ def register():
     return render_template("register.html", title="Register", form=form)
 
 
-@app.route('/reset_password_request', methods=['GET', 'POST'])
+@app.route("/reset_password_request", methods=["GET", "POST"])
 def reset_password_request():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for("index"))
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             send_password_reset_email(user)
-        flash('Check your email for the instructions to reset your password')
-        return redirect(url_for('login'))
-    return render_template('reset_password_request.html',
-                           title='Reset Password', form=form)
+        flash("Check your email for the instructions to reset your password")
+        return redirect(url_for("login"))
+    return render_template(
+        "reset_password_request.html", title="Reset Password", form=form
+    )
 
 
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@app.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for('reset_password_request'))
+        return redirect(url_for("reset_password_request"))
     user = User.verify_reset_password_token(token)
     if not user:
-        return redirect(url_for('register'))
+        return redirect(url_for("register"))
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
-        flash('Your password has been reset.')
-        return redirect(url_for('login'))
-    return render_template('reset_password.html', form=form)
+        flash("Your password has been reset.")
+        return redirect(url_for("login"))
+    return render_template("reset_password.html", form=form)
 
 
 @app.route("/dbtest")
@@ -110,31 +118,96 @@ def TeamCreation():
 
 @app.route("/TournamentCreation", methods=["GET", "POST"])
 def TournamentCreation():
+    """
+    If the league box is blank, we will take whichever league was selected from the dropdown for the
+    tournament tournament league, otherwise this function will create a new league based off of the
+    name they put in and assign the tournament to that league. The tournament is then created based
+    off all of the information put in.
+
+    """
+    leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
-        tournament = Tournament(
-            tournamentName=form.tournamentName.data,
-            tournamentDate=form.tournamentDate.data,
-            tournamentLocation=form.tournamentLocation.data,
-        )
-        db.session.add(tournament)
-        db.session.commit()
+
+        if request.method == "POST":
+            # If the database has no current leagus and they do not put one in the box, it will take them back to the page asking
+            # to create a league.
+            if not League.query.all() and form.tournamentLeague.data == "":
+                flash("Please create a league for your tournament!")
+                return redirect(url_for("TournamentCreation"))
+            tournamentState = request.form["state"]
+            if League.query.all():
+                leagueString = request.form["league"]
+                league = League.query.filter_by(leagueName=leagueString).first()
+        # If the league box is blank, we will take whichever league was selected from the dropdown for the
+        # tournament tournament league, otherwise this function will create a new league based off of the
+        # name they put in and assign the tournament to that league.
+        if form.tournamentLeague.data == "" and League.query.all():
+            tournament = Tournament(
+                tournamentName=form.tournamentName.data,
+                tournamentDate=form.tournamentDate.data,
+                tournamentLocation=form.tournamentLocation.data
+                + ","
+                + " "
+                + tournamentState,
+                tournamentLeague=league.id,
+            )
+            db.session.add(tournament)
+            db.session.commit()
+        else:
+            league = League(
+                leagueName=form.tournamentLeague.data,
+            )
+            db.session.add(league)
+            db.session.commit()
+            tournament = Tournament(
+                tournamentName=form.tournamentName.data,
+                tournamentDate=form.tournamentDate.data,
+                tournamentLocation=form.tournamentLocation.data
+                + ","
+                + " "
+                + tournamentState,
+                tournamentLeague=league.id,
+            )
+            db.session.add(tournament)
+            db.session.commit()
         flash("Congratulations, you have created a tournament!")
-        return redirect(url_for("index"))
+        return redirect(url_for("TournamentPage", tournament=tournament.tournamentName))
     return render_template(
-        "TournamentCreation.html", title="Tournament Creation", form=form
+        "TournamentCreation.html",
+        title="Tournament Creation",
+        form=form,
+        leagues=leagues,
     )
     return redirect(url_for("TournamentCreation"))
 
 
 @app.route("/TournamentDashboard")
 def TournamentDashboard():
-    return render_template("TournamentDashboard.html", title="Tournament Dashboard")
+    tournaments = Tournament.query.all()
+    leagues = League.query.all()
+    return render_template(
+        "TournamentDashboard.html",
+        title="Tournament Dashboard",
+        tournaments=tournaments,
+        leagues=leagues,
+    )
 
 
-@app.route("/TournamentPage")
+@app.route(
+    "/TournamentPage",
+)
 def TournamentPage():
-    return render_template("TournamentPage.html", title="Tournament Page")
+    tournamentString = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
+    leagueID = tournament.tournamentLeague
+    league = League.query.filter_by(id=leagueID).first()
+    return render_template(
+        "TournamentPage.html",
+        title="Tournament Page",
+        tournament=tournament,
+        league=league,
+    )
 
 
 @app.route("/team/<team_ID>", methods=["GET"])
