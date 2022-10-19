@@ -4,6 +4,7 @@ all logged-in users will have an associated user ID in the DB
 permissions are also held in DB
 
 """
+from app import app
 
 
 def request_coach(user):
