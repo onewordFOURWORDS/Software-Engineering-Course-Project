@@ -1,5 +1,4 @@
 from sqlalchemy.orm import column_property
-from app import db, login
 from datetime import datetime
 from flask_login import UserMixin
 from time import time
@@ -90,29 +89,25 @@ class User(UserMixin, db.Model):
     def is_following(self, team):
         return self.followed.filter(following.c.following_id == team.id).count() > 0
 
+    @login.user_loader
+    def load_user(id):
+        return User.query.get(int(id))
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+    # Having these be instance methods on Users makes it easy to use these within
+    # Jinja.
+    def is_admin(self):
+        return self._is_admin
 
+    def is_coach(self):
+        # print(self)
+        return self._is_coach
 
-# Having these be instance methods on Users makes it easy to use these within
-# Jinja.
-def is_admin(self):
-    return self._is_admin
-
-
-def is_coach(self):
-    # print(self)
-    return self._is_coach
-
-
-@property
-def league_id(self):
-    """
-    Looks up users affiliated league (based on their team affiliation)
-    """
-    return Team.query.filter_by(id=self.affiliated_team).first().league
+    @property
+    def league_id(self):
+        """
+        Looks up users affiliated league (based on their team affiliation)
+        """
+        return Team.query.filter_by(id=self.affiliated_team).first().league
 
 
 class League(db.Model):

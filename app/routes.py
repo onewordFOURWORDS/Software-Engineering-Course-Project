@@ -9,7 +9,7 @@ from app.forms import (
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
     TeamCreationForm,
-}
+)
 from flask_login import (
     current_user,
     login_user,
@@ -19,7 +19,7 @@ from flask_login import (
 from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
-from app.team_management import get_teams_in_league
+from app.team_management import get_teams_in_league, get_team_by_id
 
 
 @app.route("/")
@@ -213,14 +213,14 @@ def TournamentPage():
     )
 
 
-@app.route("/team/<team_ID>", methods=["GET"])
+@app.route("/<team_ID>/team", methods=["GET", "POST"])
 # @login_required
 def team(team_ID: int):
-    # team = get_team_by_id(team_ID)
-    return render_template("teamInfo.html", title="Team Details", team=None)
+    team = get_team_by_id(team_ID)
+    return render_template("team_info.html", title=team.team_name, team=team)
 
 
-@app.route("/match/<match_ID>", methods=["GET"])
+@app.route("/<match_ID>/match", methods=["GET", "POST"])
 def match(match_ID: int):
     return render_template("match.html")
 

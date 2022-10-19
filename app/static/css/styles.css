@@ -5,3 +5,16 @@
 .hidden {
     display: none;
 }
+
+#league_page_body_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+}
+
+#league_page_heading {
+    text-align: center;
+    margin-bottom: 0;
+    margin-top: 5%;
+}
