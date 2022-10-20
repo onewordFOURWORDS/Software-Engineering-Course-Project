@@ -92,7 +92,7 @@ def approve_admin(admin, user):
 def is_coach(user):
     """
     call when checking for coach privilege
-    :param user: user id from user data model
+    :param user: user object from user data model
     :return: bool representing if user is coach
     """
     # TODO query db
