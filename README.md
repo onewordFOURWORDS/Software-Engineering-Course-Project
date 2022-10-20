@@ -21,4 +21,5 @@ Nick Perfetuo
     * $venv_name\Setup\Activate
 * pip install -r requirements.txt
 * flask run
-  * If you receive an error about missing packages, restart your terminal, it should fix it. I'm not sure which config file needs to be sourced, I'll update this step later once i figure it out.
+  * If you receive an error about missing packages, restart your terminal, it should fix it. I'm not sure which config file needs to be sourced, I'll update this step later once i figure it out.  
+* Configuration currently relies on some environment variables being set, see config.py in the root directory

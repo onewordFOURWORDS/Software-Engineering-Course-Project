@@ -1,19 +1,25 @@
 alembic==1.8.1
+blinker==1.5
 click==8.1.3
 dnspython==2.2.1
 email-validator==1.3.0
 Flask==2.2.2
-Flask_Mail==0.9.1
+Flask-Admin==1.6.0
 Flask-Login==0.6.2
+Flask-Mail==0.9.1
 Flask-Migrate==3.1.0
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.1
+gunicorn==20.1.0
 idna==3.4
 itsdangerous==2.1.2
 Jinja2==3.1.2
 Mako==1.2.3
 MarkupSafe==2.1.1
-pyjwt==2.5.0 # Generate unique JSON keys
+postgres==4.0
+psycopg2-binary==2.9.4
+psycopg2-pool==1.1
+PyJWT==2.5.0
 python-dotenv==0.21.0
 SQLAlchemy==1.4.41
 Werkzeug==2.2.2
