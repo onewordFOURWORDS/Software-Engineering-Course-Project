@@ -3,6 +3,22 @@
 
 {% block content %}
     <h1>Hello, Welcome to SSBM {{ current_user.username }}!</h1>
+    <h3>Search by date:</h3>
+    <form action="" method="get" novalidate>
+        <p>
+            {{ form.startDate.label }} {{ form.startDate(size=32) }}<br>
+            {% for error in form.startDate.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.endDate.label }} {{ form.endDate(size=32) }}<br>
+            {% for error in form.endDate.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
     {% for tournament in tournaments%}
     <div><p>Tournament Name: <a href="{{ url_for('TournamentPage', tournament=tournament.tournamentName) }}">{{tournament.tournamentName }}</a></b></p></div>
     <div><p>Tournament Date: {{tournament.tournamentDate }}</b></p></div>

@@ -1,3 +1,6 @@
+from datetime import date, datetime
+from tracemalloc import start
+from xmlrpc.client import DateTime
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
@@ -5,6 +8,7 @@ from app.forms import (
     LoginForm,
     RegistrationForm,
     TournamentCreationForm,
+    SearchByDate,
     ResetPasswordRequestForm,
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
@@ -185,21 +189,29 @@ def tournament_creation():
     )
 
 
-@app.route("/TournamentDashboard")
+@app.route("/TournamentDashboard", methods=["GET"])
 def TournamentDashboard():
-    tournaments = Tournament.query.all()
-    leagues = League.query.all()
-    return render_template(
-        "TournamentDashboard.html",
-        title="Tournament Dashboard",
-        tournaments=tournaments,
-        leagues=leagues,
-    )
+    form = SearchByDate()
+    start = request.args.get("startDate") # returns string from GET or None if no query has been made yet - cannot be empty
+    end = request.args.get("endDate") # returns string from GET or None if no query has been made yet - can be empty
+    # if start is None then no query has been made - do not show any tournaments (return empty list to template)
+    if start is None:
+        return render_template("TournamentDashboard.html", title="Tournament Dashboard", form = form, tournaments = [])
+    # if start is not None end can be an empty string and cannot convert to datetime 
+    elif start is not None and end == "":
+        start = datetime.strptime(start.strip(), '%Y-%m-%d')
+        # show all past and upcoming tournaments inclusive from start
+        tournaments = Tournament.query.filter(Tournament.tournamentDate >= start).all()
+    # otherwise both dates are valid
+    elif start is not None and end != "":
+        start = datetime.strptime(start.strip(), '%Y-%m-%d')
+        end = datetime.strptime(end.strip(), '%Y-%m-%d')
+        # filter tournaments inclusive from start to end
+        tournaments = Tournament.query.filter(Tournament.tournamentDate >= start).filter(Tournament.tournamentDate <= end).all()
+    return render_template("TournamentDashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)
 
 
-@app.route(
-    "/TournamentPage",
-)
+@app.route("/TournamentPage")
 def TournamentPage():
     tournamentString = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()

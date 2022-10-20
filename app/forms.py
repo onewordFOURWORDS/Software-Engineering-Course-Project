@@ -173,11 +173,59 @@ class TournamentCreationForm(FlaskForm):
         leagueString = tournamentLeague
         if League.query.filter_by(league_name=leagueString.data).first():
             raise ValidationError(
-                "League already exists. Choose existing league or create a unique league. "
+                "League already exists. Choose existing league or create a unique league."
             )
 
     submit = SubmitField("Create Tournament")
 
+
+class SearchByDate(FlaskForm):
+    """
+    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
+    """
+    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
+    endDate = DateField("EndDate", format="%Y-%m-%d")
+    submit = SubmitField("Search")
+
+    def validate_dates(form, startDate, endDate):
+        # if no start date is specified then don't render template showing tournies
+        if startDate.data is None:
+            return False
+        # if this statement is reached then there is a specified start date.
+        # if end date is not specified then return true to show all tournies from start date on
+        elif endDate.data is None:
+            return True
+        # if both start and end dates are specified throw an error if the end comes before the start
+        # otherwise return true to show all tournies in range of start to end
+        elif endDate.data < startDate:
+            raise ValidationError("Start date must be before end date.")
+        else:
+            return True
+            
+
+class SearchByDate(FlaskForm):
+    """
+    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
+    """
+    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
+    endDate = DateField("EndDate", format="%Y-%m-%d")
+    submit = SubmitField("Search")
+
+    def validate_dates(form, startDate, endDate):
+        # if no start date is specified then don't render template showing tournies
+        if startDate.data is None:
+            return False
+        # if this statement is reached then there is a specified start date.
+        # if end date is not specified then return true to show all tournies from start date on
+        elif endDate.data is None:
+            return True
+        # if both start and end dates are specified throw an error if the end comes before the start
+        # otherwise return true to show all tournies in range of start to end
+        elif endDate.data < startDate:
+            raise ValidationError("Start date must be before end date.")
+        else:
+            return True
+            
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
