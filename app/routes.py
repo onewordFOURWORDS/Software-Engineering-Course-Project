@@ -73,6 +73,7 @@ def register():
             affiliated_team=form.affiliated_team.data,
         )
         user.set_password(form.password.data)
+        print(user)
         db.session.add(user)
         db.session.commit()
         flash("Congratulations, you are now a registered user!")
