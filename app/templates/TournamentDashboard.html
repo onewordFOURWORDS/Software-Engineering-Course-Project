@@ -6,25 +6,25 @@
     <h3>Search by date:</h3>
     <form action="" method="get" novalidate>
         <p>
-            {{ form.startDate.label }} {{ form.startDate(size=32) }}<br>
-            {% for error in form.startDate.errors %}
+            {{ form.start_date.label }} {{ form.start_date(size=32) }}<br>
+            {% for error in form.start_date.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.endDate.label }} {{ form.endDate(size=32) }}<br>
-            {% for error in form.endDate.errors %}
+            {{ form.end_date.label }} {{ form.end_date(size=32) }}<br>
+            {% for error in form.end_date.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
     </form>
     {% for tournament in tournaments%}
-    <div><p>Tournament Name: <a href="{{ url_for('TournamentPage', tournament=tournament.tournamentName) }}">{{tournament.tournamentName }}</a></b></p></div>
-    <div><p>Tournament Date: {{tournament.tournamentDate }}</b></p></div>
-    <div><p>Tournament Location: {{tournament.tournamentLocation }}</b></p></div>
+    <div><p>Tournament Name: <a href="{{ url_for('TournamentPage', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
+    <div><p>Tournament Date: {{tournament.tournament_date }}</b></p></div>
+    <div><p>Tournament Location: {{tournament.tournament_location }}</b></p></div>
     {% for league in leagues%}
-        {% if league.id == tournament.tournamentLeague %}
+        {% if league.id == tournament.tournament_league %}
             <div><p>Tournament League: {{league.league_name}}</b></p></div>
 
         {% endif %}

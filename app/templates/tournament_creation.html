@@ -5,16 +5,16 @@
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.tournamentName.label }}<br>
-            {{ form.tournamentName(size=64) }}<br>
-            {% for error in form.tournamentName.errors %}
+            {{ form.tournament_name.label }}<br>
+            {{ form.tournament_name(size=64) }}<br>
+            {% for error in form.tournament_name.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.tournamentLocation.label }}<br>
-            {{ form.tournamentLocation(size=64) }}<br>
-            {% for error in form.tournamentLocation.errors %}
+            {{ form.tournament_location.label }}<br>
+            {{ form.tournament_location(size=64) }}<br>
+            {% for error in form.tournament_location.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
@@ -80,16 +80,16 @@
             {% endfor %}
         </select>
         <p>
-            {{ form.tournamentLeague.label }}<br>
-            {{ form.tournamentLeague(size=64) }}<br>
-            {% for error in form.tournamentLeague.errors %}
+            {{ form.tournament_league.label }}<br>
+            {{ form.tournament_league(size=64) }}<br>
+            {% for error in form.tournament_league.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.tournamentDate.label }}<br>
-            {{ form.tournamentDate(size=32) }}<br>
-            {% for error in form.tournamentDate.errors %}
+            {{ form.tournament_date.label }}<br>
+            {{ form.tournament_date(size=32) }}<br>
+            {% for error in form.tournament_date.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
