@@ -10,8 +10,14 @@ from wtforms import (
     FieldList,
     FormField,
 )
-from flask_login import current_user
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
+from wtforms.validators import (
+    ValidationError,
+    DataRequired,
+    Email,
+    EqualTo,
+    Regexp,
+    Length,
+) 
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
@@ -67,7 +73,9 @@ class TeamCreationForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField(
+        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+    )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
@@ -97,6 +105,13 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError("Please use a different email address.")
 
+"""
+Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
+Tournament location has the same, except it doesnt have to be unique. Might set
+regex for tournament league in the future, but for now, it can be empty, but it still has the same regex as others. Tournament date
+must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
+are creating one.
+"""
 
 class LeaguePageTeamSelectForm(FlaskForm):
     teams = Team.query.all()
@@ -117,15 +132,6 @@ class LeaguePageTeamSelectForm(FlaskForm):
         validate_choice=False,
     )
     submit = SubmitField("Select Team")
-
-
-"""
-Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
-Tournament location has the same, except it doesnt have to be unique. Might set
-regex for tournament league in the future, but for now, it can be empty, but it still has the same regex as others. Tournament date
-must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
-are creating one.
-"""
 
 
 class TournamentCreationForm(FlaskForm):
@@ -233,7 +239,9 @@ class ResetPasswordRequestForm(FlaskForm):
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField(
+        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+    )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
