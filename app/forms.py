@@ -10,8 +10,14 @@ from wtforms import (
     FieldList,
     FormField,
 )
-from flask_login import current_user
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Regexp
+from wtforms.validators import (
+    ValidationError,
+    DataRequired,
+    Email,
+    EqualTo,
+    Regexp,
+    Length,
+) 
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
@@ -67,7 +73,9 @@ class TeamCreationForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField(
+        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+    )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
@@ -96,28 +104,6 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError("Please use a different email address.")
-
-
-class LeaguePageTeamSelectForm(FlaskForm):
-    teams = Team.query.all()
-    team_list = []
-    for team in teams:
-        # don't include None in this list, doesn't make any sense on this page.
-        # this might be an argument for keeping this form as a separate form, but we'll see.
-        # TODO: can still factor the team bit out into a get_all_teams or something
-        if team.id != 0:
-            team_list.append((team.id, team.team_name))
-    affiliated_team = SelectField(
-        "Choose a team to be affiliated with:",
-        choices=sorted(
-            team_list, key=itemgetter(0)
-        ),  # sort by ID, the first element in each tuple.
-        coerce=int,
-        validators=[DataRequired()],
-        validate_choice=False,
-    )
-    submit = SubmitField("Select Team")
-
 
 """
 Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
@@ -185,7 +171,9 @@ class ResetPasswordRequestForm(FlaskForm):
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField("Password", validators=[DataRequired()])
+    password = PasswordField(
+        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+    )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
