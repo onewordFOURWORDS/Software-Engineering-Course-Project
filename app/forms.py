@@ -113,6 +113,26 @@ must be set in the present or future, users should not be able to make a tournam
 are creating one.
 """
 
+class LeaguePageTeamSelectForm(FlaskForm):
+    teams = Team.query.all()
+    team_list = []
+    for team in teams:
+        # don't include None in this list, doesn't make any sense on this page.
+        # this might be an argument for keeping this form as a separate form, but we'll see.
+        # TODO: can still factor the team bit out into a get_all_teams or something
+        if team.id != 0:
+            team_list.append((team.id, team.team_name))
+    affiliated_team = SelectField(
+        "Choose a team to be affiliated with:",
+        choices=sorted(
+            team_list, key=itemgetter(0)
+        ),  # sort by ID, the first element in each tuple.
+        coerce=int,
+        validators=[DataRequired()],
+        validate_choice=False,
+    )
+    submit = SubmitField("Select Team")
+
 
 class TournamentCreationForm(FlaskForm):
     tournamentName = StringField(
