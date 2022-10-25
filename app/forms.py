@@ -35,7 +35,7 @@ class TeamCreationForm(FlaskForm):
     team_name = StringField("Team Name", validators=[DataRequired()])
     # TODO: probably write a get_coaches(league) fcn, 2nd time I've done this.
     # waiting on decisions as to how we're handling Leagues.
-    coaches = User.query.filter_by(_is_coach=True)
+    coaches = User.query.filter_by(is_coach=True)
     # TODO: Figure out a better way to do this. I want the current user to be the top option.
     # or to have a checkbox "I'm coaching this team" and then show/hide the dropdown with the other options.
     # but I've been fussing with this for ages and it's not working, so just keep going for now as is...
@@ -246,3 +246,18 @@ class ResetPasswordForm(FlaskForm):
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
     submit = SubmitField("Request Password Reset")
+
+
+class RequestPermissionForm(FlaskForm):
+    request_coach = BooleanField("Make me a coach!")
+    request_admin = BooleanField("Make me an admin!")
+    remove_coach = BooleanField("Un-Make me a coach!")
+    remove_admin = BooleanField("Un-Make me an admin!")
+    submit = SubmitField("Submit changes")
+
+
+class ManualPermissionsForm(FlaskForm):
+    userID = IntegerField("User ID", validators=[DataRequired()])
+    actions = SelectField("permission actions", choices=[(1,'approve coach'),(2, 'deny coach'),(3, 'approve admin'),(4, 'deny admin')])
+    submit = SubmitField("Submit changes")
+

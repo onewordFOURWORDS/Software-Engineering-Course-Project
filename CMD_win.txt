@@ -1,63 +1,55 @@
+"""
+cmd prompt notes for windows
+"""
 
------ setup ------
-
-# pip installs
-
-pip install flask
-pip install python-dotenv
-pip install flask-wtf
-pip install flask-sqlalchemy
-pip install flask-migrate
-pip install flask-login
-pip install email-validator
-
-
-#start python and verify package
-
-python3
-import flask
-
------ end setup -------
-
-
-
-
------- testing and upkeep -------
-
-CMD prompt:
-
-#navigate to repo
-#activate environment
-
-Windows
-cd C:\Users\User\...
+-----------new venv---------------
+cd ...
+py -m venv 450venv
 450venv\Scripts\activate
+pip install -r requirements.txt
+set SSBM_SECRET_KEY=
+set MAIL_PORT=25
+set SSBM_DB_PORT_NUMBER=5432
 
-# Linux
-# Also have to make install executable (chmod +x)
-. 450venv\bin\activate
 
-# run flask to start web page host
-flask run
- 
-exit() 
+-----------new db------------------
 
-# run flask shell for more db options
 flask shell
+pw = 'pbkdf2:sha256:260000$Q2JJAaHpYOxsdPFx$fc0919f2eb018351b9c55e748ab1f69f2731b560f42e285b625046c45170b70e'
+u = User(username='admin',
+email='support@supersickbracketmaker.tech',
+id=1,
+hashed_password=pw,
+first_name='admin',
+last_name='support',
+full_name='admin' + " " + 'support',
+)
+db.session.add(u)
+db.session.commit()
 
-exit()
+
+--------------fresh install quick code-----------------
+cd ...
+450venv\Scripts\activate
+pip install -r requirements.txt
+pip list
+set SSBM_SECRET_KEY=
+set MAIL_PORT=25
+set SSBM_DB_PORT_NUMBER=5432
+flask db migrate
+flask db upgrade
+flask run
 
 
------------ python db interaction ------------------
+------ db testing and upkeep -------
 
 # database updating after db changes (CMD)
 flask db migrate -m "dev comment"
 flask db upgrade
 
 
-# enter flask shell, auto loads db elements (CMD) 
+# enter flask shell, auto loads db elements (CMD)
 flask shell
-
 
 # adding data (in shell)
 u = User(username='susan', email='susan@example.com')
@@ -65,13 +57,12 @@ db.session.add(u)
 db.session.commit()
 
 #if error (in shell)
-db.sesion.rollback()
+db.session.rollback()
 
 
 # db testing (python3) if not in flask shell
 from app import db
-from app.models import User, Team, League
-
+from app.models import *
 
 
 # various shell commands and expected results
@@ -115,9 +106,6 @@ from app.models import User, Team, League
 [<User susan>, <User john>]
 
 -------------- end db interaction ----------------
-
-
---------------- end testing and upkeep ----------------------
 
 
 

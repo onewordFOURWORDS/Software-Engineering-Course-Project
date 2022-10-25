@@ -1,0 +1,45 @@
+"""
+tracer round path and helpful links for adding new functionality to project
+"""
+
+
+
+----------------------tracer round path for new pages-------------------
+
+start in routes.py
+    develop functionality
+        generate a form using forms.py
+            form = SomeForm()
+        some DB calls can go here
+            to create a new DB object, refer to the appropriate model in models.py
+            grant the object whataver variables necessary
+            db.session.add(model object)
+            db.session.commit()
+        bool based redirects
+    end with HTML render call
+        must pass form through if a form is used!
+
+modify or create forms for user input and selection
+    Creating Forms
+        https://flask-wtf.readthedocs.io/en/1.0.x/form/
+        https://flask.palletsprojects.com/en/2.2.x/patterns/wtforms/
+        https://flask-wtf.readthedocs.io/en/1.0.x/api/#module-flask_wtf
+        fields documentation
+        https://wtforms.readthedocs.io/en/2.3.x/fields/
+        must pass form through routes!
+
+modify or create HTML page to display forms
+    start with base.html
+    refer to models.py for db model attributes
+
+modify or create models for DB structural changes
+    SQLAlchemy Type Engines
+        https://www.oreilly.com/library/view/essential-sqlalchemy/9780596516147/ch04.html
+    if changes were made to DB structure, in cmd prompt:
+        flask db migrate
+        flask db upgrade
+
+
+
+postgres and pgadmin setup
+https://www.guru99.com/download-install-postgresql.html

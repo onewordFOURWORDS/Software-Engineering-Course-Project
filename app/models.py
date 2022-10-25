@@ -27,15 +27,20 @@ class User(UserMixin, db.Model):
     full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
-    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"))
+    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"), default=None)
     # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
     # team management stuff. Also, think about better names for these, just using the leading underscore
     # to avoid collision with the is_admin() and is_coach() methods, which I created to call within Jinja
     # templates even though they are a bit unpythonic. Can I just check the values of these props from
     # within the templates instead of registering the functions?
     # Look into this later, for now, it works...
-    _is_admin = db.Column(db.Boolean, default=False)
-    _is_coach = db.Column(db.Boolean, default=True)
+
+    # using boolean for testing purposes, may create coach and admin subclasses later
+    is_admin = db.Column(db.Boolean, default=0)
+    is_coach = db.Column(db.Boolean, default=0)
+    coach_approve_id = db.Column(db.Integer)
+    admin_approve_id = db.Column(db.Integer)
+    league_id = db.Column(db.Integer, db.ForeignKey("league.id"), default=None)
 
     followed = db.relationship(
         "User",
@@ -92,6 +97,9 @@ class User(UserMixin, db.Model):
     def load_user(id):
         return User.query.get(int(id))
 
+    # commented out the following functions, replaced in permissions.py
+    # please delete if no longer needed
+    """
     # Having these be instance methods on Users makes it easy to use these within
     # Jinja.
     def is_admin(self):
@@ -100,14 +108,19 @@ class User(UserMixin, db.Model):
     def is_coach(self):
         # print(self)
         return self._is_coach
+    """
 
+    # view league info will likely be done based on a selected league
+    # having a dedicated affiliated league for each user may not be helpful,
+    # instead a list of followed leagues may be better
+    """
     @property
     def league_id(self):
-        """
-        Looks up users affiliated league (based on their team affiliation)
-        """
+        
+        # Looks up users affiliated league (based on their team affiliation)
+        
         return Team.query.filter_by(id=self.affiliated_team).first().league
-
+    """
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)

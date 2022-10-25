@@ -13,6 +13,8 @@ from app.forms import (
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
     TeamCreationForm,
+    RequestPermissionForm,
+    ManualPermissionsForm
 )
 from flask_login import (
     current_user,
@@ -24,6 +26,7 @@ from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
+from app.permissions import *
 
 
 @app.route("/")
@@ -117,12 +120,6 @@ def reset_password(token):
         flash("Your password has been reset.")
         return redirect(url_for("login"))
     return render_template("reset_password.html", form=form)
-
-
-@app.route("/dbtest")
-def dbtest():
-
-    return redirect(url_for("dbtest"))
 
 
 @app.route("/tournament_creation", methods=["GET", "POST"])
@@ -242,10 +239,11 @@ def match(match_ID: int):
 def league():
     # if the user doesn't have an affiliated team and league,
     # the template will display a form so they can select one.
-    if current_user.league_id == None:
+    if current_user.league_id is None:
         teams = None
         form = LeaguePageTeamSelectForm()
         # TODO: Resume here. This is never returning true. hmmm...
+        # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
             user.affiliated_team = form.affiliated_team.data
@@ -264,7 +262,7 @@ def league():
 def create_team():
     # TODO: Might want to update this later when coach and admin classes are
     # defined/we have a coaches table.
-    coaches = User.query.filter_by(_is_coach=True)
+    coaches = User.query.filter_by(is_coach=True)
     form = TeamCreationForm()
     if form.validate_on_submit():
         team = Team(
@@ -284,3 +282,40 @@ def create_team():
         coaches=coaches,
         current_user=current_user,
     )
+
+
+@app.route("/manual_permissions", methods=["GET", "POST"])
+def manual_permissions():
+    form = ManualPermissionsForm()
+    users = db.session.query(User).order_by('id')
+    tval = "none"
+    if form.validate_on_submit():
+        user = User.query.filter_by(id=form.userID.data).first()
+        tval = user
+        if form.actions.data == '1':
+            approve_coach(current_user, user)
+        if form.actions.data == '2':
+            deny_coach(current_user, user)
+        if form.actions.data == '3':
+            approve_admin(current_user, user)
+        if form.actions.data == '4':
+            deny_admin(current_user, user)
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, tval=tval)
+
+
+@app.route("/dbtest", methods=["GET", "POST"])
+def dbtest():
+    form = RequestPermissionForm()
+    users = db.session.query(User).all()
+    tval = "none"
+    if form.validate_on_submit():
+        if form.request_coach.data:
+            approve_coach(current_user, current_user)
+        elif form.remove_coach.data:
+            deny_coach(current_user, current_user)
+        if form.request_admin.data:
+            approve_admin(current_user, current_user)
+        elif form.remove_admin.data:
+            deny_admin(current_user, current_user)
+        #db.session.commit()
+    return render_template("dbtest.html", title="db tests", form=form, users=users, tval=tval)

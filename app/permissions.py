@@ -4,7 +4,8 @@ all logged-in users will have an associated user ID in the DB
 permissions are also held in DB
 
 """
-from app import app
+#from app import app, db
+from app.models import *
 
 
 def request_coach(user):
@@ -14,7 +15,7 @@ def request_coach(user):
     :return: bool indicating request success, false indicates user already has permission
     """
     # TODO call some functionality to inform admins of request and present admins with approval/denial UI
-
+    db.session.commit()
     return
 
 
@@ -25,7 +26,7 @@ def request_admin(user):
     :return: bool indicating request success, false indicates user already has permission
     """
     # TODO call some functionality to inform admins of request and present admins with approval/denial UI
-
+    db.session.commit()
     return
 
 
@@ -37,7 +38,9 @@ def deny_coach(admin, user):
     :return: bool indicating permission denied success or fail
     """
     # TODO call some functionality to inform user of denial
-
+    user.is_coach = False
+    user.coachApproveID = admin.id
+    db.session.commit()
     return
 
 
@@ -50,6 +53,9 @@ def deny_admin(admin, user):
     """
     # TODO call some functionality to inform user of denial
 
+    user.is_admin = False
+    user.adminApproveID = admin.id
+    db.session.commit()
     return
 
 
@@ -62,7 +68,9 @@ def approve_coach(admin, user):
     """
     # TODO add privilege to user in db
     # TODO call some functionality to inform user of approval
-
+    user.is_coach = True
+    user.coachApproveID = admin.id
+    db.session.commit()
     return
 
 
@@ -75,18 +83,21 @@ def approve_admin(admin, user):
     """
     # TODO add privilege to user in db
     # TODO call some functionality to inform user of approval
-
+    user.is_admin = True
+    user.adminApproveID = admin.id
+    db.session.commit()
     return
 
 
 def is_coach(user):
     """
     call when checking for coach privilege
-    :param user: user id from user data model
+    :param user: user object from user data model
     :return: bool representing if user is coach
     """
     # TODO query db
-    return
+    #username = db.session.query(User).filter(User.username == user.username)
+    return user.is_coach
 
 
 def is_admin(user):
@@ -96,4 +107,5 @@ def is_admin(user):
     :return: bool representing if user is admin
     """
     # TODO query db
-    return
+    #username = db.session.query(User).filter(User.username == user)
+    return user.is_admin

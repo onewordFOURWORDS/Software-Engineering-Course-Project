@@ -20,9 +20,12 @@
             <a class="nav-link" id="league_view_link" href="{{ url_for("league")}}">View League Info</a>
         </li>
         {# TODO: Modify this later to also check to see if they already have a team? #}
-        {% if current_user.is_admin() or current_user.is_coach() %}
+        {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
             <a class="nav-link" id="team_creation_link" href="{{ url_for("create_team")}}">Create a New Team</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="manual_permissions" href="{{ url_for("manual_permissions")}}">Permissions</a>
         </li>
         {% endif %}
         <li class="nav-item">
