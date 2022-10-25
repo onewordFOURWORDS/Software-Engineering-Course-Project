@@ -7,8 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db, login
 
 """
-classes are defined by extending the db.model class. this allows for db management through flask-sqlalchemy. 
-the resulting db is testable in shell and saved to a local file, no need for hosting
+classes are defined by extending the db.model class. DB is managed with postgres
 """
 
 following = db.Table(
