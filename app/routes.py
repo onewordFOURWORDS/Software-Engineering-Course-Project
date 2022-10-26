@@ -219,7 +219,7 @@ def tournament_page():
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     return render_template(
-        "touage.html",
+        "tournament_page.html",
         title="Tournament Page",
         tournament=tournament,
         league=league,

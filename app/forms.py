@@ -135,7 +135,7 @@ class LeaguePageTeamSelectForm(FlaskForm):
 
 
 class TournamentCreationForm(FlaskForm):
-    tournamentName = StringField(
+    tournament_name = StringField(
         "Tournament Name",
         validators=[
             DataRequired(),
@@ -145,7 +145,7 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournamentLocation = StringField(
+    tournament_location = StringField(
         "Tournament City",
         validators=[
             DataRequired(),
@@ -155,7 +155,7 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournamentLeague = StringField(
+    tournament_league = StringField(
         "Or Create A New League",
         validators=[
             Regexp(
@@ -167,17 +167,17 @@ class TournamentCreationForm(FlaskForm):
             "placeholder": "Please leave empty if you do not wish to create a league!"
         },
     )
-    tournamentDate = DateField(
-        "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
+    tournament_date = DateField(
+        "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
 
-    def validate_tournamentDate(form, tournamentDate):
-        if tournamentDate.data < date.today():
+    def validate_tournament_date(form, tournament_date):
+        if tournament_date.data < date.today():
             raise ValidationError("Date must be set in the future.")
 
-    def validate_tournamentLeague(form, tournamentLeague):
-        leagueString = tournamentLeague
-        if League.query.filter_by(league_name=leagueString.data).first():
+    def validate_tournament_league(form, tournament_league):
+        league_string = tournament_league
+        if League.query.filter_by(league_name=league_string.data).first():
             raise ValidationError(
                 "League already exists. Choose existing league or create a unique league."
             )
