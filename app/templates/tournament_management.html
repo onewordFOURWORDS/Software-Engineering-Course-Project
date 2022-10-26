@@ -14,7 +14,7 @@
     <p>
         {{ form.tournament_location.label }}<br>
         {{ form.tournament_location(size=64) }}<br>
-        {% for error in form.tournamentLocation.errors %}
+        {% for error in form.tournament_location.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
@@ -76,28 +76,28 @@
     Choose A Pre-Existing League
     <select name="league" method="POST" action="/">
         {% for league in leagues %}
-        {% if tournament_league==league.leagueName %}
-        <option value="{{league.leagueName}}" selected>
-            {{league.leagueName}}
+        {% if tournament_league==league.league_name %}
+        <option value="{{league.league_name}}" selected>
+            {{league.league_name}}
         </option>
         {%else%}
-        <option value="{{league.leagueName}}">
-            {{league.leagueName}}
+        <option value="{{league.league_name}}">
+            {{league.league_name}}
         </option>
         {% endif %}
         {% endfor %}
     </select>
     <p>
-        {{ form.tournamentLeague.label }}<br>
-        {{ form.tournamentLeague(size=64) }}<br>
-        {% for error in form.tournamentLeague.errors %}
+        {{ form.tournament_league.label }}<br>
+        {{ form.tournament_league(size=64) }}<br>
+        {% for error in form.tournament_league.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
     <p>
-        {{ form.tournamentDate.label }}<br>
-        {{ form.tournamentDate(size=32) }}<br>
-        {% for error in form.tournamentDate.errors %}
+        {{ form.tournament_date.label }}<br>
+        {{ form.tournament_date(size=32) }}<br>
+        {% for error in form.tournament_date.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>

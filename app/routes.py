@@ -218,6 +218,8 @@ def tournament_page():
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
+    if request.method == "POST":
+        redirect(url_for("tournament_management", tournament=tournament.tournament_name))
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
