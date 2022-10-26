@@ -138,11 +138,11 @@ class Team(db.Model):
 
 
 class Tournament(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tournamentName = db.Column(db.String(140), index=True, unique=True)
-    tournamentDate = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    tournamentLocation = db.Column(db.String(200))
-    tournamentLeague = db.Column(db.Integer, db.ForeignKey("league.id"))
+    tournament_id = db.Column(db.Integer, primary_key=True)
+    tournament_name = db.Column(db.String(140), index=True, unique=True)
+    tournament_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    tournament_location = db.Column(db.String(200))
+    tournament_league = db.Column(db.Integer, db.ForeignKey("league.id"))
 
     def __repr__(self):
-        return "<Tournament {}>".format(self.tournamentName)
+        return "<Tournament {}>".format(self.tournament_name)
