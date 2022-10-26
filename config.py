@@ -3,12 +3,12 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+# TODO: Figure out best practice for managing the config file/making sure we keep keys etc out of the repo.
+# This is fine for now.
 class Config(object):
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    # database uri should look like: postgresql://user:password@localhost:5432/database_name
-    # you made need to change some of these variables if you didn't use the default settings when you installed postgres
-    # locally.
-    PORT_NUMBER = 5433
+    SECRET_KEY = os.environ.get("SSBM_SECRET_KEY")
+    # postgres 15 defaults to 5433, postgres 14 to 5432, I believe.
+    PORT_NUMBER = os.environ.get("SSBM_DB_PORT_NUMBER")
     DB_NAME = "app"
     DB_USER = "postgres"
     SQLALCHEMY_DATABASE_URI = (

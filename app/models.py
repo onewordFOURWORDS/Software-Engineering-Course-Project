@@ -1,5 +1,6 @@
 from sqlalchemy import true
 from app import app, db, login
+from sqlalchemy.orm import column_property
 from datetime import datetime
 from flask_login import UserMixin
 from time import time
@@ -24,11 +25,20 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     hashed_password = db.Column(db.String(128), default="password")
-    # teamsToFollow = db.Column(db.Column)
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
+    full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
+    affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"))
+    # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
+    # team management stuff. Also, think about better names for these, just using the leading underscore
+    # to avoid collision with the is_admin() and is_coach() methods, which I created to call within Jinja
+    # templates even though they are a bit unpythonic. Can I just check the values of these props from
+    # within the templates instead of registering the functions?
+    # Look into this later, for now, it works...
+    _is_admin = db.Column(db.Boolean, default=False)
+    _is_coach = db.Column(db.Boolean, default=True)
 
     followed = db.relationship(
         "User",
@@ -86,30 +96,48 @@ class User(UserMixin, db.Model):
 def load_user(id):
     return User.query.get(int(id))
 
+    # Having these be instance methods on Users makes it easy to use these within
+    # Jinja.
+    def is_admin(self):
+        return self._is_admin
+
+    def is_coach(self):
+        # print(self)
+        return self._is_coach
+
+    @property
+    def league_id(self):
+        """
+        Looks up users affiliated league (based on their team affiliation)
+        """
+        return Team.query.filter_by(id=self.affiliated_team).first().league
+
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    leagueName = db.Column(db.String(64), unique=True)
-    leagueTeams = db.relationship("Team", backref="teamReference", lazy="dynamic")
-    leagueTournaments = db.relationship("Tournament", backref="league")
+    league_name = db.Column(db.String(64))
+    # teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
 
     def __repr__(self):
-        return "<League {}>".format(self.leagueName)
+        return "<League {}>".format(self.league_name)
 
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    teamName = db.Column(db.String(140), index=True, unique=True)
-    headCoach = db.Column(db.Integer, db.ForeignKey("user.id"))
+    team_name = db.Column(db.String(140), index=True, unique=True)
+    coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    totalScore = db.Column(db.Integer)
-    totalScoreAgainst = db.Column(db.Integer)
-    totalWins = db.Column(db.Integer)
-    totalLosses = db.Column(db.Integer)
-    tournaments = db.Column(db.Integer)
 
     def __repr__(self):
         return "<Team {}>".format(self.teamName)
+
+    @property
+    def coach_name(self):
+        return User.query.filter_by(id=self.coach).first().full_name
+
+    @property
+    def league_name(self):
+        return League.query.filter_by(id=self.league).first().league_name
 
 
 class Tournament(db.Model):
@@ -121,6 +149,3 @@ class Tournament(db.Model):
 
     def __repr__(self):
         return "<Tournament {}>".format(self.tournamentName)
-    
-    
-
