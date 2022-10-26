@@ -212,7 +212,7 @@ def tournament_dashboard():
     return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)
 
 
-@app.route("/tournament_page")
+@app.route("/tournament_page", methods=["GET", "POST"])
 def tournament_page():
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
@@ -224,6 +224,25 @@ def tournament_page():
         tournament=tournament,
         league=league,
     )
+
+@app.route("/tournament_management", methods=["GET", "POST"])
+def tournament_management():
+    form = TournamentCreationForm()
+    leagues = League.query.all()
+    tournament_string = request.args.get('tournament', None)
+    tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
+    form.tournament_name.data = tournament.tournament_name
+    form.tournament_date.data = tournament.tournament_date
+    form.tournament_location.data = tournament.tournament_location[:-4]
+    tournament_state = tournament.tournament_location[len(tournament.tournament_location)-2:]
+    league_id = tournament.tournament_league
+    league = League.query.filter_by(id=league_id).first()
+    tournament_league = league.league_name
+
+
+    return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues, tournament_state = tournament_state,
+    tournament_league = tournament_league )
+
 
 
 @app.route("/<team_ID>/team", methods=["GET", "POST"])
