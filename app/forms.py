@@ -20,7 +20,7 @@ from wtforms.validators import (
 ) 
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
-from datetime import date
+from datetime import date, datetime
 from operator import itemgetter
 
 
@@ -171,9 +171,9 @@ class TournamentCreationForm(FlaskForm):
         "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
 
-    def validate_tournament_date(form, tournament_date):
-        if tournament_date.data < date.today():
-            raise ValidationError("Date must be set in the future.")
+    # def validate_tournament_date(form, tournament_date):
+    #     if datetime.strptime(tournament_date.data.strip(), '%Y-%m-%d') < date.today():
+    #         raise ValidationError("Date must be set in the future.")
 
     def validate_tournament_league(form, tournament_league):
         league_string = tournament_league
@@ -209,29 +209,6 @@ class SearchByDate(FlaskForm):
             return True
             
 
-class SearchByDate(FlaskForm):
-    """
-    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
-    """
-    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
-    endDate = DateField("EndDate", format="%Y-%m-%d")
-    submit = SubmitField("Search")
-
-    def validate_dates(form, startDate, endDate):
-        # if no start date is specified then don't render template showing tournies
-        if startDate.data is None:
-            return False
-        # if this statement is reached then there is a specified start date.
-        # if end date is not specified then return true to show all tournies from start date on
-        elif endDate.data is None:
-            return True
-        # if both start and end dates are specified throw an error if the end comes before the start
-        # otherwise return true to show all tournies in range of start to end
-        elif endDate.data < startDate:
-            raise ValidationError("Start date must be before end date.")
-        else:
-            return True
-            
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
