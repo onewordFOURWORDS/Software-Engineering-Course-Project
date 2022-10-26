@@ -1,5 +1,5 @@
 <nav class="mx-5">
-    <img src="{{ url_for('static', filename='images/SSBM_Logo_01.gif') }}" class="mt-4"> 
+    <img src="{{ url_for('static', filename='images/SSBM_Logo_01.gif') }}" class="mt-4">
     <ul class="nav justify-content-end">
         <li class="nav-item">
             {# TODO: Fix current page thing to actually be dynamic. #}
@@ -11,10 +11,12 @@
         </li>
         {% else %}
         <li class="nav-item">
-            <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
+            <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create
+                Tournament</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="tournament_dashboard_link" href="{{ url_for("TournamentDashboard")}}">Tournament Dashboard</a>
+            <a class="nav-link" id="tournament_dashboard_link" href="{{ url_for("tournament_dashboard")}}">Tournament
+                Dashboard</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="league_view_link" href="{{ url_for("league")}}">View League Info</a>
