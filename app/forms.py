@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -189,24 +190,33 @@ class SearchByDate(FlaskForm):
     """
     A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
     """
-    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
-    endDate = DateField("EndDate", format="%Y-%m-%d")
+    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[DataRequired()])
+    end_date = DateField("End Date:", format="%Y-%m-%d")
     submit = SubmitField("Search")
 
-    def validate_dates(form, startDate, endDate):
-        # if no start date is specified then don't render template showing tournies
-        if startDate.data is None:
-            return False
-        # if this statement is reached then there is a specified start date.
-        # if end date is not specified then return true to show all tournies from start date on
-        elif endDate.data is None:
+    def validate_dates(form, start, end):
+        """
+        Takes string start date and string end date parameters and returns bool if the dates are valid.
+        """
+        # no search has been performed and form is valid
+        if start is None and end is None:
             return True
-        # if both start and end dates are specified throw an error if the end comes before the start
-        # otherwise return true to show all tournies in range of start to end
-        elif endDate.data < startDate:
-            raise ValidationError("Start date must be before end date.")
+        # empty end with specified start is valid
+        elif start is not None and end == "":
+            return True
+        # empty start means user tried to search with only an end and this is not valid
+        elif start == "":
+            raise ValidationError("You must specify a start date!")
+        # all cases handled and dates can be converted and compared
         else:
-            return True
+            start_date = datetime.strptime(start.strip(), '%Y-%m-%d')
+            end_date = datetime.strptime(end.strip(), '%Y-%m-%d')
+            # end before start is not valid
+            if end_date < start_date:
+                raise ValidationError("Start date must be before end date.")
+            # otherwise everything is valid
+            else:
+                return True
             
 
 class ResetPasswordRequestForm(FlaskForm):

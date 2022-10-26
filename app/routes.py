@@ -24,6 +24,7 @@ from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
+from app.search import filter_tournaments_by_date
 
 
 @app.route("/")
@@ -190,15 +191,24 @@ def tournament_creation():
     )
 
 
-@app.route("/TournamentDashboard", methods=["GET"])
-def TournamentDashboard():
+@app.route("/tournament_dashboard", methods=["GET"])
+def tournament_dashboard():
+    # TODO: alter form to be general search class and then use decorator method to build up queries based on name, league, and date
     form = SearchByDate()
-    start = request.args.get("startDate") # returns string from GET or None if no query has been made yet - cannot be empty
-    end = request.args.get("endDate") # returns string from GET or None if no query has been made yet - can be empty
-    # if start is None then no query has been made - do not show any tournaments (return empty list to template)
-    if start is None:
-        return render_template("TournamentDashboard.html", title="Tournament Dashboard", form = form, tournaments = [])
-    # if start is not None end can be an empty string and cannot convert to datetime 
+    start = request.args.get("start_date") # returns string from GET or None if no query has been made yet - cannot be empty
+    end = request.args.get("end_date") # returns string from GET or None if no query has been made yet - can be empty
+
+    # only filter tournaments if dates are valid
+    if form.validate_dates(start, end):
+        # build query decorator style
+        tournaments = Tournament.query
+        if start is not None and end == "":
+           tournaments.filter(Tournament.tournamentDate >= start).all()
+        return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)
+    # if dates are invalid don't display any tournaments -- should probably handle this differently
+    else:
+        return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = [])
+    """ # if start is not None end can be an empty string and cannot convert to datetime 
     elif start is not None and end == "":
         start = datetime.strptime(start.strip(), '%Y-%m-%d')
         # show all past and upcoming tournaments inclusive from start
@@ -209,9 +219,9 @@ def TournamentDashboard():
         end = datetime.strptime(end.strip(), '%Y-%m-%d')
         # filter tournaments inclusive from start to end
         tournaments = Tournament.query.filter(Tournament.tournamentDate >= start).filter(Tournament.tournamentDate <= end).all()
-    return render_template("TournamentDashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)
+    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)
 
-
+ """
 @app.route("/TournamentPage")
 def TournamentPage():
     tournamentString = request.args.get("tournament", None)
