@@ -35,6 +35,8 @@ modify or create HTML page to display forms
 modify or create models for DB structural changes
     SQLAlchemy Type Engines
         https://www.oreilly.com/library/view/essential-sqlalchemy/9780596516147/ch04.html
+    DB table interaction
+        https://www.digitalocean.com/community/tutorials/how-to-use-many-to-many-database-relationships-with-flask-sqlalchemy
     if changes were made to DB structure, in cmd prompt:
         flask db migrate
         flask db upgrade

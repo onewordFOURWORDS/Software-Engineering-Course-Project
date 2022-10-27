@@ -10,11 +10,12 @@ from app import app, db, login
 classes are defined by extending the db.model class. DB is managed with postgres
 """
 
-following = db.Table(
-    "following",
-    db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
-    db.Column("followed_id", db.Integer, db.ForeignKey("team.id")),
+"""user_team = db.Table(
+    "user_team",
+    db.Column("user_id", db.Integer, db.ForeignKey("user.id")),
+    db.Column("team_id", db.Integer, db.ForeignKey("team.id")),
 )
+"""
 
 
 class User(UserMixin, db.Model):
@@ -27,6 +28,7 @@ class User(UserMixin, db.Model):
     full_name = column_property(first_name + " " + last_name)
     address = db.Column(db.String(140))
     phone_number = db.Column(db.String(64))
+
     affiliated_team = db.Column(db.Integer, db.ForeignKey("team.id"), default=None)
     # TODO: Change this later: Currently setting _is_coach to be true by default so I can test some of my
     # team management stuff. Also, think about better names for these, just using the leading underscore
@@ -41,15 +43,18 @@ class User(UserMixin, db.Model):
     coach_approve_id = db.Column(db.Integer)
     admin_approve_id = db.Column(db.Integer)
     league_id = db.Column(db.Integer, db.ForeignKey("league.id"), default=None)
-
+    # following relationship, many to many
+    teams = db.relationship('Following', backref='users', cascade="delete")
+    """    
     followed = db.relationship(
-        "User",
+        "Team",
         secondary=following,
         primaryjoin=(following.c.follower_id == id),
         secondaryjoin=(following.c.followed_id == id),
-        backref=db.backref("following", lazy="dynamic"),
+        backref=db.backref("users", lazy="dynamic"),
         lazy="dynamic",
     )
+    """
 
     def __repr__(self):
         return "<User {}>".format(self.username)
@@ -84,14 +89,14 @@ class User(UserMixin, db.Model):
 
     def follow(self, team):
         if not self.is_following(team):
-            self.followed.append(team)
+            self.teams.append(team)
 
     def unfollow(self, team):
         if self.is_following(team):
-            self.followed.remove(team)
+            self.teams.remove(team)
 
     def is_following(self, team):
-        return self.followed.filter(following.c.following_id == team.id).count() > 0
+        return team in self.teams
 
     @login.user_loader
     def load_user(id):
@@ -112,7 +117,7 @@ class User(UserMixin, db.Model):
 
     # view league info will likely be done based on a selected league
     # having a dedicated affiliated league for each user may not be helpful,
-    # instead a list of followed leagues may be better
+    # instead a list of followed leagues may be better, similar to the followed teams
     """
     @property
     def league_id(self):
@@ -121,6 +126,7 @@ class User(UserMixin, db.Model):
         
         return Team.query.filter_by(id=self.affiliated_team).first().league
     """
+
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -136,9 +142,10 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    users = db.relationship('Following', backref='teams', cascade="delete")
 
     def __repr__(self):
-        return "<Team {}>".format(self.teamName)
+        return "<Team {}>".format(self.team_name)
 
     @property
     def coach_name(self):
@@ -158,3 +165,34 @@ class Tournament(db.Model):
 
     def __repr__(self):
         return "<Tournament {}>".format(self.tournamentName)
+
+
+class Following(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey(Team.id, ondelete="CASCADE"), primary_key=True)
+
+
+def clear_db(model):
+    elements = model.query.all()
+    for m in elements:
+        db.session.delete(m)
+    db.session.commit()
+    if model == User:
+        rebuild_admin()
+    return
+
+
+def rebuild_admin():
+    pw = 'pbkdf2:sha256:260000$Q2JJAaHpYOxsdPFx$fc0919f2eb018351b9c55e748ab1f69f2731b560f42e285b625046c45170b70e'
+    u = User(username='admin',
+             email='support@supersickbracketmaker.tech',
+             hashed_password=pw,
+             first_name='admin',
+             last_name='support',
+             full_name='admin' + " " + 'support',
+             is_admin=1
+             )
+    db.session.add(u)
+    db.session.commit()
+    return
+

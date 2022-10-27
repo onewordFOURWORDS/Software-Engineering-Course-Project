@@ -6,12 +6,10 @@
     <div><p>user: <b>{{ users.username }}</b> UID: {{ users.id }} coach: {{ users.isCoach }} admin: {{ users.isAdmin }}</p></div>
     {% endfor %}
 
+    <p>Choose a DB model to clear</p>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
-        <p>{{ form.request_coach() }} {{ form.request_coach.label }}</p>
-        <p>{{ form.remove_coach() }} {{ form.remove_coach.label }}</p>
-        <p>{{ form.request_admin() }} {{ form.request_admin.label }}</p>
-        <p>{{ form.remove_admin() }} {{ form.remove_admin.label }}</p>
+        <p>{{ form.model() }} {{ form.model.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
     <p>{{ tval }}</p>

@@ -13,8 +13,9 @@ from app.forms import (
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
     TeamCreationForm,
-    RequestPermissionForm,
-    ManualPermissionsForm
+    ManualPermissionsForm,
+    dbtestForm,
+
 )
 from flask_login import (
     current_user,
@@ -27,6 +28,8 @@ from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
 from app.permissions import *
+from app import db
+
 
 
 @app.route("/")
@@ -77,8 +80,10 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            affiliated_team=form.affiliated_team.data,
+            #affiliated_team=form.affiliated_team.data
         )
+        if form.affiliated_team.data is not None:
+            user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
         db.session.add(user)
@@ -305,17 +310,18 @@ def manual_permissions():
 
 @app.route("/dbtest", methods=["GET", "POST"])
 def dbtest():
-    form = RequestPermissionForm()
-    users = db.session.query(User).all()
+    form = dbtestForm()
+    # test value
     tval = "none"
+    models = {
+        "User": User,
+        "League": League,
+        "Team": Team,
+        "Tournament": Tournament
+    }
     if form.validate_on_submit():
-        if form.request_coach.data:
-            approve_coach(current_user, current_user)
-        elif form.remove_coach.data:
-            deny_coach(current_user, current_user)
-        if form.request_admin.data:
-            approve_admin(current_user, current_user)
-        elif form.remove_admin.data:
-            deny_admin(current_user, current_user)
-        #db.session.commit()
-    return render_template("dbtest.html", title="db tests", form=form, users=users, tval=tval)
+        tval = models[form.model.data]
+        #tval = "form.model.data.query.all()"
+
+        clear_db(tval)
+    return render_template("dbtest.html", title="DB Testing", form=form, tval=tval)

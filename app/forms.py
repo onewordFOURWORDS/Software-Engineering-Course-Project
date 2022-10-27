@@ -16,8 +16,9 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Regexp,
-    Length,
-) 
+    Length, InputRequired,
+)
+from app import db
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
@@ -91,6 +92,7 @@ class RegistrationForm(FlaskForm):
             team_list, key=itemgetter(0)
         ),  # sort by ID, the first element in each tuple.
         coerce=int,
+        validate_choice=False
     )
     # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
@@ -105,6 +107,7 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError("Please use a different email address.")
 
+
 """
 Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
 Tournament location has the same, except it doesnt have to be unique. Might set
@@ -112,6 +115,7 @@ regex for tournament league in the future, but for now, it can be empty, but it 
 must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
 are creating one.
 """
+
 
 class LeaguePageTeamSelectForm(FlaskForm):
     teams = Team.query.all()
@@ -207,7 +211,7 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class SearchByDate(FlaskForm):
     """
@@ -231,7 +235,7 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -248,16 +252,18 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField("Request Password Reset")
 
 
-class RequestPermissionForm(FlaskForm):
-    request_coach = BooleanField("Make me a coach!")
-    request_admin = BooleanField("Make me an admin!")
-    remove_coach = BooleanField("Un-Make me a coach!")
-    remove_admin = BooleanField("Un-Make me an admin!")
-    submit = SubmitField("Submit changes")
-
-
 class ManualPermissionsForm(FlaskForm):
     userID = IntegerField("User ID", validators=[DataRequired()])
-    actions = SelectField("permission actions", choices=[(1,'approve coach'),(2, 'deny coach'),(3, 'approve admin'),(4, 'deny admin')])
+    actions = SelectField("permission actions",
+                          choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
     submit = SubmitField("Submit changes")
 
+
+class dbtestForm(FlaskForm):
+    model = SelectField("Choose a DB",
+                        choices=[('User', 'User'),
+                                 ('League', 'League'),
+                                 ('Team', 'Team'),
+                                 ('Tournament', 'Tournament')],
+                        validators=[InputRequired()],)
+    submit = SubmitField("Clear chosen DB")

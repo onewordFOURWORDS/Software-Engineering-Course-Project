@@ -9,5 +9,5 @@ def make_shell_context():
         "User": User,
         "League": League,
         "Team": Team,
-        "Tournament": Tournament,
+        "Tournament": Tournament
     }
