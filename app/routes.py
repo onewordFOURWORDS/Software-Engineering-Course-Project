@@ -238,6 +238,10 @@ def tournament_management():
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     tournament_league = league.league_name
+    if request.method == 'GET':
+        form.tournament_name.data = tournament.tournament_name
+        form.tournament_location.data = tournament.tournament_location[:-4]
+        tournament_state = tournament.tournament_location[-2:]
     
 
     if form.validate_on_submit():
@@ -261,7 +265,7 @@ def tournament_management():
         flash("Congratulations, you have updated your tournament!")
         return redirect(url_for("tournament_page", tournament=tournament.tournament_name))
 
-    return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues,
+    return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues, tournament_state= tournament_state,
     tournament_league = tournament_league )
 
 
