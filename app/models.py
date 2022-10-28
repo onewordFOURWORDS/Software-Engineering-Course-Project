@@ -124,6 +124,7 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    tournaments = db.Column(db.Integer, db.ForeignKey("tournament.tournament_id"))
 
     def __repr__(self):
         return "<Team {}>".format(self.teamName)
@@ -141,8 +142,11 @@ class Tournament(db.Model):
     tournament_id = db.Column(db.Integer, primary_key=True)
     tournament_name = db.Column(db.String(140), index=True, unique=True)
     tournament_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    tournament_location = db.Column(db.String(200))
+    tournament_city = db.Column(db.String(200))
+    tournament_state = db.Column(db.String(2))
     tournament_league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    tournament_teams = db.relationship('Team', backref='tournament')
+
 
     def __repr__(self):
         return "<Tournament {}>".format(self.tournament_name)

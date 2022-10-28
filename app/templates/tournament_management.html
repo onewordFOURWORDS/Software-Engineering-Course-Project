@@ -12,9 +12,9 @@
         {% endfor %}
     </p>
     <p>
-        {{ form.tournament_location.label }}<br>
-        {{ form.tournament_location(size=64) }}<br>
-        {% for error in form.tournament_location.errors %}
+        {{ form.tournament_city.label }}<br>
+        {{ form.tournament_city(size=64) }}<br>
+        {% for error in form.tournament_city.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
@@ -74,7 +74,7 @@
     </select>
     <br> <br>
     Choose A Pre-Existing League
-    <select name="league" method="POST" action="/">
+    <select name="league_choose" method="POST" action="/">
         {% for league in leagues %}
         {% if tournament_league==league.league_name %}
         <option value="{{league.league_name}}" selected>

@@ -145,7 +145,7 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournament_location = StringField(
+    tournament_city = StringField(
         "Tournament City",
         validators=[
             DataRequired(),

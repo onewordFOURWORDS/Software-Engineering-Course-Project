@@ -12,9 +12,9 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.tournament_location.label }}<br>
-            {{ form.tournament_location(size=64) }}<br>
-            {% for error in form.tournament_location.errors %}
+            {{ form.tournament_city.label }}<br>
+            {{ form.tournament_city(size=64) }}<br>
+            {% for error in form.tournament_city.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
