@@ -18,5 +18,10 @@
 <form method="POST">
     <input type="submit" name="edit_button" value="Edit Tournament">
 </form>
+<form 
+        method="POST"
+        onsubmit="return confirm('Are you sure you wish to delete?');">
+    <input type="submit" name="delete_button" value="Delete Tournament">
+    </form>
 
 {% endblock %}

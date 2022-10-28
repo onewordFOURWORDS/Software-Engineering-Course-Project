@@ -190,7 +190,7 @@ def tournament_creation():
     )
 
 
-@app.route("/tournament_dashboard", methods=["GET"])
+@app.route("/tournament_dashboard", methods=["GET", "POST"])
 def tournament_dashboard():
     form = SearchByDate()
     start = request.args.get("start_date") # returns string from GET or None if no query has been made yet - cannot be empty
@@ -219,8 +219,13 @@ def tournament_page():
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     if request.method == "POST":
-        if request.form["edit_button"]:
+        if request.form.get('edit_button') == 'Edit Tournament':
             return redirect(url_for('tournament_management', tournament=tournament.tournament_name))
+        elif request.form.get('delete_button') == 'Delete Tournament':
+            db.session.delete(tournament)
+            db.session.commit()
+            flash("You have successfully deleted the following tournament: " + tournament.tournament_name)
+            return redirect(url_for('tournament_dashboard'))
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
