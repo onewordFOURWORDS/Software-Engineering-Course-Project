@@ -232,24 +232,36 @@ def tournament_page():
 def tournament_management():
     form = TournamentCreationForm()
     leagues = League.query.all()
+
     tournament_string = request.args.get('tournament', None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
-    form.tournament_name.data = tournament.tournament_name
-    form.tournament_date.data = tournament.tournament_date
-    form.tournament_location.data = tournament.tournament_location[:-4]
-    tournament_state = tournament.tournament_location[len(tournament.tournament_location)-2:]
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     tournament_league = league.league_name
     
 
     if form.validate_on_submit():
+        if request.method == "POST":
+            tournament_state = request.form["state"]
+            if form.tournament_league.data == "":
+                leagueString = request.form["league"]
+                league = League.query.filter_by(league_name=leagueString).first()
+            else:
+                league = League(
+                    league_name=form.tournament_league.data,
+                )
+                db.session.add(league)
+                db.session.commit()
+        
         tournament.tournament_name = form.tournament_name.data
+        tournament.tournament_date = form.tournament_date.data
+        tournament.tournament_location = form.tournament_location.data + "," + " " + tournament_state
+        tournament.tournamnet_league = league.id
         db.session.commit()
         flash("Congratulations, you have updated your tournament!")
         return redirect(url_for("tournament_page", tournament=tournament.tournament_name))
 
-    return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues, tournament_state = tournament_state,
+    return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues,
     tournament_league = tournament_league )
 
 
