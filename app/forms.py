@@ -1,3 +1,4 @@
+from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -17,7 +18,7 @@ from wtforms.validators import (
     EqualTo,
     Regexp,
     Length,
-) 
+)
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
@@ -105,6 +106,7 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError("Please use a different email address.")
 
+
 """
 Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
 Tournament location has the same, except it doesnt have to be unique. Might set
@@ -112,6 +114,7 @@ regex for tournament league in the future, but for now, it can be empty, but it 
 must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
 are creating one.
 """
+
 
 class LeaguePageTeamSelectForm(FlaskForm):
     teams = Team.query.all()
@@ -189,6 +192,7 @@ class SearchByDate(FlaskForm):
     """
     A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
     """
+
     startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
     endDate = DateField("EndDate", format="%Y-%m-%d")
     submit = SubmitField("Search")
@@ -207,12 +211,13 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class SearchByDate(FlaskForm):
     """
     A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
     """
+
     startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
     endDate = DateField("EndDate", format="%Y-%m-%d")
     submit = SubmitField("Search")
@@ -231,7 +236,7 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -246,3 +251,9 @@ class ResetPasswordForm(FlaskForm):
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
     submit = SubmitField("Request Password Reset")
+
+
+class UserSettingsForm(FlaskForm):
+    username = StringField("Username")
+    firstname = StringField("First Name")
+    lastname = StringField("Last Name")
