@@ -1,3 +1,5 @@
+from ast import Str
+from concurrent.futures import process
 from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -254,6 +256,10 @@ class ResetPasswordForm(FlaskForm):
 
 
 class UserSettingsForm(FlaskForm):
-    username = StringField("Username")
-    firstname = StringField("First Name")
-    lastname = StringField("Last Name")
+    username = StringField("Username", render_kw={"readonly": True})
+    firstname = StringField("First Name", validators=[DataRequired()])
+    lastname = StringField("Last Name", validators=[DataRequired()])
+    phonenumber = StringField("Phone Number")
+    address = StringField("Address")
+    email = StringField("Email")
+    submit = SubmitField("Update Settings")

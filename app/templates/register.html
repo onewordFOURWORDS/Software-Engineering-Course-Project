@@ -34,7 +34,8 @@
     </p>
     <p>
         {{ form.password.label }}<br>
-        {{ form.password(size=32) }} <span style="color: darkgray;">Length 8-64 characters</span><br>
+        {{ form.password(size=32) }}
+        <span style="color: darkgray;">Length 8-64 characters</span><br>
         {% for error in form.password.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
