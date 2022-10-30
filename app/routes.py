@@ -305,23 +305,35 @@ def manual_permissions():
             approve_admin(current_user, user)
         if form.actions.data == '4':
             deny_admin(current_user, user)
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, tval=tval)
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users)
 
 
 @app.route("/dbtest", methods=["GET", "POST"])
 def dbtest():
     form = dbtestForm()
+    users = db.session.query(User).order_by('id')
+    teams = db.session.query(Team).order_by('id')
+    leagues = db.session.query(League).order_by('id')
+    tournaments = db.session.query(Tournament).order_by('id')
     # test value
     tval = "none"
     models = {
+        "None": None,
         "User": User,
         "League": League,
         "Team": Team,
         "Tournament": Tournament
     }
     if form.validate_on_submit():
-        tval = models[form.model.data]
-        #tval = "form.model.data.query.all()"
+        clear = models[form.model.data]
+        gen = models[form.model_gen.data]
+        if clear is not None:
+            clear_db(clear)
+        if gen is not None:
+            gen_db(gen, 10)
 
-        clear_db(tval)
-    return render_template("dbtest.html", title="DB Testing", form=form, tval=tval)
+    return render_template("dbtest.html",
+                           title="DB Testing",
+                           form=form, users=users,
+                           tval=tval, teams=teams,
+                           leagues=leagues, tournaments=tournaments)

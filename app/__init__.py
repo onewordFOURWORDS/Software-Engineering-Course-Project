@@ -25,7 +25,7 @@ env.globals["is_admin"] = User.is_admin
 env.globals["is_coach"] = User.is_coach
 
 
-# if user 1 not named admin, clear all users and rebuild
+# if admin user not in db, clear all users and rebuild
 user = User.query.filter_by(username='admin').first()
 if not user:
     clear_db(User)

@@ -1,10 +1,12 @@
 from sqlalchemy.orm import column_property
 from datetime import datetime
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from time import time
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db, login
+import random
+import string
 
 """
 classes are defined by extending the db.model class. DB is managed with postgres
@@ -104,33 +106,35 @@ class User(UserMixin, db.Model):
 
     # commented out the following functions, replaced in permissions.py
     # please delete if no longer needed
-    """
+
     # Having these be instance methods on Users makes it easy to use these within
     # Jinja.
+    """
     def is_admin(self):
-        return self._is_admin
+        return self.is_admin
 
     def is_coach(self):
         # print(self)
-        return self._is_coach
-    """
+        return self.is_coach
+"""
 
     # view league info will likely be done based on a selected league
     # having a dedicated affiliated league for each user may not be helpful,
     # instead a list of followed leagues may be better, similar to the followed teams
-    """
+
     @property
     def league_id(self):
         
         # Looks up users affiliated league (based on their team affiliation)
         
         return Team.query.filter_by(id=self.affiliated_team).first().league
-    """
+
 
 
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     league_name = db.Column(db.String(64))
+
     # teams = db.relationship("Team", backref="teamReference", lazy="dynamic")
 
     def __repr__(self):
@@ -140,8 +144,8 @@ class League(db.Model):
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String(140), index=True, unique=True)
-    coach = db.Column(db.Integer, db.ForeignKey("user.id"))
-    league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    coach = db.Column(db.Integer, db.ForeignKey("user.id", ondelete='CASCADE'))
+    league = db.Column(db.Integer, db.ForeignKey("league.id", ondelete='CASCADE'))
     users = db.relationship('Following', backref='teams', cascade="delete")
 
     def __repr__(self):
@@ -158,15 +162,16 @@ class Team(db.Model):
 
 class Tournament(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tournamentName = db.Column(db.String(140), index=True, unique=True)
-    tournamentDate = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    tournamentLocation = db.Column(db.String(200))
-    tournamentLeague = db.Column(db.Integer, db.ForeignKey("league.id"))
+    tournament_name = db.Column(db.String(140), index=True, unique=True)
+    tournament_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    tournament_location = db.Column(db.String(200))
+    tournament_league = db.Column(db.Integer, db.ForeignKey("league.id"))
 
     def __repr__(self):
-        return "<Tournament {}>".format(self.tournamentName)
+        return "<Tournament {}>".format(self.tournament_name)
 
 
+# TODO change the name since following is too generic and users may want to follow leagues
 class Following(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
     team_id = db.Column(db.Integer, db.ForeignKey(Team.id, ondelete="CASCADE"), primary_key=True)
@@ -178,21 +183,55 @@ def clear_db(model):
         db.session.delete(m)
     db.session.commit()
     if model == User:
-        rebuild_admin()
+        rebuild_users()
     return
 
 
-def rebuild_admin():
+# TODO: other dev team members- add your info here and a hashed password if you want one in order to auto generate
+def rebuild_users():
     pw = 'pbkdf2:sha256:260000$Q2JJAaHpYOxsdPFx$fc0919f2eb018351b9c55e748ab1f69f2731b560f42e285b625046c45170b70e'
-    u = User(username='admin',
-             email='support@supersickbracketmaker.tech',
-             hashed_password=pw,
-             first_name='admin',
-             last_name='support',
-             full_name='admin' + " " + 'support',
-             is_admin=1
-             )
-    db.session.add(u)
+    admin = User(username='admin',
+                 email='support@supersickbracketmaker.tech',
+                 hashed_password=pw,
+                 first_name='admin',
+                 last_name='support',
+                 is_admin=1
+                 )
+    Scott = User(username='Scott_Gere',
+                 email='sgman0997@gmail.com',
+                 hashed_password=pw,
+                 first_name='Scott',
+                 last_name='Gere',
+                 is_admin=1,
+                 is_coach=1
+                 )
+    db.session.add_all([admin, Scott])
     db.session.commit()
     return
 
+
+def gen_db(model, num):
+    # must be coach to generate teams
+    league = League.query.first()
+    if not league:
+        league = League(league_name='test league')
+        db.session.add(league)
+        db.session.commit()
+    if model is Team:
+        for i in range(num):
+            name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
+            t = Team(team_name=name, coach=current_user.id, league=league.id)
+            db.session.add(t)
+            db.session.commit()
+    elif model is League:
+        for i in range(num):
+            name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
+            l = League(league_name=name)
+            db.session.add(l)
+            db.session.commit()
+    elif model is Tournament:
+        for i in range(num):
+            name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
+            t = Tournament(tournament_name=name, tournament_location=name, tournament_league=league.id)
+            db.session.add(t)
+            db.session.commit()

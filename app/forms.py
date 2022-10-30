@@ -260,10 +260,19 @@ class ManualPermissionsForm(FlaskForm):
 
 
 class dbtestForm(FlaskForm):
-    model = SelectField("Choose a DB",
-                        choices=[('User', 'User'),
+    model = SelectField("DB models",
+                        choices=[('None', 'None'),
+                                 ('User', 'User'),
                                  ('League', 'League'),
                                  ('Team', 'Team'),
                                  ('Tournament', 'Tournament')],
-                        validators=[InputRequired()],)
-    submit = SubmitField("Clear chosen DB")
+                        validators=[InputRequired()], )
+
+    model_gen = SelectField("DB generations",
+                            choices=[('None', 'None'),
+                                     ('User', 'User'),
+                                     ('League', 'League'),
+                                     ('Team', 'Team'),
+                                     ('Tournament', 'Tournament')],
+                            validators=[InputRequired()])
+    submit = SubmitField("Clear or gen")

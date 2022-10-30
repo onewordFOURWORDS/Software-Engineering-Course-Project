@@ -1,15 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Hello, {{ current_user.username }}! coach: {{ current_user.isCoach }} admin: {{ current_user.isAdmin }}</h1>
-    {% for users in users %}
-    <div><p>user: <b>{{ users.username }}</b> UID: {{ users.id }} coach: {{ users.isCoach }} admin: {{ users.isAdmin }}</p></div>
-    {% endfor %}
+    <h1>Hello, {{ current_user.username }}! coach: {{ current_user.is_coach }} admin: {{ current_user.is_admin }}</h1>
+<br>
 
+<div class="scrolling-wrapper-flexbox">
+    {% for users in users %}
+  <div class="card">
+    <a href="{{ url_for("index")}}">
+    <p><b>{{ users.username }}</b></p>
+    <p>ID: {{ users.id }}, coach: {{ users.is_coach }}, admin: {{ users.is_admin }}</p>
+    </a>
+  </div>
+    {% endfor %}
+</div>
+
+<p>          see list of all registered users</p>
+<div class="scrollmenu">
+    {% for users in users %}
+    <a href="{{ url_for("index")}}">
+    <p><b>{{ users.username }}</b></p>
+    <p>ID: {{ users.id }}, coach: {{ users.is_coach }}, admin: {{ users.is_admin }}</p>
+    </a>
+    {% endfor %}
+</div>
+<br>
+<p>          see list of all teams</p>
+<div class="scrollmenu">
+    {% for teams in teams %}
+    <a href="{{ url_for("league")}}">
+    <p><b>{{ teams.team_name }}</b></p>
+    <p>ID: {{ teams.id }}, coach: {{ teams.coach.username }}, league: {{ teams.league.league_name }}</p>
+    </a>
+    {% endfor %}
+</div>
+<br>
+<p>          see list of all leagues</p>
+<div class="scrollmenu">
+    {% for leagues in leagues %}
+    <a href="{{ url_for("league")}}">
+    <p><b>{{ leagues.league_name }}</b></p>
+    <p>ID: {{ leagues.id }}</p>
+    </a>
+    {% endfor %}
+</div>
+<br>
+<p>          see list of all tournaments</p>
+<div class="scrollmenu">
+    {% for tournaments in tournaments %}
+    <a href="{{ url_for("TournamentDashboard")}}">
+    <p><b>{{ tournaments.tournament_name }}</b></p>
+    <p>ID: {{ tournaments.id }} Date: {{ tournaments.tournament_date }}</p>
+    </a>
+    {% endfor %}
+</div>
+<br>
     <p>Choose a DB model to clear</p>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>{{ form.model() }} {{ form.model.label }}</p>
+        <p>Choose a DB model to generate some data for</p>
+        <p>{{ form.model_gen() }} {{ form.model_gen.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
     <p>{{ tval }}</p>
