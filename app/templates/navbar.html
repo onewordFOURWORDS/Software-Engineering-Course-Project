@@ -11,6 +11,9 @@
         </li>
         {% else %}
         <li class="nav-item">
+            <a class="nav-link" id="request_permission_link" href="{{ url_for("request_permission")}}">Request Permission</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
         </li>
         <li class="nav-item">
@@ -25,7 +28,7 @@
             <a class="nav-link" id="team_creation_link" href="{{ url_for("create_team")}}">Create a New Team</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="manual_permissions" href="{{ url_for("manual_permissions")}}">Permissions</a>
+            <a class="nav-link" id="manual_permissions" href="{{ url_for("manual_permissions")}}">Approve Permissions</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="dbtest" href="{{ url_for("dbtest")}}">DB Testing</a>

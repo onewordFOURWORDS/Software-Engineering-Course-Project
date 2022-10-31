@@ -130,7 +130,6 @@ class User(UserMixin, db.Model):
         return Team.query.filter_by(id=self.affiliated_team).first().league
 
 
-
 class League(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     league_name = db.Column(db.String(64))
@@ -175,6 +174,13 @@ class Tournament(db.Model):
 class Following(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
     team_id = db.Column(db.Integer, db.ForeignKey(Team.id, ondelete="CASCADE"), primary_key=True)
+
+
+class PermissionRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.Integer,  db.ForeignKey("user.id", ondelete='CASCADE'))
+    coach_request = db.Column(db.Boolean, default=0)
+    admin_request = db.Column(db.Boolean, default=0)
 
 
 def clear_db(model):

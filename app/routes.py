@@ -14,7 +14,7 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm,
+    dbtestForm, RequestPermissionsForm,
 
 )
 from flask_login import (
@@ -251,7 +251,9 @@ def league():
         # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = form.affiliated_team.data
+            user.affiliated_team = form.affiliated_team.data  # .data is not actually a team object
+            # scott: this does not work because flask forms does not appear to be passing objects back through
+            # scott: I have this issue in other places as well
             db.session.commit()
             return redirect(url_for("league"))
     # otherwise, it will display the teams in their league.
@@ -293,19 +295,56 @@ def create_team():
 def manual_permissions():
     form = ManualPermissionsForm()
     users = db.session.query(User).order_by('id')
-    tval = "none"
+    prs = db.session.query(PermissionRequest).order_by('id')
+
+    tval = prs
     if form.validate_on_submit():
-        user = User.query.filter_by(id=form.userID.data).first()
-        tval = user
-        if form.actions.data == '1':
+        #user = User.query.filter_by(id=form.userID.data).first()
+        pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
+        user = User.query.filter_by(id=pr.user).first()
+        tval = pr.id
+
+        """
+        if form.actions.data == 1:
             approve_coach(current_user, user)
-        if form.actions.data == '2':
+        if form.actions.data == 2:
             deny_coach(current_user, user)
-        if form.actions.data == '3':
+        if form.actions.data == 3:
             approve_admin(current_user, user)
-        if form.actions.data == '4':
+        if form.actions.data == 4:
             deny_admin(current_user, user)
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users)
+        """
+        
+        if form.pr_actions.data == 1:
+            if pr.coach_request == 1:
+                approve_coach(current_user, user, pr)
+            elif pr.admin_request == 1:
+                approve_admin(current_user, user, pr)
+        if form.pr_actions.data == 2:
+            if pr.coach_request == 1:
+                deny_coach(current_user, user, pr)
+            elif pr.admin_request == 1:
+                deny_admin(current_user, user, pr)
+
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs, tval=tval)
+
+
+@app.route("/request_permission", methods=["GET", "POST"])
+def request_permission():
+    form = RequestPermissionsForm()
+    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
+    if form.validate_on_submit():
+        if form.actions.data == 1:
+            # generate new pr object
+            pr = PermissionRequest(coach_request=1, user=current_user.id)
+            db.session.add(pr)
+            db.session.commit()
+        if form.actions.data == 2:
+            pr = PermissionRequest(admin_request=1, user=current_user.id)
+            db.session.add(pr)
+            db.session.commit()
+    return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
+
 
 
 @app.route("/dbtest", methods=["GET", "POST"])

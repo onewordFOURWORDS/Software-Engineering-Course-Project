@@ -8,7 +8,7 @@ from wtforms import (
     DateField,
     SelectField,
     FieldList,
-    FormField,
+    FormField, SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -253,9 +253,24 @@ class ResetPasswordForm(FlaskForm):
 
 
 class ManualPermissionsForm(FlaskForm):
-    userID = IntegerField("User ID", validators=[DataRequired()])
+    userID = IntegerField("User ID")
+    prID = IntegerField("permission request ID")
+
+    """
     actions = SelectField("permission actions",
+                          coerce=int,
                           choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
+    """
+    pr_actions = SelectField("permission request actions",
+                             coerce=int,
+                             choices=[(1, 'approve pr'), (2, 'deny pr')])
+    submit = SubmitField("Submit changes")
+
+
+class RequestPermissionsForm(FlaskForm):
+    actions = SelectField("permission choices",
+                          coerce=int,
+                          choices=[(1, 'coach'), (2, 'admin')])
     submit = SubmitField("Submit changes")
 
 

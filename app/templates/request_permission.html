@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Hello, {{ current_user.username }}!
+        <br> coach status: {{ current_user.is_coach }}
+        <br> admin status: {{ current_user.is_admin }}</h1>
+    <p>see list of your permission requests</p>
+    {% for prs in prs %}
+    <div><p>user: <b>{{ prs.user }}</b> request ID: {{ prs.id }}, coach: {{ prs.coach_request }}, admin: {{ prs.admin_request }}</p></div>
+    {% endfor %}
+    <p>request a permissions change</p>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>{{ form.actions() }} {{ form.actions.label }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <p>{{ tval }}</p>
+
+{% endblock %}
