@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Team Registration</h1>
+<div>
+    <p>Tournament Name: {{tournament.tournament_name }}</a></b></p>
+
+
+<div>
+    <p>Teams To Choose From: 
+        <select name="team_choose" method="POST" action="/">
+        {% for team in teams %}
+        <option value="{{team.team_name}}">
+            {{team.team_name}}
+        </option>
+        {% endfor %}
+    </select>
+    </b></p>
+</div>
+
+<form method="POST">
+    <input type="submit" name="submit_button" value="submit team">
+</form>
+
+
+{% endblock %}

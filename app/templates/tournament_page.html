@@ -15,6 +15,10 @@
     <p>Tournament League: {{league.league_name }}</b></p>
 </div>
 
+<div>
+    <p>Registered Teams: {{league.league_name }}</b></p>
+</div>
+
 <form method="POST">
     <input type="submit" name="edit_button" value="Edit Tournament">
 </form>
@@ -22,6 +26,11 @@
         method="POST"
         onsubmit="return confirm('Are you sure you wish to delete?');">
     <input type="submit" name="delete_button" value="Delete Tournament">
+</form>
+<form 
+        method="POST"
+        onsubmit="return confirm('Are you sure you want to register for {{tournament.tournament_name }}');">
+    <input type="submit" name="register_button" value="Register">
 </form>
 
 {% endblock %}
