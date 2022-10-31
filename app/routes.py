@@ -80,10 +80,10 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            #affiliated_team=form.affiliated_team.data
+            affiliated_team=form.affiliated_team.data
         )
-        if form.affiliated_team.data is not None:
-            user.follow(form.affiliated_team.data)
+        #if form.affiliated_team.data is not None:
+        #    user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
         db.session.add(user)
