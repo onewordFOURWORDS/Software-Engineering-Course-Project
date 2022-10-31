@@ -76,15 +76,9 @@
     Choose A Pre-Existing League
     <select name="league_choose" method="POST" action="/">
         {% for league in leagues %}
-        {% if tournament_league==league.league_name %}
-        <option value="{{league.league_name}}" selected>
+        <option value="{{league.league_name}}" {% if tournament_league_name==league.league_name %} selected {% endif %}>
             {{league.league_name}}
         </option>
-        {%else%}
-        <option value="{{league.league_name}}">
-            {{league.league_name}}
-        </option>
-        {% endif %}
         {% endfor %}
     </select>
     <p>

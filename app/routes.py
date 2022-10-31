@@ -234,14 +234,9 @@ def tournament_management():
     leagues = League.query.all()
     tournament_string = request.args.get('tournament', None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
-    tournament_league = tournament.tournament_league
+    tournament_league_name = (League.query.filter_by(id=tournament.tournament_league).first()).league_name
     tournament_state = tournament.tournament_state
     form = TournamentCreationForm(obj=tournament)
-    # if request.method == 'GET':
-    #     form.tournament_name.data = tournament.tournament_name
-    #     form.tournament_city.data = tournament.tournament_city
-        
-    
 
     if form.validate_on_submit():
         if request.method == "POST":
@@ -261,14 +256,11 @@ def tournament_management():
             )
             db.session.add(league)
             db.session.commit()
-            tournament = Tournament(
-                tournament_name=form.tournament_name.data,
-                tournament_date=form.tournament_date.data,
-                tournament_city=form.tournament_city.data,
-                tournament_state = tournament_state,
-                tournament_league=league.id,
-            )
-            db.session.add(tournament)
+            tournament.tournament_name = form.tournament_name.data
+            tournament.tournament_date = form.tournament_date.data
+            tournament.tournament_city = form.tournament_city.data
+            tournament.tournament_state = tournament_state
+            tournament.tournament_league = league.id
             db.session.commit()
 
         
@@ -277,7 +269,7 @@ def tournament_management():
         return redirect(url_for("tournament_page", tournament=tournament.tournament_name))
 
     return render_template("tournament_management.html", title="Tournament Management", form=form, leagues = leagues, tournament_state = tournament_state,
-    tournament_league = tournament_league )
+    tournament_league_name = tournament_league_name )
 
 
 
