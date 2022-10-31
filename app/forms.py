@@ -256,10 +256,16 @@ class ResetPasswordForm(FlaskForm):
 
 
 class UserSettingsForm(FlaskForm):
-    username = StringField("Username", render_kw={"readonly": True})
-    firstname = StringField("First Name", validators=[DataRequired()])
+    username = StringField(
+        "Username", validators=[DataRequired()], render_kw={"readonly": True}
+    )
+    firstname = StringField(
+        "First Name",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "First Name"},
+    )
     lastname = StringField("Last Name", validators=[DataRequired()])
-    phonenumber = StringField("Phone Number")
-    address = StringField("Address")
-    email = StringField("Email")
+    phonenumber = StringField("Phone Number", render_kw={"placeholder": "555-555-5555"})
+    address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
+    email = StringField("Email", validators=[Email(), DataRequired()])
     submit = SubmitField("Update Settings")

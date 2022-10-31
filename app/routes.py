@@ -309,22 +309,29 @@ def create_team():
 @app.route("/user_settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
-    user = current_user
     form = UserSettingsForm()
+    id = current_user.id
+    user = User.query.get_or_404(id)
     form.username.data = current_user.username
     form.firstname.data = current_user.first_name
     form.lastname.data = current_user.last_name
-    form.lastname.data = current_user.last_name
+    form.address.data = current_user.address
     form.phonenumber.data = current_user.phone_number
     form.email.data = current_user.email
 
-    if form.validate_on_submit():
-        user.username(form.username.data)
-        user.first_name(form.firstname.data)
-        user.last_name(form.lastname.data)
-        user.phonenumber(form.phonenumber.data)
-        user.username(form.address.data)
-        user.username(form.email.data)
-        db.session.commit()
-        flash("Your password has been reset.")
-    return render_template("user_settings.html", form=form)
+    if request.method == "POST":
+        user.username = request.form["username"]
+        user.first_name = request.form["firstname"]
+        user.last_name = request.form["lastname"]
+        user.phone_number = request.form["phonenumber"]
+        user.address = request.form["address"]
+        user.email = request.form["email"]
+        try:
+            db.session.commit()
+            flash("User Information Succesfully Updated!")
+            return redirect(url_for("user_settings"))
+        except:
+            flash("An Error Occured. Please try again!")
+            return redirect(url_for("user_settings"))
+    else:
+        return render_template("user_settings.html", form=form)
