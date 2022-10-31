@@ -16,7 +16,11 @@
 </div>
 
 <div>
-    <p>Registered Teams: {{league.league_name }}</b></p>
+    <p>Registered Teams: <br> <br>
+        {% for team_id in tournament.tournament_teams %}
+            {{team_id}} <br> <br>
+        {% endfor %}
+     </b></p>
 </div>
 
 <form method="POST">

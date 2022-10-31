@@ -236,15 +236,16 @@ def register_page():
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     teams = Team.query.all()
+    
 
     if request.method == "POST":
-        team = request.form.get("team_choose", False)
         if request.form.get('submit_button') == 'submit team':
-            # team= Team.query.filter_by(team_name=team_string).first()
-            # tournament.tournament_teams.append(team)
-            # db.session.commit()
+            team = teams[1]
+            tournament.tournament_teams.append(team)
+            db.session.commit()
             flash(str(team) + " successfully registered!")
             return redirect(url_for('register_page', tournament=tournament.tournament_name))
+    
     
     return render_template(
         "register_page.html",

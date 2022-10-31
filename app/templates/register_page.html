@@ -1,20 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h1>Team Registration</h1>
+
 <div>
     <p>Tournament Name: {{tournament.tournament_name }}</a></b></p>
 
 
 <div>
-    <p>Teams To Choose From: 
-        <select name="team_choose" method="POST" action="/">
-        {% for team in teams %}
-        <option value="{{team.team_name}}">
-            {{team.team_name}}
-        </option>
+    <p>Registered Teams: <br> <br> 
+        {% for team_id in tournament.tournament_teams %}
+            {{team_id}} <br> <br>
         {% endfor %}
-    </select>
     </b></p>
 </div>
 
