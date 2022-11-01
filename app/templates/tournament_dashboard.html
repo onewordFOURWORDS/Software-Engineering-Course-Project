@@ -3,27 +3,39 @@
 
 {% block content %}
     <h1>Hello, Welcome to SSBM {{ current_user.username }}!</h1>
-    <h3>Search by date:</h3>
+    <h3>Search by:</h3>
     <form action="" method="post" novalidate>
-        <p>
-            {{ form.start_date.label }} {{ form.start_date(size=32) }}<br>
-            {% for error in form.start_date.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.end_date.label }} {{ form.end_date(size=32) }}<br>
-            {% for error in form.end_date.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
+        <span onclick='hide("date", "date_fields")'>{{ form.date.label }} {{ form.date }}</span>
+        <span onclick='hide("name", "name_field")'>{{ form.name.label }} {{ form.name }}</span>
+        <div id="date_fields">
+            <p>
+                {{ form.start_date.label }} {{ form.start_date(size=32) }}<br>
+                {% for error in form.start_date.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.end_date.label }} {{ form.end_date(size=32) }}<br>
+                {% for error in form.end_date.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+        </div>
+        <div id="name_field">
+            <p>
+                {{ form.tournament_name.label }} {{ form.tournament_name(size=32) }}<br>
+                {% for error in form.tournament_name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+        </div>
         <p>{{ form.submit() }}</p>
     </form>
     {% for tournament in tournaments %}
     <div><p>Tournament Name: <a href="{{ url_for('TournamentPage', tournament=tournament.tournamentName) }}">{{tournament.tournamentName }}</a></b></p></div>
     <div><p>Tournament Date: {{tournament.tournamentDate }}</b></p></div>
     <div><p>Tournament Location: {{tournament.tournamentLocation }}</b></p></div>
-    {% for league in leagues%}
+    {% for league in leagues %}
         {% if league.id == tournament.tournamentLeague %}
             <div><p>Tournament League: {{league.league_name}}</b></p></div>
 
@@ -33,5 +45,17 @@
     {% endfor %}
     <script>
         document.querySelector("#tournament_dashboard_link").classList.toggle("active");
+
+        function hide(check, field) {
+            var check_box = document.getElementById(check);
+            var field = document.getElementById(field);
+            
+            if (check_box.checked == true){
+                field.style.display = "block";
+            } 
+            else {
+               field.style.display = "none";
+            }
+        }
     </script>
 {% endblock %}

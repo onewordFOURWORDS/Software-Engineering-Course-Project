@@ -187,14 +187,33 @@ class TournamentCreationForm(FlaskForm):
     submit = SubmitField("Create Tournament")
 
 
+class RequiredIf(object):
+
+    def __init__(self, **kwargs):
+        self.conditions = kwargs
+
+    def __call__(self, form, field):
+        current_value = form.data.get(field.name)
+        if current_value == "None":
+            for condition_field, reserved_value in self.conditions.items():
+                dependent_value = form.data.get(condition_field)
+                if condition_field not in form.data:
+                    continue
+                elif dependent_value == reserved_value:
+                    raise Exception('Invalid value of field "%s". Field is required when %s==%s' % (field.name, condition_field, dependent_value))
+
+
 class SearchByDate(FlaskForm):
     """
-    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
+    A search bar to filter tournaments by date.
     """
-    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[DataRequired()])
-    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[DataRequired()])
+    date = BooleanField("Date:")
+    name = BooleanField("Name:")
+    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
     submit = SubmitField("Search")
-            
+
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
