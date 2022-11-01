@@ -143,8 +143,9 @@ class League(db.Model):
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String(140), index=True, unique=True)
-    coach = db.Column(db.Integer, db.ForeignKey("user.id", ondelete='CASCADE'))
-    league = db.Column(db.Integer, db.ForeignKey("league.id", ondelete='CASCADE'))
+    coach = db.Column(db.Integer, db.ForeignKey("user.id"))
+    league = db.Column(db.Integer, db.ForeignKey("league.id"))
+    # the cascade delete here only impacts the many to many relationship
     users = db.relationship('Following', backref='teams', cascade="delete")
 
     def __repr__(self):
