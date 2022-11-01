@@ -19,8 +19,8 @@ following = db.Table(
 
 tournament_teams = db.Table(
     "tournament_teams",
-    db.Column('tournament_id', db.Integer, db.ForeignKey("tournament.tournament_id")),
-    db.Column('team_id', db.Integer, db.ForeignKey("team.id"))
+    db.Column("tournament_id", db.Integer, db.ForeignKey("tournament.tournament_id")),
+    db.Column("team_id", db.Integer, db.ForeignKey("team.id")),
 )
 
 
@@ -130,7 +130,6 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    tournaments = db.relationship('Tournament', secondary=tournament_teams, backref='team')
 
     def __repr__(self):
         return "<Team {}>".format(self.team_name)
@@ -150,10 +149,10 @@ class Tournament(db.Model):
     tournament_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     tournament_city = db.Column(db.String(200))
     tournament_state = db.Column(db.String(2))
-    tournament_league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    tournament_teams = db.relationship('Team', secondary=tournament_teams, backref='tournament')
-
+    tournament_league = db.Column(db.Integer, db.ForeignKey("league.id",))
+    tournament_teams = db.relationship(
+        "Team", secondary=tournament_teams, backref="tournament"
+    )
 
     def __repr__(self):
         return "<Tournament {}>".format(self.tournament_name)
-

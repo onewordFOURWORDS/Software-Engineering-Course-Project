@@ -18,22 +18,18 @@
 <div>
     <p>Registered Teams: <br> <br>
         {% for team_id in tournament.tournament_teams %}
-            {{team_id}} <br> <br>
+        {{team_id}} <br> <br>
         {% endfor %}
-     </b></p>
+        </b></p>
 </div>
 
 <form method="POST">
     <input type="submit" name="edit_button" value="Edit Tournament">
 </form>
-<form 
-        method="POST"
-        onsubmit="return confirm('Are you sure you wish to delete?');">
+<form method="POST" onsubmit="return confirm('Are you sure you wish to delete?');">
     <input type="submit" name="delete_button" value="Delete Tournament">
 </form>
-<form 
-        method="POST"
-        onsubmit="return confirm('Are you sure you want to register for {{tournament.tournament_name }}');">
+<form method="POST" onsubmit="return confirm('Are you sure you want to register for {{tournament.tournament_name }}');">
     <input type="submit" name="register_button" value="Register">
 </form>
 
