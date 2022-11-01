@@ -203,9 +203,9 @@ class RequiredIf(object):
                     raise Exception('Invalid value of field "%s". Field is required when %s==%s' % (field.name, condition_field, dependent_value))
 
 
-class SearchByDate(FlaskForm):
+class Search(FlaskForm):
     """
-    A search bar to filter tournaments by date.
+    A search system to filter tournaments by name and date.
     """
     date = BooleanField("Date:")
     name = BooleanField("Name:")

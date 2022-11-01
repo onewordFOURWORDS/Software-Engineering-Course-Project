@@ -9,7 +9,7 @@ from app.forms import (
     LoginForm,
     RegistrationForm,
     TournamentCreationForm,
-    SearchByDate,
+    Search,
     ResetPasswordRequestForm,
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
@@ -194,16 +194,24 @@ def tournament_creation():
 
 @app.route("/tournament_dashboard", methods=["GET", "POST"])
 def tournament_dashboard():
-    form = SearchByDate()
+    form = Search()
     form.validate_on_submit()
-    tournaments = []
     start = form.start_date.data
     end = form.end_date.data
-    
-    # filter tournaments inclusive from start to end
-    if type(start) == date and type(end) == date:
-        tournaments = Tournament.query.filter(Tournament.tournamentDate >= start).filter(Tournament.tournamentDate <= end).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    name = form.tournament_name.data 
+
+    if form.submit.data and (type(start) == date or type(name) == str):
+        # build query up decorator style to allow precise searching
+        tournaments = Tournament.query
+        # filter tournaments inclusive from start to end
+        if type(start) == date and type(end) == date:
+            tournaments = tournaments.filter(Tournament.tournamentDate >= start).filter(Tournament.tournamentDate <= end).all()
+        # 
+        if type(name) == str:
+            tournaments = tournaments.filter(Tournament.tournamentName.contains(name)).all()
+        return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    else:
+        return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = [])     
 
 
 @app.route("/TournamentPage")
