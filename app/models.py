@@ -172,8 +172,8 @@ class Tournament(db.Model):
 
 # TODO change the name since following is too generic and users may want to follow leagues
 class Following(db.Model):
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
-    team_id = db.Column(db.Integer, db.ForeignKey(Team.id, ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete='SET NULL'), primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey(Team.id, ondelete='SET NULL'), primary_key=True)
 
 
 class PermissionRequest(db.Model):

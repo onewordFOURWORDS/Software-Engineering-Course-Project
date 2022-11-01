@@ -26,9 +26,10 @@ env.globals["is_coach"] = User.is_coach
 
 
 # if admin user not in db, clear all users and rebuild
-user = User.query.filter_by(username='admin').first()
-if not user:
-    clear_db(User)
+# useful for testing, just uncomment if needed
+# user = User.query.filter_by(username='admin').first()
+# if not user:
+#     clear_db(User)
 
 # TODO: figure out a better way to handle this, currently
 # need this in the db for the way we do the no team thing on user registration.
