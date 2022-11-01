@@ -1,5 +1,6 @@
 from ast import Str
 from concurrent.futures import process
+from os import remove
 from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -25,6 +26,7 @@ from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
 from operator import itemgetter
+import re
 
 
 class LoginForm(FlaskForm):
@@ -265,7 +267,22 @@ class UserSettingsForm(FlaskForm):
         render_kw={"placeholder": "First Name"},
     )
     lastname = StringField("Last Name", validators=[DataRequired()])
-    phonenumber = StringField("Phone Number", render_kw={"placeholder": "555-555-5555"})
+    phonenumber = StringField(
+        "Phone Number",
+        render_kw={"placeholder": "555-555-5555"},
+    )
     address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
     email = StringField("Email", validators=[Email(), DataRequired()])
+
     submit = SubmitField("Update Settings")
+
+    # def validate_phonenumber(form, field):
+    #     if len(field.data) > 16:
+    #         raise ValidationError("Invalid phone number.")
+
+    # def validate_phonenumber(self, phonenumber):
+    #     number = phonenumber.data
+    #     number = re.sub("\D", "", number)
+    #     print(number)
+    #     if len(number) != 10:
+    #         raise ValidationError("Invalid phone number")

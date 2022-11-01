@@ -320,7 +320,8 @@ def user_settings():
     form.email.data = current_user.email
 
     if request.method == "POST":
-        user.username = request.form["username"]
+        # if form.validate_on_submit():
+        # user.username = request.form["username"]
         user.first_name = request.form["firstname"]
         user.last_name = request.form["lastname"]
         user.phone_number = request.form["phonenumber"]
