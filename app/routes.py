@@ -208,18 +208,18 @@ def tournament_dashboard():
 
     # filter tournaments inclusive from start to end
     if type(start) == date and type(end) == date:
-        tournaments = tournaments.filter(Tournament.tournamentDate >= start).filter(Tournament.tournamentDate <= end).all()
+        tournaments = tournaments.filter(Tournament.tournament_date >= start).filter(Tournament.tournament_date <= end).all()
     # kind of fuzzy search on tournament name
     elif type(name) == str:
-        tournaments = tournaments.filter(Tournament.tournamentName.contains(name)).all()
+        tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
     return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
     
 
-@app.route("/TournamentPage")
-def TournamentPage():
+@app.route("/tournament_page")
+def tournament_page():
     tournamentString = request.args.get("tournament", None)
-    tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
-    leagueID = tournament.tournamentLeague
+    tournament = Tournament.query.filter_by(tournament_name=tournamentString).first()
+    leagueID = tournament.tournament_league
     league = League.query.filter_by(id=leagueID).first()
     return render_template(
         "tournament_page.html",
