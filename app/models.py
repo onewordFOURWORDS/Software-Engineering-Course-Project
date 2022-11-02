@@ -13,11 +13,11 @@ classes are defined by extending the db.model class. this allows for db manageme
 the resulting db is testable in shell and saved to a local file, no need for hosting
 """
 
-following = db.Table(
-    "following",
-    db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
-    db.Column("followed_id", db.Integer, db.ForeignKey("team.id")),
-)
+# following = db.Table(
+#     "following",
+#     db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
+#     db.Column("followed_id", db.Integer, db.ForeignKey("team.id")),
+# )
 
 tournament_teams = db.Table(
     "tournament_teams",
