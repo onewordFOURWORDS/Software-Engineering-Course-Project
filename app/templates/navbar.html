@@ -1,5 +1,5 @@
 <nav class="mx-5">
-    <img src="{{ url_for('static', filename='images/SSBM_Logo_01.gif') }}" class="mt-4"> 
+    <img src="{{ url_for('static', filename='images/SSBM_Logo_01.gif') }}" class="mt-4">
     <ul class="nav justify-content-end">
         <li class="nav-item">
             {# TODO: Fix current page thing to actually be dynamic. #}
@@ -11,6 +11,9 @@
         </li>
         {% else %}
         <li class="nav-item">
+            <a class="nav-link" id="request_permission_link" href="{{ url_for("request_permission")}}">Request Permission</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
         </li>
         <li class="nav-item">
@@ -20,10 +23,14 @@
             <a class="nav-link" id="league_view_link" href="{{ url_for("league")}}">View League Info</a>
         </li>
         {# TODO: Modify this later to also check to see if they already have a team? #}
-        {% if current_user.is_admin() or current_user.is_coach() %}
+        {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
             <a class="nav-link" id="team_creation_link" href="{{ url_for("create_team")}}">Create a New Team</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" id="manual_permissions" href="{{ url_for("manual_permissions")}}">Approve Permissions</a>
+        </li>
+
         {% endif %}
         <li class="nav-item">
             <a class="nav-link" id="logout_link" href="{{ url_for("logout")}}">Logout</a>
