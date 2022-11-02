@@ -1,3 +1,7 @@
+from ast import Str
+from concurrent.futures import process
+from os import remove
+from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -23,6 +27,7 @@ from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date, datetime
 from operator import itemgetter
+import re
 
 
 class LoginForm(FlaskForm):
@@ -193,6 +198,7 @@ class SearchByDate(FlaskForm):
     """
     A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
     """
+
     startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
     endDate = DateField("EndDate", format="%Y-%m-%d")
     submit = SubmitField("Search")
@@ -217,6 +223,7 @@ class SearchByDate(FlaskForm):
     """
     A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
     """
+
     startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
     endDate = DateField("EndDate", format="%Y-%m-%d")
     submit = SubmitField("Search")
@@ -291,3 +298,34 @@ class dbtestForm(FlaskForm):
                                      ('Tournament', 'Tournament')],
                             validators=[InputRequired()])
     submit = SubmitField("Clear or gen")
+
+
+class UserSettingsForm(FlaskForm):
+    username = StringField(
+        "Username", validators=[DataRequired()], render_kw={"readonly": True}
+    )
+    firstname = StringField(
+        "First Name",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "First Name"},
+    )
+    lastname = StringField("Last Name", validators=[DataRequired()])
+    phonenumber = StringField(
+        "Phone Number",
+        render_kw={"placeholder": "555-555-5555"},
+    )
+    address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
+    email = StringField("Email", validators=[Email(), DataRequired()])
+
+    submit = SubmitField("Update Settings")
+
+    # def validate_phonenumber(form, field):
+    #     if len(field.data) > 16:
+    #         raise ValidationError("Invalid phone number.")
+
+    # def validate_phonenumber(self, phonenumber):
+    #     number = phonenumber.data
+    #     number = re.sub("\D", "", number)
+    #     print(number)
+    #     if len(number) != 10:
+    #         raise ValidationError("Invalid phone number")
