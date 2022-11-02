@@ -2,6 +2,8 @@ from ast import Str
 from concurrent.futures import process
 from os import remove
 from flask import Flask
+from email.policy import default
+from tracemalloc import start
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -194,54 +196,32 @@ class TournamentCreationForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
-class SearchByDate(FlaskForm):
-    """
-    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
-    """
+class RequiredIf(object):
 
-    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
-    endDate = DateField("EndDate", format="%Y-%m-%d")
+    def __init__(self, **kwargs):
+        self.conditions = kwargs
+
+    def __call__(self, form, field):
+        current_value = form.data.get(field.name)
+        if current_value == "None":
+            for condition_field, reserved_value in self.conditions.items():
+                dependent_value = form.data.get(condition_field)
+                if condition_field not in form.data:
+                    continue
+                elif dependent_value == reserved_value:
+                    raise Exception('Invalid value of field "%s". Field is required when %s==%s' % (field.name, condition_field, dependent_value))
+
+
+class Search(FlaskForm):
+    """
+    A search system to filter tournaments by name and date.
+    """
+    date = BooleanField("Date:")
+    name = BooleanField("Name:")
+    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
     submit = SubmitField("Search")
-
-    def validate_dates(form, startDate, endDate):
-        # if no start date is specified then don't render template showing tournies
-        if startDate.data is None:
-            return False
-        # if this statement is reached then there is a specified start date.
-        # if end date is not specified then return true to show all tournies from start date on
-        elif endDate.data is None:
-            return True
-        # if both start and end dates are specified throw an error if the end comes before the start
-        # otherwise return true to show all tournies in range of start to end
-        elif endDate.data < startDate:
-            raise ValidationError("Start date must be before end date.")
-        else:
-            return True
-
-
-class SearchByDate(FlaskForm):
-    """
-    A search bar to filter tournaments by date. Leaving end date blank will show all upcoming tournaments.
-    """
-
-    startDate = DateField("StartDate", format="%Y-%m-%d", validators=[DataRequired()])
-    endDate = DateField("EndDate", format="%Y-%m-%d")
-    submit = SubmitField("Search")
-
-    def validate_dates(form, startDate, endDate):
-        # if no start date is specified then don't render template showing tournies
-        if startDate.data is None:
-            return False
-        # if this statement is reached then there is a specified start date.
-        # if end date is not specified then return true to show all tournies from start date on
-        elif endDate.data is None:
-            return True
-        # if both start and end dates are specified throw an error if the end comes before the start
-        # otherwise return true to show all tournies in range of start to end
-        elif endDate.data < startDate:
-            raise ValidationError("Start date must be before end date.")
-        else:
-            return True
 
 
 class ResetPasswordRequestForm(FlaskForm):

@@ -2,6 +2,7 @@ from crypt import methods
 from datetime import date, datetime
 from operator import methodcaller
 from tracemalloc import start
+from xml.dom import ValidationErr
 from xmlrpc.client import DateTime
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
@@ -10,7 +11,7 @@ from app.forms import (
     LoginForm,
     RegistrationForm,
     TournamentCreationForm,
-    SearchByDate,
+    Search,
     ResetPasswordRequestForm,
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
@@ -30,6 +31,7 @@ from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
+from app.search import filter_tournaments_by_date
 from app.permissions import *
 from app import db
 
@@ -195,82 +197,30 @@ def tournament_creation():
 
 @app.route("/tournament_dashboard", methods=["GET", "POST"])
 def tournament_dashboard():
-    form = SearchByDate()
-    start = request.args.get(
-        "start_date"
-    )  # returns string from GET or None if no query has been made yet - cannot be empty
-    end = request.args.get(
-        "end_date"
-    )  # returns string from GET or None if no query has been made yet - can be empty
-    # if start is None then no query has been made - do not show any tournaments (return empty list to template)
-    if start is None:
-        return render_template(
-            "tournament_dashboard.html",
-            title="Tournament Dashboard",
-            form=form,
-            tournaments=[],
-        )
-    # if start is not None end can be an empty string and cannot convert to datetime
-    elif start is not None and end == "":
-        start = datetime.strptime(start.strip(), "%Y-%m-%d")
-        # show all past and upcoming tournaments inclusive from start
-        tournaments = Tournament.query.filter(Tournament.tournament_date >= start).all()
-    # otherwise both dates are valid
-    elif start is not None and end != "":
-        start = datetime.strptime(start.strip(), "%Y-%m-%d")
-        end = datetime.strptime(end.strip(), "%Y-%m-%d")
-        # filter tournaments inclusive from start to end
-        tournaments = (
-            Tournament.query.filter(Tournament.tournament_date >= start)
-            .filter(Tournament.tournament_date <= end)
-            .all()
-        )
-    return render_template(
-        "tournament_dashboard.html",
-        title="Tournament Dashboard",
-        form=form,
-        tournaments=tournaments,
-    )
+    # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
+    form = Search()
+    form.validate_on_submit()
+    start = form.start_date.data
+    end = form.end_date.data
+    name = form.tournament_name.data 
+    # build query up decorator style to allow precise searching -- NEVERMIND THIS BREAKS EVERYTHING
+    tournaments = Tournament.query
 
+    # filter tournaments inclusive from start to end
+    if type(start) == date and type(end) == date:
+        tournaments = tournaments.filter(Tournament.tournament_date >= start).filter(Tournament.tournament_date <= end).all()
+    # kind of fuzzy search on tournament name
+    elif type(name) == str:
+        tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
+    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    
 
-@app.route("/tournament_page", methods=["GET", "POST"])
+@app.route("/tournament_page")
 def tournament_page():
-    tournament_string = request.args.get("tournament", None)
-    tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
-    league_id = tournament.tournament_league
-    league = League.query.filter_by(id=league_id).first()
-    teams = Team.query.all()
-    if request.method == "POST":
-        # Edit button will take them to tournament management page.
-        if request.form.get("edit_button") == "Edit Tournament":
-            return redirect(
-                url_for("tournament_management", tournament=tournament.tournament_name)
-            )
-        # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
-        # This will also clear the relations from the teams table. 
-        elif request.form.get("delete_button") == "Delete Tournament":
-            tournament.tournament_teams.clear()
-            db.session.delete(tournament)
-            db.session.commit()
-            flash(
-                "You have successfully deleted the following tournament: "
-                + tournament.tournament_name
-            )
-            return redirect(url_for("tournament_dashboard"))
-        elif request.form.get("register_button") == "Register":
-            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
-            for team in teams:
-                if (
-                    team.league == tournament.tournament_league
-                    and team.coach == current_user.id
-                ):
-                    tournament.tournament_teams.append(team)
-            
-            db.session.commit()
-            flash("You have successfully registered for " + tournament.tournament_name)
-            return redirect(
-                url_for("tournament_page", tournament=tournament.tournament_name)
-            )
+    tournamentString = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournament_name=tournamentString).first()
+    leagueID = tournament.tournament_league
+    league = League.query.filter_by(id=leagueID).first()
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
