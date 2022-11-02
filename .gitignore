@@ -12,4 +12,8 @@ migrations/README
 .DS_Store
 app/.DS_Store
 app/static/.DS_Store
-/migrations
+/450venv_lptp/
+/450venv_test/
+CMD_win.txt
+tracer.txt
+/notes/

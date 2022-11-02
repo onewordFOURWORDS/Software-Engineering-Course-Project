@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tournament Profile Page</h1>
+<div>
+    <p>Tournament Name: {{tournament.tournament_name }}</a></b></p>
+</div>
+<div>
+    <p>Tournament Date: {{tournament.tournament_date }}</b></p>
+</div>
+<div>
+    <p>Tournament Location: {{tournament.tournament_city }} , {{tournament.tournament_state }}</b></p>
+</div>
+<div>
+    <p>Tournament League: {{league.league_name }}</b></p>
+</div>
+
+<div>
+    <p>Registered Teams: <br> <br>
+        {% for team_id in tournament.tournament_teams %}
+        {{team_id}} <br> <br>
+        {% endfor %}
+        </b></p>
+</div>
+
+<form method="POST">
+    <input type="submit" name="edit_button" value="Edit Tournament">
+</form>
+<form method="POST" onsubmit="return confirm('Are you sure you wish to delete?');">
+    <input type="submit" name="delete_button" value="Delete Tournament">
+</form>
+<form method="POST" onsubmit="return confirm('Are you sure you want to register for {{tournament.tournament_name }}');">
+    <input type="submit" name="register_button" value="Register">
+</form>
+
+{% endblock %}

@@ -12,7 +12,7 @@ from wtforms import (
     DateField,
     SelectField,
     FieldList,
-    FormField,
+    FormField, SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -20,11 +20,12 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Regexp,
-    Length,
+    Length, InputRequired,
 )
+from app import db
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
-from datetime import date
+from datetime import date, datetime
 from operator import itemgetter
 import re
 
@@ -40,7 +41,7 @@ class TeamCreationForm(FlaskForm):
     team_name = StringField("Team Name", validators=[DataRequired()])
     # TODO: probably write a get_coaches(league) fcn, 2nd time I've done this.
     # waiting on decisions as to how we're handling Leagues.
-    coaches = User.query.filter_by(_is_coach=True)
+    coaches = User.query.filter_by(is_coach=True)
     # TODO: Figure out a better way to do this. I want the current user to be the top option.
     # or to have a checkbox "I'm coaching this team" and then show/hide the dropdown with the other options.
     # but I've been fussing with this for ages and it's not working, so just keep going for now as is...
@@ -96,6 +97,7 @@ class RegistrationForm(FlaskForm):
             team_list, key=itemgetter(0)
         ),  # sort by ID, the first element in each tuple.
         coerce=int,
+        validate_choice=False
     )
     # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
@@ -142,7 +144,7 @@ class LeaguePageTeamSelectForm(FlaskForm):
 
 
 class TournamentCreationForm(FlaskForm):
-    tournamentName = StringField(
+    tournament_name = StringField(
         "Tournament Name",
         validators=[
             DataRequired(),
@@ -152,7 +154,7 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournamentLocation = StringField(
+    tournament_city = StringField(
         "Tournament City",
         validators=[
             DataRequired(),
@@ -162,7 +164,7 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournamentLeague = StringField(
+    tournament_league = StringField(
         "Or Create A New League",
         validators=[
             Regexp(
@@ -174,22 +176,22 @@ class TournamentCreationForm(FlaskForm):
             "placeholder": "Please leave empty if you do not wish to create a league!"
         },
     )
-    tournamentDate = DateField(
-        "TournamentDate", format="%Y-%m-%d", validators=[DataRequired()]
+    tournament_date = DateField(
+        "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
 
-    def validate_tournamentDate(form, tournamentDate):
-        if tournamentDate.data < date.today():
-            raise ValidationError("Date must be set in the future.")
+    # def validate_tournament_date(form, tournament_date):
+    #     if datetime.strptime(tournament_date.data.strip(), '%Y-%m-%d') < date.today():
+    #         raise ValidationError("Date must be set in the future.")
 
-    def validate_tournamentLeague(form, tournamentLeague):
-        leagueString = tournamentLeague
-        if League.query.filter_by(league_name=leagueString.data).first():
+    def validate_tournament_league(form, tournament_league):
+        league_string = tournament_league
+        if League.query.filter_by(league_name=league_string.data).first():
             raise ValidationError(
                 "League already exists. Choose existing league or create a unique league."
             )
 
-    submit = SubmitField("Create Tournament")
+    submit = SubmitField("Submit")
 
 
 class SearchByDate(FlaskForm):
@@ -255,6 +257,47 @@ class ResetPasswordForm(FlaskForm):
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
     submit = SubmitField("Request Password Reset")
+
+
+class ManualPermissionsForm(FlaskForm):
+    userID = IntegerField("User ID")
+    prID = IntegerField("permission request ID")
+
+    """
+    actions = SelectField("permission actions",
+                          coerce=int,
+                          choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
+    """
+    pr_actions = SelectField("permission request actions",
+                             coerce=int,
+                             choices=[(1, 'approve pr'), (2, 'deny pr')])
+    submit = SubmitField("Submit changes")
+
+
+class RequestPermissionsForm(FlaskForm):
+    actions = SelectField("permission choices",
+                          coerce=int,
+                          choices=[(1, 'coach'), (2, 'admin')])
+    submit = SubmitField("Submit changes")
+
+
+class dbtestForm(FlaskForm):
+    model = SelectField("DB models",
+                        choices=[('None', 'None'),
+                                 ('User', 'User'),
+                                 ('League', 'League'),
+                                 ('Team', 'Team'),
+                                 ('Tournament', 'Tournament')],
+                        validators=[InputRequired()], )
+
+    model_gen = SelectField("DB generations",
+                            choices=[('None', 'None'),
+                                     ('User', 'User'),
+                                     ('League', 'League'),
+                                     ('Team', 'Team'),
+                                     ('Tournament', 'Tournament')],
+                            validators=[InputRequired()])
+    submit = SubmitField("Clear or gen")
 
 
 class UserSettingsForm(FlaskForm):

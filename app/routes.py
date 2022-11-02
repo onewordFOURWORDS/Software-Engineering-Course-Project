@@ -15,7 +15,10 @@ from app.forms import (
     ResetPasswordForm,
     LeaguePageTeamSelectForm,
     TeamCreationForm,
-    UserSettingsForm,
+    ManualPermissionsForm,
+    dbtestForm, RequestPermissionsForm,
+    UserSettingsForm
+
 )
 from flask_login import (
     current_user,
@@ -27,6 +30,9 @@ from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
 from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
+from app.permissions import *
+from app import db
+
 
 
 @app.route("/")
@@ -77,8 +83,10 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            affiliated_team=form.affiliated_team.data,
+            affiliated_team=form.affiliated_team.data,  # <- this is wierd, just saying
         )
+        #if form.affiliated_team.data is not None:
+        #    user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
         db.session.add(user)
@@ -122,11 +130,6 @@ def reset_password(token):
     return render_template("reset_password.html", form=form)
 
 
-@app.route("/dbtest")
-def dbtest():
-    return redirect(url_for("dbtest"))
-
-
 @app.route("/tournament_creation", methods=["GET", "POST"])
 def tournament_creation():
     """
@@ -143,47 +146,45 @@ def tournament_creation():
         if request.method == "POST":
             # If the database has no current leagus and they do not put one in the box, it will take them back to the page asking
             # to create a league.
-            if not League.query.all() and form.tournamentLeague.data == "":
+            if not League.query.all() and form.tournament_league.data == "":
                 flash("Please create a league for your tournament!")
                 return redirect(url_for("tournament_creation"))
-            tournamentState = request.form["state"]
+            tournament_state = request.form["state"]
             if League.query.all():
                 leagueString = request.form["league"]
                 league = League.query.filter_by(league_name=leagueString).first()
         # If the league box is blank, we will take whichever league was selected from the dropdown for the
         # tournament tournament league, otherwise this function will create a new league based off of the
         # name they put in and assign the tournament to that league.
-        if form.tournamentLeague.data == "" and League.query.all():
+        if form.tournament_league.data == "" and League.query.all():
             tournament = Tournament(
-                tournamentName=form.tournamentName.data,
-                tournamentDate=form.tournamentDate.data,
-                tournamentLocation=form.tournamentLocation.data
-                + ","
-                + " "
-                + tournamentState,
-                tournamentLeague=league.id,
+                tournament_name=form.tournament_name.data,
+                tournament_date=form.tournament_date.data,
+                tournament_city=form.tournament_city.data,
+                tournament_state=tournament_state,
+                tournament_league=league.id,
             )
             db.session.add(tournament)
             db.session.commit()
         else:
             league = League(
-                league_name=form.tournamentLeague.data,
+                league_name=form.tournament_league.data,
             )
             db.session.add(league)
             db.session.commit()
             tournament = Tournament(
-                tournamentName=form.tournamentName.data,
-                tournamentDate=form.tournamentDate.data,
-                tournamentLocation=form.tournamentLocation.data
-                + ","
-                + " "
-                + tournamentState,
-                tournamentLeague=league.id,
+                tournament_name=form.tournament_name.data,
+                tournament_date=form.tournament_date.data,
+                tournament_city=form.tournament_city.data,
+                tournament_state=tournament_state,
+                tournament_league=league.id,
             )
             db.session.add(tournament)
             db.session.commit()
         flash("Congratulations, you have created a tournament!")
-        return redirect(url_for("TournamentPage", tournament=tournament.tournamentName))
+        return redirect(
+            url_for("tournament_page", tournament=tournament.tournament_name)
+        )
     return render_template(
         "tournament_creation.html",
         title="Tournament Creation",
@@ -192,19 +193,19 @@ def tournament_creation():
     )
 
 
-@app.route("/TournamentDashboard", methods=["GET"])
-def TournamentDashboard():
+@app.route("/tournament_dashboard", methods=["GET", "POST"])
+def tournament_dashboard():
     form = SearchByDate()
     start = request.args.get(
-        "startDate"
+        "start_date"
     )  # returns string from GET or None if no query has been made yet - cannot be empty
     end = request.args.get(
-        "endDate"
+        "end_date"
     )  # returns string from GET or None if no query has been made yet - can be empty
     # if start is None then no query has been made - do not show any tournaments (return empty list to template)
     if start is None:
         return render_template(
-            "TournamentDashboard.html",
+            "tournament_dashboard.html",
             title="Tournament Dashboard",
             form=form,
             tournaments=[],
@@ -213,36 +214,123 @@ def TournamentDashboard():
     elif start is not None and end == "":
         start = datetime.strptime(start.strip(), "%Y-%m-%d")
         # show all past and upcoming tournaments inclusive from start
-        tournaments = Tournament.query.filter(Tournament.tournamentDate >= start).all()
+        tournaments = Tournament.query.filter(Tournament.tournament_date >= start).all()
     # otherwise both dates are valid
     elif start is not None and end != "":
         start = datetime.strptime(start.strip(), "%Y-%m-%d")
         end = datetime.strptime(end.strip(), "%Y-%m-%d")
         # filter tournaments inclusive from start to end
         tournaments = (
-            Tournament.query.filter(Tournament.tournamentDate >= start)
-            .filter(Tournament.tournamentDate <= end)
+            Tournament.query.filter(Tournament.tournament_date >= start)
+            .filter(Tournament.tournament_date <= end)
             .all()
         )
     return render_template(
-        "TournamentDashboard.html",
+        "tournament_dashboard.html",
         title="Tournament Dashboard",
         form=form,
         tournaments=tournaments,
     )
 
 
-@app.route("/TournamentPage")
-def TournamentPage():
-    tournamentString = request.args.get("tournament", None)
-    tournament = Tournament.query.filter_by(tournamentName=tournamentString).first()
-    leagueID = tournament.tournamentLeague
-    league = League.query.filter_by(id=leagueID).first()
+@app.route("/tournament_page", methods=["GET", "POST"])
+def tournament_page():
+    tournament_string = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
+    league_id = tournament.tournament_league
+    league = League.query.filter_by(id=league_id).first()
+    teams = Team.query.all()
+    if request.method == "POST":
+        # Edit button will take them to tournament management page.
+        if request.form.get("edit_button") == "Edit Tournament":
+            return redirect(
+                url_for("tournament_management", tournament=tournament.tournament_name)
+            )
+        # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
+        # This will also clear the relations from the teams table. 
+        elif request.form.get("delete_button") == "Delete Tournament":
+            tournament.tournament_teams.clear()
+            db.session.delete(tournament)
+            db.session.commit()
+            flash(
+                "You have successfully deleted the following tournament: "
+                + tournament.tournament_name
+            )
+            return redirect(url_for("tournament_dashboard"))
+        elif request.form.get("register_button") == "Register":
+            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
+            for team in teams:
+                if (
+                    team.league == tournament.tournament_league
+                    and team.coach == current_user.id
+                ):
+                    tournament.tournament_teams.append(team)
+            
+            db.session.commit()
+            flash("You have successfully registered for " + tournament.tournament_name)
+            return redirect(
+                url_for("tournament_page", tournament=tournament.tournament_name)
+            )
     return render_template(
-        "TournamentPage.html",
+        "tournament_page.html",
         title="Tournament Page",
         tournament=tournament,
         league=league,
+    )
+
+
+@app.route("/tournament_management", methods=["GET", "POST"])
+def tournament_management():
+    # Tournament management essentially does the same thing as the create team, but instead of making new tournament objects,
+    # we are just adding on to the current tournament. With the way leagues are right now, I think we might have to remove
+    # the option to edit leagues once a tournament is created for simplicity sakes.
+    leagues = League.query.all()
+    tournament_string = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
+    tournament_league_name = (
+        League.query.filter_by(id=tournament.tournament_league).first()
+    ).league_name
+    tournament_state = tournament.tournament_state
+    form = TournamentCreationForm(obj=tournament)
+
+    if form.validate_on_submit():
+        if request.method == "POST":
+            tournament_state = request.form["state"]
+            leagueString = request.form["league_choose"]
+            league = League.query.filter_by(league_name=leagueString).first()
+        if form.tournament_league.data == "" and League.query.all():
+            tournament.tournament_name = form.tournament_name.data
+            tournament.tournament_date = form.tournament_date.data
+            tournament.tournament_city = form.tournament_city.data
+            tournament.tournament_state = tournament_state
+            tournament.tournament_league = league.id
+            db.session.commit()
+        else:
+            league = League(
+                league_name=form.tournament_league.data,
+            )
+            db.session.add(league)
+            db.session.commit()
+            tournament.tournament_name = form.tournament_name.data
+            tournament.tournament_date = form.tournament_date.data
+            tournament.tournament_city = form.tournament_city.data
+            tournament.tournament_state = tournament_state
+            tournament.tournament_league = league.id
+            db.session.commit()
+
+        db.session.commit()
+        flash("Congratulations, you have updated your tournament!")
+        return redirect(
+            url_for("tournament_page", tournament=tournament.tournament_name)
+        )
+
+    return render_template(
+        "tournament_management.html",
+        title="Tournament Management",
+        form=form,
+        leagues=leagues,
+        tournament_state=tournament_state,
+        tournament_league_name=tournament_league_name,
     )
 
 
@@ -262,13 +350,16 @@ def match(match_ID: int):
 def league():
     # if the user doesn't have an affiliated team and league,
     # the template will display a form so they can select one.
-    if current_user.league_id == None:
+    if current_user.league_id is None:
         teams = None
         form = LeaguePageTeamSelectForm()
         # TODO: Resume here. This is never returning true. hmmm...
+        # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = form.affiliated_team.data
+            user.affiliated_team = form.affiliated_team.data  # .data is not actually a team object
+            # scott: this does not work because flask forms does not appear to be passing objects back through
+            # scott: I have this issue in other places as well
             db.session.commit()
             return redirect(url_for("league"))
     # otherwise, it will display the teams in their league.
@@ -284,7 +375,7 @@ def league():
 def create_team():
     # TODO: Might want to update this later when coach and admin classes are
     # defined/we have a coaches table.
-    coaches = User.query.filter_by(_is_coach=True)
+    coaches = User.query.filter_by(is_coach=True)
     form = TeamCreationForm()
     if form.validate_on_submit():
         team = Team(
@@ -304,6 +395,93 @@ def create_team():
         coaches=coaches,
         current_user=current_user,
     )
+
+
+@app.route("/manual_permissions", methods=["GET", "POST"])
+def manual_permissions():
+    form = ManualPermissionsForm()
+    users = db.session.query(User).order_by('id')
+    prs = db.session.query(PermissionRequest).order_by('id')
+
+    tval = prs
+    if form.validate_on_submit():
+        #user = User.query.filter_by(id=form.userID.data).first()
+        pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
+        user = User.query.filter_by(id=pr.user).first()
+        tval = pr.id
+
+        """
+        if form.actions.data == 1:
+            approve_coach(current_user, user)
+        if form.actions.data == 2:
+            deny_coach(current_user, user)
+        if form.actions.data == 3:
+            approve_admin(current_user, user)
+        if form.actions.data == 4:
+            deny_admin(current_user, user)
+        """
+        
+        if form.pr_actions.data == 1:
+            if pr.coach_request == 1:
+                approve_coach(current_user, user, pr)
+            elif pr.admin_request == 1:
+                approve_admin(current_user, user, pr)
+        if form.pr_actions.data == 2:
+            if pr.coach_request == 1:
+                deny_coach(current_user, user, pr)
+            elif pr.admin_request == 1:
+                deny_admin(current_user, user, pr)
+
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs, tval=tval)
+
+
+@app.route("/request_permission", methods=["GET", "POST"])
+def request_permission():
+    form = RequestPermissionsForm()
+    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
+    if form.validate_on_submit():
+        if form.actions.data == 1:
+            # generate new pr object
+            pr = PermissionRequest(coach_request=1, user=current_user.id)
+            db.session.add(pr)
+            db.session.commit()
+        if form.actions.data == 2:
+            pr = PermissionRequest(admin_request=1, user=current_user.id)
+            db.session.add(pr)
+            db.session.commit()
+    return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
+
+
+
+@app.route("/dbtest", methods=["GET", "POST"])
+def dbtest():
+    form = dbtestForm()
+    users = db.session.query(User).order_by('id')
+    teams = db.session.query(Team).order_by('id')
+    leagues = db.session.query(League).order_by('id')
+    tournaments = db.session.query(Tournament).order_by('id')
+    # test value
+    tval = "none"
+    models = {
+        "None": None,
+        "User": User,
+        "League": League,
+        "Team": Team,
+        "Tournament": Tournament
+    }
+    if form.validate_on_submit():
+        clear = models[form.model.data]
+        gen = models[form.model_gen.data]
+        if clear is not None:
+            clear_db(clear)
+        if gen is not None:
+            gen_db(gen, 10)
+
+    return render_template("dbtest.html",
+                           title="DB Testing",
+                           form=form, users=users,
+                           tval=tval, teams=teams,
+                           leagues=leagues, tournaments=tournaments)
 
 
 @app.route("/user_settings", methods=["GET", "POST"])
