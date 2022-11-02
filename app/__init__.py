@@ -20,9 +20,6 @@ from app.models import *
 with app.app_context():
     db.create_all()
 
-with app.app_context():
-    db.create_all()
-
 env = Environment(loader=FileSystemLoader("./app/templates"))
 env.globals["is_admin"] = User.is_admin
 env.globals["is_coach"] = User.is_coach
