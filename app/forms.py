@@ -8,7 +8,7 @@ from wtforms import (
     DateField,
     SelectField,
     FieldList,
-    FormField,
+    FormField, SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -16,8 +16,9 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Regexp,
-    Length,
-) 
+    Length, InputRequired,
+)
+from app import db
 from app.models import User, Tournament, League, Team
 from flask_wtf.file import FileField
 from datetime import date
@@ -35,7 +36,7 @@ class TeamCreationForm(FlaskForm):
     team_name = StringField("Team Name", validators=[DataRequired()])
     # TODO: probably write a get_coaches(league) fcn, 2nd time I've done this.
     # waiting on decisions as to how we're handling Leagues.
-    coaches = User.query.filter_by(_is_coach=True)
+    coaches = User.query.filter_by(is_coach=True)
     # TODO: Figure out a better way to do this. I want the current user to be the top option.
     # or to have a checkbox "I'm coaching this team" and then show/hide the dropdown with the other options.
     # but I've been fussing with this for ages and it's not working, so just keep going for now as is...
@@ -91,6 +92,7 @@ class RegistrationForm(FlaskForm):
             team_list, key=itemgetter(0)
         ),  # sort by ID, the first element in each tuple.
         coerce=int,
+        validate_choice=False
     )
     # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
@@ -105,6 +107,7 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError("Please use a different email address.")
 
+
 """
 Keeping tournament name not unique for now. In the future, might want to make it unique with date and league.
 Tournament location has the same, except it doesnt have to be unique. Might set
@@ -112,6 +115,7 @@ regex for tournament league in the future, but for now, it can be empty, but it 
 must be set in the present or future, users should not be able to make a tournament in the past. League has to be unique if they 
 are creating one.
 """
+
 
 class LeaguePageTeamSelectForm(FlaskForm):
     teams = Team.query.all()
@@ -207,7 +211,7 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class SearchByDate(FlaskForm):
     """
@@ -231,7 +235,7 @@ class SearchByDate(FlaskForm):
             raise ValidationError("Start date must be before end date.")
         else:
             return True
-            
+
 
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -246,3 +250,44 @@ class ResetPasswordForm(FlaskForm):
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
     )
     submit = SubmitField("Request Password Reset")
+
+
+class ManualPermissionsForm(FlaskForm):
+    userID = IntegerField("User ID")
+    prID = IntegerField("permission request ID")
+
+    """
+    actions = SelectField("permission actions",
+                          coerce=int,
+                          choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
+    """
+    pr_actions = SelectField("permission request actions",
+                             coerce=int,
+                             choices=[(1, 'approve pr'), (2, 'deny pr')])
+    submit = SubmitField("Submit changes")
+
+
+class RequestPermissionsForm(FlaskForm):
+    actions = SelectField("permission choices",
+                          coerce=int,
+                          choices=[(1, 'coach'), (2, 'admin')])
+    submit = SubmitField("Submit changes")
+
+
+class dbtestForm(FlaskForm):
+    model = SelectField("DB models",
+                        choices=[('None', 'None'),
+                                 ('User', 'User'),
+                                 ('League', 'League'),
+                                 ('Team', 'Team'),
+                                 ('Tournament', 'Tournament')],
+                        validators=[InputRequired()], )
+
+    model_gen = SelectField("DB generations",
+                            choices=[('None', 'None'),
+                                     ('User', 'User'),
+                                     ('League', 'League'),
+                                     ('Team', 'Team'),
+                                     ('Tournament', 'Tournament')],
+                            validators=[InputRequired()])
+    submit = SubmitField("Clear or gen")

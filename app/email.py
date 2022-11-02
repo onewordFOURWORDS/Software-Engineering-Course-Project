@@ -7,20 +7,6 @@ from threading import Thread
 
 
 def send_email(subject, sender, recipients, text_body, html_body):
-    """
-    Provides the function to send emails to a recipient.
-
-    :param subject: email subject line
-    :type subject: string
-    :param sender: address the email is sent from
-    :type sender: string
-    :param recipients: the email address(es) the email is sent from
-    :type recipients: list of string(s)
-    :param text_body: plaintext email body
-    :type text_body: string
-    :param html_body: HTML formatted email body
-    :type html_body: string
-    """
     msg = Message(subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
