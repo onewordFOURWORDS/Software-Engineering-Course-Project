@@ -32,7 +32,7 @@
         <p>{{ form.submit() }}</p>
     </form>
     {% for tournament in tournaments %}
-    <div><p>Tournament Name: <a href="{{ url_for('tournament_page', tournament=tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
+    <div><p>Tournament Name: <a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
     <div><p>Tournament Date: {{tournament.tournament_date }}</b></p></div>
     <div><p>Tournament Location: {{tournament.tournament_city }}, {{ tournament.tournament_state }}</b></p></div>
     {% for league in leagues %}
