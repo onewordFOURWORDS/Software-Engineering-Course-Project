@@ -215,12 +215,44 @@ def tournament_dashboard():
     return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
     
 
-@app.route("/tournament_page")
+@app.route("/tournament_page", methods=["GET", "POST"])
 def tournament_page():
-    tournamentString = request.args.get("tournament", None)
-    tournament = Tournament.query.filter_by(tournament_name=tournamentString).first()
-    leagueID = tournament.tournament_league
-    league = League.query.filter_by(id=leagueID).first()
+    tournament_string = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
+    league_id = tournament.tournament_league
+    league = League.query.filter_by(id=league_id).first()
+    teams = Team.query.all()
+    if request.method == "POST":
+        # Edit button will take them to tournament management page.
+        if request.form.get("edit_button") == "Edit Tournament":
+            return redirect(
+                url_for("tournament_management", tournament=tournament.tournament_name)
+            )
+        # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
+        # This will also clear the relations from the teams table. 
+        elif request.form.get("delete_button") == "Delete Tournament":
+            tournament.tournament_teams.clear()
+            db.session.delete(tournament)
+            db.session.commit()
+            flash(
+                "You have successfully deleted the following tournament: "
+                + tournament.tournament_name
+            )
+            return redirect(url_for("tournament_dashboard"))
+        elif request.form.get("register_button") == "Register":
+            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
+            for team in teams:
+                if (
+                    team.league == tournament.tournament_league
+                    and team.coach == current_user.id
+                ):
+                    tournament.tournament_teams.append(team)
+            
+            db.session.commit()
+            flash("You have successfully registered for " + tournament.tournament_name)
+            return redirect(
+                url_for("tournament_page", tournament=tournament.tournament_name)
+            )
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
