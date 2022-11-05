@@ -13,12 +13,6 @@ classes are defined by extending the db.model class. this allows for db manageme
 the resulting db is testable in shell and saved to a local file, no need for hosting
 """
 
-# following = db.Table(
-#     "following",
-#     db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
-#     db.Column("followed_id", db.Integer, db.ForeignKey("team.id")),
-# )
-
 tournament_teams = db.Table(
     "tournament_teams",
     db.Column("tournament_id", db.Integer, db.ForeignKey("tournament.tournament_id")),
@@ -51,18 +45,6 @@ class User(UserMixin, db.Model):
     coach_approve_id = db.Column(db.Integer)
     admin_approve_id = db.Column(db.Integer)
     league_id = db.Column(db.Integer, db.ForeignKey("league.id"), default=None)
-    # following relationship, many to many
-    #teams = db.relationship('Following', backref='users', cascade="delete")
-    """    
-    followed = db.relationship(
-        "Team",
-        secondary=following,
-        primaryjoin=(following.c.follower_id == id),
-        secondaryjoin=(following.c.followed_id == id),
-        backref=db.backref("users", lazy="dynamic"),
-        lazy="dynamic",
-    )
-    """
 
     def __repr__(self):
         return "<User {}>".format(self.username)
@@ -95,16 +77,6 @@ class User(UserMixin, db.Model):
             return
         return User.query.get(id)
 
-    #def follow(self, team):
-    #    if not self.is_following(team):
-    #        self.teams.append(team)
-
-    #def unfollow(self, team):
-    #    if self.is_following(team):
-    #        self.teams.remove(team)
-
-    #def is_following(self, team):
-    #    return team in self.teams
 
     @login.user_loader
     def load_user(id):
@@ -122,11 +94,8 @@ class User(UserMixin, db.Model):
     def is_coach(self):
         # print(self)
         return self.is_coach
-"""
+    """
 
-    # view league info will likely be done based on a selected league
-    # having a dedicated affiliated league for each user may not be helpful,
-    # instead a list of followed leagues may be better, similar to the followed teams
 
     @property
     def league_id(self):
