@@ -1,8 +1,4 @@
-from datetime import date, datetime
-from operator import methodcaller
-from tracemalloc import start
-from xml.dom import ValidationErr
-from xmlrpc.client import DateTime
+from datetime import date
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
@@ -18,7 +14,6 @@ from app.forms import (
     ManualPermissionsForm,
     dbtestForm, RequestPermissionsForm,
     UserSettingsForm
-
 )
 from flask_login import (
     current_user,
@@ -28,11 +23,9 @@ from flask_login import (
 )
 from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
-from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
 from app.permissions import *
 from app import db
-
 
 
 @app.route("/")
@@ -197,6 +190,7 @@ def tournament_creation():
 def tournament_dashboard():
     # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
     form = Search()
+    leagues = League.query.all()
     form.validate_on_submit()
     start = form.start_date.data
     end = form.end_date.data
@@ -210,7 +204,7 @@ def tournament_dashboard():
     # kind of fuzzy search on tournament name
     elif type(name) == str:
         tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments, leagues = leagues)     
     
 
 @app.route("/tournament_page", methods=["GET", "POST"])

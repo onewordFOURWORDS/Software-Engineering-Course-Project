@@ -1,9 +1,3 @@
-from ast import Str
-from concurrent.futures import process
-from os import remove
-from flask import Flask
-from email.policy import default
-from tracemalloc import start
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -13,8 +7,6 @@ from wtforms import (
     IntegerField,
     DateField,
     SelectField,
-    FieldList,
-    FormField, SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -24,12 +16,8 @@ from wtforms.validators import (
     Regexp,
     Length, InputRequired,
 )
-from app import db
-from app.models import User, Tournament, League, Team
-from flask_wtf.file import FileField
-from datetime import date, datetime
+from app.models import User, League, Team
 from operator import itemgetter
-import re
 
 
 class LoginForm(FlaskForm):
@@ -220,7 +208,7 @@ class Search(FlaskForm):
     name = BooleanField("Name:")
     start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
     end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
+    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True), Regexp(regex=r"[ \'A-Za-z0-9]*$", message="Tournament names never contain any special characters.")])
     submit = SubmitField("Search")
 
 
