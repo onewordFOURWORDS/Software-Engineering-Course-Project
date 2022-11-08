@@ -267,6 +267,7 @@ def tournament_management():
     # we are just adding on to the current tournament. With the way leagues are right now, I think we might have to remove
     # the option to edit leagues once a tournament is created for simplicity sakes.
     leagues = League.query.all()
+    teams = Team.query.all()
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     tournament_league_name = (
@@ -280,6 +281,12 @@ def tournament_management():
             tournament_state = request.form["state"]
             leagueString = request.form["league_choose"]
             league = League.query.filter_by(league_name=leagueString).first()
+            if request.form.get("add_team") == "Add Team":
+                team_string = request.form["adding_team"]
+                team = Team.query.filter_by(team_name=team_string).first()
+                tournament.tournament_teams.append(team)
+                db.session.commit()
+                return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
         if form.tournament_league.data == "" and League.query.all():
             tournament.tournament_name = form.tournament_name.data
             tournament.tournament_date = form.tournament_date.data
@@ -310,9 +317,11 @@ def tournament_management():
         "tournament_management.html",
         title="Tournament Management",
         form=form,
+        tournament=tournament,
         leagues=leagues,
         tournament_state=tournament_state,
         tournament_league_name=tournament_league_name,
+        teams=teams
     )
 
 
