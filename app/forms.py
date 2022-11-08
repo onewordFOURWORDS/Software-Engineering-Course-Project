@@ -14,7 +14,8 @@ from wtforms import (
     DateField,
     SelectField,
     FieldList,
-    FormField, SelectMultipleField,
+    FormField,
+    SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -22,7 +23,8 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Regexp,
-    Length, InputRequired,
+    Length,
+    InputRequired,
 )
 from app import db
 from app.models import User, Tournament, League, Team
@@ -99,7 +101,7 @@ class RegistrationForm(FlaskForm):
             team_list, key=itemgetter(0)
         ),  # sort by ID, the first element in each tuple.
         coerce=int,
-        validate_choice=False
+        validate_choice=False,
     )
     # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
@@ -197,7 +199,6 @@ class TournamentCreationForm(FlaskForm):
 
 
 class RequiredIf(object):
-
     def __init__(self, **kwargs):
         self.conditions = kwargs
 
@@ -209,17 +210,25 @@ class RequiredIf(object):
                 if condition_field not in form.data:
                     continue
                 elif dependent_value == reserved_value:
-                    raise Exception('Invalid value of field "%s". Field is required when %s==%s' % (field.name, condition_field, dependent_value))
+                    raise Exception(
+                        'Invalid value of field "%s". Field is required when %s==%s'
+                        % (field.name, condition_field, dependent_value)
+                    )
 
 
 class Search(FlaskForm):
     """
     A search system to filter tournaments by name and date.
     """
+
     date = BooleanField("Date:")
     name = BooleanField("Name:")
-    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    start_date = DateField(
+        "Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    end_date = DateField(
+        "End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
     tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
     submit = SubmitField("Search")
 
@@ -248,35 +257,45 @@ class ManualPermissionsForm(FlaskForm):
                           coerce=int,
                           choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
     """
-    pr_actions = SelectField("permission request actions",
-                             coerce=int,
-                             choices=[(1, 'approve pr'), (2, 'deny pr')])
+    pr_actions = SelectField(
+        "permission request actions",
+        coerce=int,
+        choices=[(1, "approve pr"), (2, "deny pr")],
+    )
     submit = SubmitField("Submit changes")
 
 
 class RequestPermissionsForm(FlaskForm):
-    actions = SelectField("permission choices",
-                          coerce=int,
-                          choices=[(1, 'coach'), (2, 'admin')])
+    actions = SelectField(
+        "permission choices", coerce=int, choices=[(1, "coach"), (2, "admin")]
+    )
     submit = SubmitField("Submit changes")
 
 
 class dbtestForm(FlaskForm):
-    model = SelectField("DB models",
-                        choices=[('None', 'None'),
-                                 ('User', 'User'),
-                                 ('League', 'League'),
-                                 ('Team', 'Team'),
-                                 ('Tournament', 'Tournament')],
-                        validators=[InputRequired()], )
+    model = SelectField(
+        "DB models",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
 
-    model_gen = SelectField("DB generations",
-                            choices=[('None', 'None'),
-                                     ('User', 'User'),
-                                     ('League', 'League'),
-                                     ('Team', 'Team'),
-                                     ('Tournament', 'Tournament')],
-                            validators=[InputRequired()])
+    model_gen = SelectField(
+        "DB generations",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
     submit = SubmitField("Clear or gen")
 
 
@@ -309,3 +328,11 @@ class UserSettingsForm(FlaskForm):
     #     print(number)
     #     if len(number) != 10:
     #         raise ValidationError("Invalid phone number")
+
+
+class TeamSettingsForm(FlaskForm):
+    teamname = StringField("Team Name", validators=[DataRequired()])
+    coach = StringField("Coach", render_kw={"readonly": True})
+    league = SelectField("League", validators=[DataRequired()])
+
+    submit = SubmitField("Update Settings")

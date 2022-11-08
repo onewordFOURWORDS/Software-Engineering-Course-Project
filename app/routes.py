@@ -17,9 +17,10 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm, RequestPermissionsForm,
-    UserSettingsForm
-
+    dbtestForm,
+    RequestPermissionsForm,
+    UserSettingsForm,
+    TeamSettingsForm,
 )
 from flask_login import (
     current_user,
@@ -34,7 +35,6 @@ from app.team_management import get_teams_in_league, get_team_by_id
 from app.search import filter_tournaments_by_date
 from app.permissions import *
 from app import db
-
 
 
 @app.route("/")
@@ -87,7 +87,7 @@ def register():
             last_name=form.last_name.data,
             affiliated_team=form.affiliated_team.data,  # <- this is wierd, just saying
         )
-        #if form.affiliated_team.data is not None:
+        # if form.affiliated_team.data is not None:
         #    user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
@@ -202,18 +202,29 @@ def tournament_dashboard():
     form.validate_on_submit()
     start = form.start_date.data
     end = form.end_date.data
-    name = form.tournament_name.data 
+    name = form.tournament_name.data
     # build query up decorator style to allow precise searching -- NEVERMIND THIS BREAKS EVERYTHING
     tournaments = Tournament.query
 
     # filter tournaments inclusive from start to end
     if type(start) == date and type(end) == date:
-        tournaments = tournaments.filter(Tournament.tournament_date >= start).filter(Tournament.tournament_date <= end).all()
+        tournaments = (
+            tournaments.filter(Tournament.tournament_date >= start)
+            .filter(Tournament.tournament_date <= end)
+            .all()
+        )
     # kind of fuzzy search on tournament name
     elif type(name) == str:
-        tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
-    
+        tournaments = tournaments.filter(
+            Tournament.tournament_name.contains(name)
+        ).all()
+    return render_template(
+        "tournament_dashboard.html",
+        title="Tournament Dashboard",
+        form=form,
+        tournaments=tournaments,
+    )
+
 
 @app.route("/tournament_page", methods=["GET", "POST"])
 def tournament_page():
@@ -229,7 +240,7 @@ def tournament_page():
                 url_for("tournament_management", tournament=tournament.tournament_name)
             )
         # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
-        # This will also clear the relations from the teams table. 
+        # This will also clear the relations from the teams table.
         elif request.form.get("delete_button") == "Delete Tournament":
             tournament.tournament_teams.clear()
             db.session.delete(tournament)
@@ -247,7 +258,7 @@ def tournament_page():
                     and team.coach == current_user.id
                 ):
                     tournament.tournament_teams.append(team)
-            
+
             db.session.commit()
             flash("You have successfully registered for " + tournament.tournament_name)
             return redirect(
@@ -339,7 +350,9 @@ def league():
         # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = form.affiliated_team.data  # .data is not actually a team object
+            user.affiliated_team = (
+                form.affiliated_team.data
+            )  # .data is not actually a team object
             # scott: this does not work because flask forms does not appear to be passing objects back through
             # scott: I have this issue in other places as well
             db.session.commit()
@@ -382,12 +395,12 @@ def create_team():
 @app.route("/manual_permissions", methods=["GET", "POST"])
 def manual_permissions():
     form = ManualPermissionsForm()
-    users = db.session.query(User).order_by('id')
-    prs = db.session.query(PermissionRequest).order_by('id')
+    users = db.session.query(User).order_by("id")
+    prs = db.session.query(PermissionRequest).order_by("id")
 
     tval = prs
     if form.validate_on_submit():
-        #user = User.query.filter_by(id=form.userID.data).first()
+        # user = User.query.filter_by(id=form.userID.data).first()
         pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
         user = User.query.filter_by(id=pr.user).first()
         tval = pr.id
@@ -402,7 +415,7 @@ def manual_permissions():
         if form.actions.data == 4:
             deny_admin(current_user, user)
         """
-        
+
         if form.pr_actions.data == 1:
             if pr.coach_request == 1:
                 approve_coach(current_user, user, pr)
@@ -414,7 +427,14 @@ def manual_permissions():
             elif pr.admin_request == 1:
                 deny_admin(current_user, user, pr)
 
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs, tval=tval)
+    return render_template(
+        "manual_permissions.html",
+        title="Permissions",
+        form=form,
+        users=users,
+        prs=prs,
+        tval=tval,
+    )
 
 
 @app.route("/request_permission", methods=["GET", "POST"])
@@ -431,17 +451,18 @@ def request_permission():
             pr = PermissionRequest(admin_request=1, user=current_user.id)
             db.session.add(pr)
             db.session.commit()
-    return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
-
+    return render_template(
+        "request_permission.html", title="Request Permission", form=form, prs=prs
+    )
 
 
 @app.route("/dbtest", methods=["GET", "POST"])
 def dbtest():
     form = dbtestForm()
-    users = db.session.query(User).order_by('id')
-    teams = db.session.query(Team).order_by('id')
-    leagues = db.session.query(League).order_by('id')
-    tournaments = db.session.query(Tournament).order_by('id')
+    users = db.session.query(User).order_by("id")
+    teams = db.session.query(Team).order_by("id")
+    leagues = db.session.query(League).order_by("id")
+    tournaments = db.session.query(Tournament).order_by("id")
     # test value
     tval = "none"
     models = {
@@ -449,7 +470,7 @@ def dbtest():
         "User": User,
         "League": League,
         "Team": Team,
-        "Tournament": Tournament
+        "Tournament": Tournament,
     }
     if form.validate_on_submit():
         clear = models[form.model.data]
@@ -459,11 +480,16 @@ def dbtest():
         if gen is not None:
             gen_db(gen, 10)
 
-    return render_template("dbtest.html",
-                           title="DB Testing",
-                           form=form, users=users,
-                           tval=tval, teams=teams,
-                           leagues=leagues, tournaments=tournaments)
+    return render_template(
+        "dbtest.html",
+        title="DB Testing",
+        form=form,
+        users=users,
+        tval=tval,
+        teams=teams,
+        leagues=leagues,
+        tournaments=tournaments,
+    )
 
 
 @app.route("/user_settings", methods=["GET", "POST"])
@@ -496,3 +522,24 @@ def user_settings():
             return redirect(url_for("user_settings"))
     else:
         return render_template("user_settings.html", form=form)
+
+
+@app.route("/team_settings", methods=["GET", "POST"])
+@login_required
+def team_settings():
+    form = TeamSettingsForm()
+    coach = current_user.id
+    # team = Team.query.get_or_404(coach)
+
+    if request.method == "POST":
+        team.team_name = request.form["teamname"]
+        team.league = request.form["league"]
+        try:
+            db.session.commit()
+            flash("User Information Succesfully Updated!")
+            return redirect(url_for("team_settings"))
+        except:
+            flash("An Error Occured. Please try again!")
+            return redirect(url_for("team_settings"))
+    else:
+        return render_template("team_settings.html", form=form)
