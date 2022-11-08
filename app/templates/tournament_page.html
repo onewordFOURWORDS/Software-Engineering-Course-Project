@@ -16,6 +16,32 @@
 </div>
 
 <div>
+    <h2>Leaderboard</h2>
+    <table id="leaderboard">
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Team</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in tournament.tournament_teams %}
+                <tr>
+                    <td>{{ team.id }}</td> <!-- this is temporary; may need javascript to calculate -->
+                    <td>{{ team.team_name }}</td>
+                    <!-- <td>{{ team.wins }}</td> -->
+                    <!-- <td>{{ team.losses }}</td> -->
+                    <!-- <td>{{ team.points }}</td> -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div>
     <p>Registered Teams: <br> <br>
         {% for team_id in tournament.tournament_teams %}
         {{team_id}} <br> <br>
