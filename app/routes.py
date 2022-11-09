@@ -267,7 +267,6 @@ def tournament_management():
     # we are just adding on to the current tournament. With the way leagues are right now, I think we might have to remove
     # the option to edit leagues once a tournament is created for simplicity sakes.
     leagues = League.query.all()
-    teams = Team.query.all()
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     tournament_league_name = (
@@ -275,6 +274,7 @@ def tournament_management():
     ).league_name
     tournament_state = tournament.tournament_state
     form = TournamentCreationForm(obj=tournament)
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
 
     if form.validate_on_submit():
         if request.method == "POST":
@@ -287,6 +287,14 @@ def tournament_management():
                 tournament.tournament_teams.append(team)
                 db.session.commit()
                 return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+            if request.form.get("test_team") == "Remove Team":
+                return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+            # if request.form.get("remove_team") == "Remove Team":
+            #     # team_id = request.form["removing_team"]
+            #     # team = Team.query.filter_by(id=team_id).first()
+            #     # team.tournament_teams.remove(team)
+            #     # db.session.commit()
+            #     return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
         if form.tournament_league.data == "" and League.query.all():
             tournament.tournament_name = form.tournament_name.data
             tournament.tournament_date = form.tournament_date.data
@@ -329,7 +337,20 @@ def tournament_management():
 # @login_required
 def team(team_ID: int):
     team = get_team_by_id(team_ID)
-    return render_template("team_info.html", title=team.team_name, team=team)
+    tournaments = db.session.query(tournament_teams).all()
+    upcoming_tournaments = []
+    previous_tournaments = []
+    for tournament in tournaments:
+        # Checks to make sure tournament id is the same as team ID
+        if int(tournament[1]) == int(team_ID):
+            newTournament = Tournament.query.filter_by(tournament_id=tournament[0]).first()
+            if newTournament.tournament_date < datetime.now():
+                previous_tournaments.append(newTournament)
+            else:
+                upcoming_tournaments.append(newTournament)
+            
+
+    return render_template("team_info.html", title=team.team_name, team=team, upcoming_tournaments=upcoming_tournaments, previous_tournaments = previous_tournaments)
 
 
 @app.route("/<match_ID>/match", methods=["GET", "POST"])

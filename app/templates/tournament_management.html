@@ -115,12 +115,12 @@
         <input type="submit" name="add_team" value="Add Team">
     </form>
 
-    <select name="remove_team" method="POST" action="/">
+    <select name="removing_team" method="POST" action="/">
         {% for team_id in tournament.tournament_teams %}
-            <option value="{{team_id}}">{{team_id}}</option> 
+            <option value="{{team_id.id}}">{{team_id}}</option> 
         {% endfor %}
         </select> <form method="POST">
-            <input type="submit" name="remove_team" value="Remove Team">
+            <input type="submit" name="test_team" value="Remove Team">
         </form>
 
     <p>{{ form.submit() }} </p>

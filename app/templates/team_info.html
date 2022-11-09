@@ -3,4 +3,16 @@
 {% block content %}
     <h1>{{ team.name }}</h1>
     <p>This will eventually contain detailed info for the {{ team.team_name }}!</p>
+    
+    Upcoming Tournaments <br><br>
+    {% for tournament in upcoming_tournaments %}
+        {{tournament}} 
+        <br><br>
+        {% endfor %}
+    
+    Previous Tournaments <br><br>
+    {% for tournament in previous_tournaments %}
+        {{tournament}} 
+        <br><br>
+        {% endfor %}
 {% endblock %}
