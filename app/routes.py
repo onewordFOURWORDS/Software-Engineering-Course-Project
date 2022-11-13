@@ -1,6 +1,7 @@
 from crypt import methods
 from datetime import date, datetime
 from operator import methodcaller
+import re
 from tracemalloc import start
 from xml.dom import ValidationErr
 from xmlrpc.client import DateTime
@@ -496,21 +497,24 @@ def dbtest():
 @login_required
 def user_settings():
     form = UserSettingsForm()
-    id = current_user.id
-    user = User.query.get_or_404(id)
-    form.username.data = current_user.username
-    form.firstname.data = current_user.first_name
-    form.lastname.data = current_user.last_name
-    form.address.data = current_user.address
-    form.phonenumber.data = current_user.phone_number
-    form.email.data = current_user.email
+    user = current_user
+    # user = User.query.get_or_404(current_user.id)
 
-    if request.method == "POST":
-        # if form.validate_on_submit():
+    if request.method == "GET":
+        form.username.data = current_user.username
+        form.firstname.data = current_user.first_name
+        form.lastname.data = current_user.last_name
+        form.address.data = current_user.address
+        form.phonenumber.data = current_user.phone_number
+        form.email.data = current_user.email
+
+    if form.validate_on_submit():
         # user.username = request.form["username"]
         user.first_name = request.form["firstname"]
         user.last_name = request.form["lastname"]
-        user.phone_number = request.form["phonenumber"]
+        # Strips everything but numbers, this can be changed depending
+        # on how phone numbers should be stored
+        user.phone_number = re.sub("\D", "", request.form["phonenumber"])
         user.address = request.form["address"]
         user.email = request.form["email"]
         try:
@@ -520,8 +524,9 @@ def user_settings():
         except:
             flash("An Error Occured. Please try again!")
             return redirect(url_for("user_settings"))
-    else:
-        return render_template("user_settings.html", form=form)
+    return render_template(
+        "user_settings.html", form=form, user=user, current_user=current_user
+    )
 
 
 @app.route("/team_settings", methods=["GET", "POST"])

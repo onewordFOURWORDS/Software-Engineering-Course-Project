@@ -300,21 +300,12 @@ class dbtestForm(FlaskForm):
 
 
 class UserSettingsForm(FlaskForm):
-    username = StringField(
-        "Username", validators=[DataRequired()], render_kw={"readonly": True}
-    )
-    firstname = StringField(
-        "First Name",
-        validators=[DataRequired()],
-        render_kw={"placeholder": "First Name"},
-    )
-    lastname = StringField("Last Name", validators=[DataRequired()])
-    phonenumber = StringField(
-        "Phone Number",
-        render_kw={"placeholder": "555-555-5555"},
-    )
+    username = StringField("Username", render_kw={"readonly": True})
+    firstname = StringField("First Name", render_kw={"placeholder": "First Name"})
+    lastname = StringField("Last Name")
+    phonenumber = StringField("Phone Number", render_kw={"placeholder": "555-555-5555"})
     address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
-    email = StringField("Email", validators=[Email(), DataRequired()])
+    email = StringField("Email")
 
     submit = SubmitField("Update Settings")
 
@@ -322,12 +313,16 @@ class UserSettingsForm(FlaskForm):
     #     if len(field.data) > 16:
     #         raise ValidationError("Invalid phone number.")
 
-    # def validate_phonenumber(self, phonenumber):
-    #     number = phonenumber.data
-    #     number = re.sub("\D", "", number)
-    #     print(number)
-    #     if len(number) != 10:
-    #         raise ValidationError("Invalid phone number")
+    def validate_phonenumber(self, field):
+        number = field.data
+        number = re.sub("\D", "", number)
+        print(field.data)
+        if len(number) == 10 or len(number) == 0:
+            return
+        else:
+            raise ValidationError("Invalid phone number")
+
+    # def
 
 
 class TeamSettingsForm(FlaskForm):
