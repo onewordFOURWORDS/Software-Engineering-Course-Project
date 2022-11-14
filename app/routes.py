@@ -534,8 +534,8 @@ def is_registered(tournament:Tournament, coach:User):
     for team in teams:
         if team.coach == coach.id:
             coaches_team = team
-    for tournament in tournaments:
-        if coaches_team is not None and int(tournament[1]) == int(coaches_team.id) :
+    for tournament_team in tournaments:
+        if coaches_team is not None and int(tournament_team[1]) == int(coaches_team.id) and int(tournament_team[0]) == tournament.tournament_id:
             return True
     return False
 
