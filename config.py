@@ -11,6 +11,7 @@ class Config(object):
     PORT_NUMBER = os.environ.get("SSBM_DB_PORT_NUMBER")
     DB_NAME = "app"
     DB_USER = "postgres"
+
     SQLALCHEMY_DATABASE_URI = (
         f"postgresql://{DB_USER}:{SECRET_KEY}@localhost:{PORT_NUMBER}/{DB_NAME}"
     )

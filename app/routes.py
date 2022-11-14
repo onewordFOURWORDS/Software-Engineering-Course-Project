@@ -1,4 +1,3 @@
-from crypt import methods
 from datetime import date, datetime
 from operator import methodcaller
 from tracemalloc import start
@@ -441,7 +440,7 @@ def dbtest():
     users = db.session.query(User).order_by('id')
     teams = db.session.query(Team).order_by('id')
     leagues = db.session.query(League).order_by('id')
-    tournaments = db.session.query(Tournament).order_by('id')
+    tournaments = db.session.query(Tournament).order_by('tournament_id')
     # test value
     tval = "none"
     models = {
