@@ -154,9 +154,6 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    wins = db.Column(db.Integer)
-    losses = db.Column(db.Integer)
-    total_score = db.Column(db.Integer)
     # the cascade delete here only impacts the many to many relationship
     #users = db.relationship('Following', backref='teams', cascade="delete")
 
@@ -258,3 +255,4 @@ def gen_db(model, num):
             t = Tournament(tournament_name=name, tournament_location=name, tournament_league=league.id)
             db.session.add(t)
             db.session.commit()
+
