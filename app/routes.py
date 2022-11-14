@@ -412,18 +412,6 @@ def manual_permissions():
         pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
         user = User.query.filter_by(id=pr.user).first()
         tval = pr.id
-
-        """
-        if form.actions.data == 1:
-            approve_coach(current_user, user)
-        if form.actions.data == 2:
-            deny_coach(current_user, user)
-        if form.actions.data == 3:
-            approve_admin(current_user, user)
-        if form.actions.data == 4:
-            deny_admin(current_user, user)
-        """
-        
         if form.pr_actions.data == 1:
             if pr.coach_request == 1:
                 approve_coach(current_user, user, pr)
@@ -441,17 +429,36 @@ def manual_permissions():
 @app.route("/request_permission", methods=["GET", "POST"])
 def request_permission():
     form = RequestPermissionsForm()
-    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
     if form.validate_on_submit():
+        # prs = list of permission requests associated with current user
+        prs = PermissionRequest.query.filter_by(user=current_user.id).all()
+        coach_request = 0  # 1 if request already exists
+        admin_request = 0
+        for each in prs:
+            if each.label == 'Coach request':
+                coach_request = 1
+            if each.label == 'Admin request':
+                admin_request = 1
         if form.actions.data == 1:
-            # generate new pr object
-            pr = PermissionRequest(coach_request=1, user=current_user.id)
-            db.session.add(pr)
-            db.session.commit()
+            if current_user.is_coach:
+                flash("You are already a Coach!")
+            elif coach_request == 0:
+                # generate new pr object
+                pr = PermissionRequest(coach_request=1, user=current_user.id, label='Coach request')
+                db.session.add(pr)
+                db.session.commit()
+            else:
+                flash("You already have a Coach request in!")
         if form.actions.data == 2:
-            pr = PermissionRequest(admin_request=1, user=current_user.id)
-            db.session.add(pr)
-            db.session.commit()
+            if current_user.is_admin:
+                flash("You are already an Admin!")
+            elif admin_request == 0:
+                pr = PermissionRequest(admin_request=1, user=current_user.id, label='Admin request')
+                db.session.add(pr)
+                db.session.commit()
+            else:
+                flash("You already have an Admin request in!")
+    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
     return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
 
 
