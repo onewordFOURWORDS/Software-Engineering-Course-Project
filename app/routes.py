@@ -18,7 +18,8 @@ from app.forms import (
     TeamCreationForm,
     ManualPermissionsForm,
     dbtestForm, RequestPermissionsForm,
-    UserSettingsForm
+    UserSettingsForm,
+    TournamentManagementForm
 
 )
 from flask_login import (
@@ -222,6 +223,8 @@ def tournament_page():
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     teams = Team.query.all()
+    registered_boolean = is_registered(tournament,current_user)
+    has_team = has_team_in_league(tournament, current_user)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
         if request.form.get("edit_button") == "Edit Tournament":
@@ -253,11 +256,28 @@ def tournament_page():
             return redirect(
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
+        elif request.form.get("un_register_button") == "Un-register":
+            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
+            for team in teams:
+                if (
+                    team.league == tournament.tournament_league
+                    and team.coach == current_user.id
+                ):
+                    tournament.tournament_teams.remove(team)
+            
+            db.session.commit()
+            flash("You have successfully removed your team from " + tournament.tournament_name)
+            return redirect(
+                url_for("tournament_page", tournament=tournament.tournament_name)
+            )
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
         tournament=tournament,
         league=league,
+        current_user = current_user,
+        registered_boolean = registered_boolean,
+        has_team = has_team,
     )
 
 
@@ -273,48 +293,28 @@ def tournament_management():
         League.query.filter_by(id=tournament.tournament_league).first()
     ).league_name
     tournament_state = tournament.tournament_state
-    form = TournamentCreationForm(obj=tournament)
+    form = TournamentManagementForm(obj=tournament)
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
 
     if form.validate_on_submit():
         if request.method == "POST":
             tournament_state = request.form["state"]
-            leagueString = request.form["league_choose"]
-            league = League.query.filter_by(league_name=leagueString).first()
-            if request.form.get("add_team") == "Add Team":
-                team_string = request.form["adding_team"]
-                team = Team.query.filter_by(team_name=team_string).first()
-                tournament.tournament_teams.append(team)
-                db.session.commit()
-                return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
-            if request.form.get("test_team") == "Remove Team":
-                return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
-            # if request.form.get("remove_team") == "Remove Team":
-            #     # team_id = request.form["removing_team"]
-            #     # team = Team.query.filter_by(id=team_id).first()
-            #     # team.tournament_teams.remove(team)
-            #     # db.session.commit()
-            #     return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
-        if form.tournament_league.data == "" and League.query.all():
-            tournament.tournament_name = form.tournament_name.data
-            tournament.tournament_date = form.tournament_date.data
-            tournament.tournament_city = form.tournament_city.data
-            tournament.tournament_state = tournament_state
-            tournament.tournament_league = league.id
+        if form.add_team.data:
+            team_string = request.form["adding_team"]
+            team = Team.query.filter_by(team_name=team_string).first()
+            tournament.tournament_teams.append(team)
             db.session.commit()
-        else:
-            league = League(
-                league_name=form.tournament_league.data,
-            )
-            db.session.add(league)
+            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+        elif form.remove_team.data:
+            team_id = request.form["removing_team"]
+            team = Team.query.filter_by(id=team_id).first()
+            tournament.tournament_teams.remove(team)
             db.session.commit()
-            tournament.tournament_name = form.tournament_name.data
-            tournament.tournament_date = form.tournament_date.data
-            tournament.tournament_city = form.tournament_city.data
-            tournament.tournament_state = tournament_state
-            tournament.tournament_league = league.id
-            db.session.commit()
-
+            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+        tournament.tournament_name = form.tournament_name.data
+        tournament.tournament_date = form.tournament_date.data
+        tournament.tournament_city = form.tournament_city.data
+        tournament.tournament_state = tournament_state
         db.session.commit()
         flash("Congratulations, you have updated your tournament!")
         return redirect(
@@ -526,3 +526,22 @@ def user_settings():
             return redirect(url_for("user_settings"))
     else:
         return render_template("user_settings.html", form=form)
+
+def is_registered(tournament:Tournament, coach:User):
+    tournaments = db.session.query(tournament_teams).all()
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
+    coaches_team = None
+    for team in teams:
+        if team.coach == coach.id:
+            coaches_team = team
+    for tournament in tournaments:
+        if coaches_team is not None and int(tournament[1]) == int(coaches_team.id) :
+            return True
+    return False
+
+def has_team_in_league(tournament:Tournament, coach:User):
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
+    for team in teams:
+        if team.coach == coach.id and tournament.tournament_league:
+            return True
+    return False

@@ -73,21 +73,6 @@
         <option value="WY" {% if tournament_state=="WY" %} selected {% endif %}>Wyoming</option>
     </select>
     <br> <br>
-    Choose A Pre-Existing League
-    <select name="league_choose" method="POST" action="/">
-        {% for league in leagues %}
-        <option value="{{league.league_name}}" {% if tournament_league_name==league.league_name %} selected {% endif %}>
-            {{league.league_name}}
-        </option>
-        {% endfor %}
-    </select>
-    <p>
-        {{ form.tournament_league.label }}<br>
-        {{ form.tournament_league(size=64) }}<br>
-        {% for error in form.tournament_league.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
     <p>
         {{ form.tournament_date.label }}<br>
         {{ form.tournament_date(size=32) }}<br>
@@ -96,8 +81,6 @@
         {% endfor %}
     </p>
 
-    
-            
     Registered Teams: <br> <br>
         {% for team_id in tournament.tournament_teams %}
         {{team_id}} 
@@ -108,21 +91,18 @@
     Add Team:
     
     <select name="adding_team" method="POST" action="/">
-    {% for team in teams%}
-        <option value="{{team.team_name}}">{{team.team_name}}</option> 
-    {% endfor %}
-    </select> <form method="POST">
-        <input type="submit" name="add_team" value="Add Team">
-    </form>
+        {% for team in teams%}
+            <option value="{{team.team_name}}">{{team.team_name}}</option> 
+        {% endfor %}
+    <p>{{ form.add_team() }} </p>
 
     <select name="removing_team" method="POST" action="/">
         {% for team_id in tournament.tournament_teams %}
             <option value="{{team_id.id}}">{{team_id}}</option> 
         {% endfor %}
-        </select> <form method="POST">
-            <input type="submit" name="test_team" value="Remove Team">
-        </form>
-
+        <p>{{ form.remove_team() }} </p>
+    
+   
     <p>{{ form.submit() }} </p>
 </form>
 {% endblock %}

@@ -299,6 +299,45 @@ class UserSettingsForm(FlaskForm):
 
     submit = SubmitField("Update Settings")
 
+class TournamentManagementForm(FlaskForm):
+    tournament_name = StringField(
+        "Tournament Name",
+        validators=[
+            DataRequired(),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="Tournament name must not contain any special characters.",
+            ),
+        ],
+    )
+    tournament_city = StringField(
+        "Tournament City",
+        validators=[
+            DataRequired(),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="City name must not contain any special characters.",
+            ),
+        ],
+    )
+    
+    tournament_date = DateField(
+        "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
+    )
+
+    # def validate_tournament_date(form, tournament_date):
+    #     if datetime.strptime(tournament_date.data.strip(), '%Y-%m-%d') < date.today():
+    #         raise ValidationError("Date must be set in the future.")
+
+    def validate_tournament_league(form, tournament_league):
+        league_string = tournament_league
+        if League.query.filter_by(league_name=league_string.data).first():
+            raise ValidationError(
+                "League already exists. Choose existing league or create a unique league."
+            )
+    add_team = SubmitField("Add Team")
+    remove_team = SubmitField("Remove Team")
+    submit = SubmitField("Submit")
     # def validate_phonenumber(form, field):
     #     if len(field.data) > 16:
     #         raise ValidationError("Invalid phone number.")
