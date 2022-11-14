@@ -250,6 +250,8 @@ def tournament_page():
         title="Tournament Page",
         tournament=tournament,
         league=league,
+        teams=teams,
+        tournament_teams=tournament.tournament_teams
     )
 
 

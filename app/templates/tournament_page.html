@@ -25,14 +25,27 @@
         {% endfor %}
     </div>
 </div>
-
+<br>
 <div>
     <h2 style="text-align: center;">Bracket</h2>
     <div id="bracket-container">
-        <p>i am having a bad time</p>
+        <table>
+            <tbody>
+                {% for team in tournament.tournament_teams %}
+                    <tr><td class="bracket"><b>{{ loop.index }}</b> {{ team.team_name }}</td><td></td></tr>
+                    {% if loop.index is divisibleby 2 and team != tournament.tournament_teams[-1] %}
+                        <tr><td class="empty">|</td><td class="line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+                    {% elif loop.index is not divisibleby 2 and team == tournament.tournament_teams[-1] %}
+                        <tr><td class="bracket" style="text-align: center;"><i>BYE</i></td><td></td></tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-
+<br>
+<br>
+<br>
 <form method="POST">
     <input type="submit" name="edit_button" value="Edit Tournament">
 </form>
@@ -102,21 +115,44 @@
     .row:nth-child(4) {
         background: #cd7f32;
     }
+
+    #bracket-container {
+        width: 600px;
+        height: auto;
+        margin: auto;
+    }
+
+    .bracket {
+        background-color: navy;
+        color: white;
+        border-right: 3px solid navy;
+    }
+
+    .empty {
+        color: white;
+        border-right: 3px solid navy;
+    }
+
+    .line {
+        color: navy;
+        text-decoration: line-through;
+    }
 </style>
 
 <script>
-        document.addEventListener('DOMContentLoaded', () => {
-    let elements = []
-    let container = document.querySelector('#leaderboard-container')
-    // add each row to the array
-    container.querySelectorAll('.row').forEach(el => elements.push(el))
-    // clear the container
-    container.innerHTML = ''
-    // sort the array from highest to lowest
-    elements.sort((a, b) => b.querySelector('.score').textContent - a.querySelector('.score').textContent)
-    // put the elements back into the container
-    elements.forEach(e => container.appendChild(e))
-    })
+    document.addEventListener("DOMContentLoaded", () => {
+        // calculate leaderboard positioning
+        let elements = [];
+        let container = document.querySelector("#leaderboard-container");
+        // add each row to the array
+        container.querySelectorAll(".row").forEach(element => elements.push(element));
+        // clear the container
+        container.innerHTML = "";
+        // sort the array from highest to lowest
+        elements.sort((a, b) => b.querySelector(".wins").textContent - a.querySelector(".wins").textContent);
+        // put the elements back into the container
+        elements.forEach(element => container.appendChild(element));
+    });
 </script>
 
 {% endblock %}
