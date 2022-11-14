@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Team Settings</h1>
 <form action="" method="post">
+    {{ form.csrf_token }}
     <p>
         {{ form.teamname.label }}<br>
         {{ form.teamname(size=32)}}<br>

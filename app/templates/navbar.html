@@ -22,6 +22,9 @@
         <li class="nav-item">
             <a class="nav-link" id="league_view_link" href="{{ url_for("league")}}">View League Info</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" id="user_settings" href="{{ url_for("user_settings")}}">User Settings</a>
+        </li>
         {# TODO: Modify this later to also check to see if they already have a team? #}
         {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
@@ -29,6 +32,9 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" id="manual_permissions" href="{{ url_for("manual_permissions")}}">Approve Permissions</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="team_settings" href="{{ url_for("team_settings")}}">Team Settings</a>
         </li>
 
         {% endif %}

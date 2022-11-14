@@ -533,18 +533,22 @@ def user_settings():
 @login_required
 def team_settings():
     form = TeamSettingsForm()
-    coach = current_user.id
-    # team = Team.query.get_or_404(coach)
 
-    if request.method == "POST":
-        team.team_name = request.form["teamname"]
-        team.league = request.form["league"]
+    coach_id = current_user.id
+    team = Team.query.filter_by(coach=coach_id).first()
+    league = League.query.filter_by(id=team.league).first()
+
+    if request.method == "GET":
+        form.coach.data = current_user.first_name + " " + current_user.last_name
+        form.teamname.data = team.team_name
+        # form.league.data = league.league_name
+
+    if form.validate_on_submit():
         try:
             db.session.commit()
             flash("User Information Succesfully Updated!")
-            return redirect(url_for("team_settings"))
+            return redirect(url_for("user_settings"))
         except:
             flash("An Error Occured. Please try again!")
-            return redirect(url_for("team_settings"))
-    else:
-        return render_template("team_settings.html", form=form)
+            return redirect(url_for("user_settings"))
+    return render_template("team_settings.html", form=form)

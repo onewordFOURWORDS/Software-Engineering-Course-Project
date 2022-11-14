@@ -60,6 +60,11 @@ class TeamCreationForm(FlaskForm):
     league = SelectField("Select your league: ", choices=league_list)
     submit = SubmitField("Register")
 
+    def validate_team_name(self, field):
+        team = Team.query.filter_by(team_name=field.data).first()
+        if team is not None:
+            raise ValidationError("Team name is already taken.")
+
 
 # TODO: Figure out nesting forms so this can be reused throughout the site.
 # For now just have a separate form for the league page.
@@ -301,18 +306,23 @@ class dbtestForm(FlaskForm):
 
 class UserSettingsForm(FlaskForm):
     username = StringField("Username", render_kw={"readonly": True})
-    firstname = StringField("First Name", render_kw={"placeholder": "First Name"})
-    lastname = StringField("Last Name")
+    firstname = StringField(
+        "First Name*",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "First Name"},
+    )
+    lastname = StringField(
+        "Last Name*",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Last Name"},
+    )
     phonenumber = StringField("Phone Number", render_kw={"placeholder": "555-555-5555"})
     address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
-    email = StringField("Email")
+    email = StringField("Email*", validators=[Email()])
 
     submit = SubmitField("Update Settings")
 
-    # def validate_phonenumber(form, field):
-    #     if len(field.data) > 16:
-    #         raise ValidationError("Invalid phone number.")
-
+    # Very basic number validation, checks that there are 10 digits
     def validate_phonenumber(self, field):
         number = field.data
         number = re.sub("\D", "", number)
@@ -322,12 +332,18 @@ class UserSettingsForm(FlaskForm):
         else:
             raise ValidationError("Invalid phone number")
 
-    # def
-
 
 class TeamSettingsForm(FlaskForm):
     teamname = StringField("Team Name", validators=[DataRequired()])
     coach = StringField("Coach", render_kw={"readonly": True})
-    league = SelectField("League", validators=[DataRequired()])
-
+    leagues = League.query.all()
+    league_list = []
+    for league in leagues:
+        league_list.append((league.id, league.league_name))
+    league = SelectField("League", validators=[DataRequired()], choices=league_list)
     submit = SubmitField("Update Settings")
+
+    def validate_team_name(self, field):
+        team = Team.query.filter_by(team_name=field.data).first()
+        if team is not None:
+            raise ValidationError("Team name is already taken.")
