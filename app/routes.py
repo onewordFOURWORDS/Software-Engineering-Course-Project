@@ -35,7 +35,6 @@ from app.permissions import *
 from app import db
 
 
-
 @app.route("/")
 @app.route("/index")
 def index():
@@ -140,6 +139,9 @@ def tournament_creation():
     off all of the information put in.
 
     """
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
@@ -230,6 +232,9 @@ def tournament_page():
         # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
         # This will also clear the relations from the teams table. 
         elif request.form.get("delete_button") == "Delete Tournament":
+            # if user not coach or admin, deny access by redirect
+            if not (current_user.is_coach or current_user.is_admin):
+                return redirect(url_for("access_denied"))
             tournament.tournament_teams.clear()
             db.session.delete(tournament)
             db.session.commit()
@@ -239,6 +244,9 @@ def tournament_page():
             )
             return redirect(url_for("tournament_dashboard"))
         elif request.form.get("register_button") == "Register":
+            # if user not coach or admin, deny access by redirect
+            if not (current_user.is_coach or current_user.is_admin):
+                return redirect(url_for("access_denied"))
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
             for team in teams:
                 if (
@@ -262,6 +270,9 @@ def tournament_page():
 
 @app.route("/tournament_management", methods=["GET", "POST"])
 def tournament_management():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     # Tournament management essentially does the same thing as the create team, but instead of making new tournament objects,
     # we are just adding on to the current tournament. With the way leagues are right now, I think we might have to remove
     # the option to edit leagues once a tournament is created for simplicity sakes.
@@ -327,6 +338,11 @@ def match(match_ID: int):
     return render_template("match.html")
 
 
+@app.route("/access_denied")
+def access_denied():
+    return render_template("access_denied.html")
+
+
 @app.route("/league", methods=["GET", "POST"])
 def league():
     # if the user doesn't have an affiliated team and league,
@@ -354,6 +370,9 @@ def league():
 @app.route("/create_team", methods=["GET", "POST"])
 @login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
 def create_team():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     # TODO: Might want to update this later when coach and admin classes are
     # defined/we have a coaches table.
     coaches = User.query.filter_by(is_coach=True)
@@ -380,6 +399,9 @@ def create_team():
 
 @app.route("/manual_permissions", methods=["GET", "POST"])
 def manual_permissions():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     form = ManualPermissionsForm()
     users = db.session.query(User).order_by('id')
     prs = db.session.query(PermissionRequest).order_by('id')
@@ -433,9 +455,11 @@ def request_permission():
     return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
 
 
-
 @app.route("/dbtest", methods=["GET", "POST"])
 def dbtest():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     form = dbtestForm()
     users = db.session.query(User).order_by('id')
     teams = db.session.query(Team).order_by('id')

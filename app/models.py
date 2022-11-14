@@ -249,6 +249,6 @@ def gen_db(model, num):
     elif model is Tournament:
         for i in range(num):
             name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
-            t = Tournament(tournament_name=name, tournament_state=name, tournament_league=league.id)
+            t = Tournament(tournament_name=name, tournament_state='NC', tournament_league=league.id)
             db.session.add(t)
             db.session.commit()
