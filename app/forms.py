@@ -242,7 +242,8 @@ class ResetPasswordForm(FlaskForm):
 class ManualPermissionsForm(FlaskForm):
     userID = IntegerField("User ID")
     prID = IntegerField("permission request ID")
-
+    approve = SubmitField("Approve")
+    deny = SubmitField("Deny")
     """
     actions = SelectField("permission actions",
                           coerce=int,
@@ -251,14 +252,15 @@ class ManualPermissionsForm(FlaskForm):
     pr_actions = SelectField("permission request actions",
                              coerce=int,
                              choices=[(1, 'approve pr'), (2, 'deny pr')])
+    
+    #pr_actions = SelectField("permission request actions",
+    #                         coerce=int)
     submit = SubmitField("Submit changes")
 
 
 class RequestPermissionsForm(FlaskForm):
-    actions = SelectField("permission choices",
-                          coerce=int,
-                          choices=[(1, 'coach'), (2, 'admin')])
-    submit = SubmitField("Submit changes")
+    request_coach = SubmitField("Coach request")
+    request_admin = SubmitField("Admin request")
 
 
 class dbtestForm(FlaskForm):

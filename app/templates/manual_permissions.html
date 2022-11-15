@@ -6,8 +6,8 @@
         <br> Admin status: {{ current_user.is_admin }}</h1>
     <p>see list of all permission requests. any admin can approve or deny them</p>
     {% for prs in prs %}
-    <div>
-        <p>user: <b>{{ prs.user }}</b> request ID: {{ prs.id }}, coach: {{ prs.coach_request }}, admin: {{ prs.admin_request }}</p></div>
+    <div><p>user: <b>{{ prs.username }}</b> request ID: {{ prs.id }}, {{ prs.label }}</p></div>
+
     {% endfor %}
 
 <br>

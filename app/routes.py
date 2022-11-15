@@ -131,6 +131,7 @@ def reset_password(token):
 
 
 @app.route("/tournament_creation", methods=["GET", "POST"])
+@login_required
 def tournament_creation():
     """
     If the league box is blank, we will take whichever league was selected from the dropdown for the
@@ -197,6 +198,7 @@ def tournament_creation():
 
 
 @app.route("/tournament_dashboard", methods=["GET", "POST"])
+@login_required
 def tournament_dashboard():
     # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
     form = Search()
@@ -217,6 +219,7 @@ def tournament_dashboard():
     
 
 @app.route("/tournament_page", methods=["GET", "POST"])
+@login_required
 def tournament_page():
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
@@ -269,6 +272,7 @@ def tournament_page():
 
 
 @app.route("/tournament_management", methods=["GET", "POST"])
+@login_required
 def tournament_management():
     # if user not coach or admin, deny access by redirect
     if not (current_user.is_coach or current_user.is_admin):
@@ -334,16 +338,19 @@ def team(team_ID: int):
 
 
 @app.route("/<match_ID>/match", methods=["GET", "POST"])
+@login_required
 def match(match_ID: int):
     return render_template("match.html")
 
 
 @app.route("/access_denied")
+@login_required
 def access_denied():
     return render_template("access_denied.html")
 
 
 @app.route("/league", methods=["GET", "POST"])
+@login_required
 def league():
     # if the user doesn't have an affiliated team and league,
     # the template will display a form so they can select one.
@@ -398,35 +405,37 @@ def create_team():
 
 
 @app.route("/manual_permissions", methods=["GET", "POST"])
+@login_required
 def manual_permissions():
     # if user not coach or admin, deny access by redirect
     if not (current_user.is_coach or current_user.is_admin):
         return redirect(url_for("access_denied"))
+
     form = ManualPermissionsForm()
     users = db.session.query(User).order_by('id')
     prs = db.session.query(PermissionRequest).order_by('id')
 
-    tval = prs
     if form.validate_on_submit():
-        #user = User.query.filter_by(id=form.userID.data).first()
         pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
         user = User.query.filter_by(id=pr.user).first()
-        tval = pr.id
-        if form.pr_actions.data == 1:
+        if form.pr_actions.data == 1:  # approve
             if pr.coach_request == 1:
                 approve_coach(current_user, user, pr)
             elif pr.admin_request == 1:
                 approve_admin(current_user, user, pr)
-        if form.pr_actions.data == 2:
+        if form.pr_actions.data == 2:  # deny
             if pr.coach_request == 1:
                 deny_coach(current_user, user, pr)
             elif pr.admin_request == 1:
-                deny_admin(current_user, user, pr)
-
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs, tval=tval)
+                if current_user.id == user.id:
+                    flash("Do not try to remove your own admin permission!")
+                else:
+                    deny_admin(current_user, user, pr)
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs)
 
 
 @app.route("/request_permission", methods=["GET", "POST"])
+@login_required
 def request_permission():
     form = RequestPermissionsForm()
     if form.validate_on_submit():
@@ -439,21 +448,27 @@ def request_permission():
                 coach_request = 1
             if each.label == 'Admin request':
                 admin_request = 1
-        if form.actions.data == 1:
+        if form.request_coach.data:
             if current_user.is_coach:
                 flash("You are already a Coach!")
             elif coach_request == 0:
                 # generate new pr object
-                pr = PermissionRequest(coach_request=1, user=current_user.id, label='Coach request')
+                pr = PermissionRequest(coach_request=1,
+                                       user=current_user.id,
+                                       username=current_user.username,
+                                       label='Coach request')
                 db.session.add(pr)
                 db.session.commit()
             else:
                 flash("You already have a Coach request in!")
-        if form.actions.data == 2:
+        if form.request_admin.data:
             if current_user.is_admin:
                 flash("You are already an Admin!")
             elif admin_request == 0:
-                pr = PermissionRequest(admin_request=1, user=current_user.id, label='Admin request')
+                pr = PermissionRequest(admin_request=1,
+                                       user=current_user.id,
+                                       username=current_user.username,
+                                       label='Admin request')
                 db.session.add(pr)
                 db.session.commit()
             else:
@@ -463,6 +478,7 @@ def request_permission():
 
 
 @app.route("/dbtest", methods=["GET", "POST"])
+@login_required
 def dbtest():
     # if user not coach or admin, deny access by redirect
     if not (current_user.is_coach or current_user.is_admin):

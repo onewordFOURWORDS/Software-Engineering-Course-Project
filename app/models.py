@@ -190,6 +190,7 @@ class Following(db.Model):
 class PermissionRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user = db.Column(db.Integer,  db.ForeignKey("user.id", ondelete='CASCADE'))
+    username = db.Column(db.String(64))
     label = db.Column(db.String(140))
     coach_request = db.Column(db.Boolean, default=0)
     admin_request = db.Column(db.Boolean, default=0)
