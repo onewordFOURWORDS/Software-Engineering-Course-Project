@@ -21,7 +21,7 @@ from flask_login import (
     logout_user,
     login_required,
 )
-from app.models import Tournament, User, League, Team
+from app.models import Tournament, User, League, Team, tournament_teams as tournament_teams_object
 from werkzeug.urls import url_parse
 from app.team_management import get_teams_in_league, get_team_by_id
 from app.permissions import *
@@ -213,7 +213,19 @@ def tournament_page():
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
-    teams = Team.query.all()
+    all_teams = Team.query.all()
+    all_tournament_teams = db.session.query(tournament_teams_object).all()
+    tournament_teams = []
+    for tourney_team in all_tournament_teams:
+        # pull out teams registered to this tournament
+        if tourney_team[0] == tournament.tournament_id:
+            # need nested for loops to pull out each team's name
+            for team in all_teams:
+                # if the ids are the same then you have the right team
+                if tourney_team[1] == team.id:
+                    # build hashtable with necessary values to display on leaderboard
+                    item = {"name": team.team_name, "score": tourney_team[2], "wins": tourney_team[3], "losses": tourney_team[4]}
+                    tournament_teams.append(item)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
         if request.form.get("edit_button") == "Edit Tournament":
@@ -233,25 +245,32 @@ def tournament_page():
             return redirect(url_for("tournament_dashboard"))
         elif request.form.get("register_button") == "Register":
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
-            for team in teams:
+            for team in all_teams:
                 if (
                     team.league == tournament.tournament_league
                     and team.coach == current_user.id
                 ):
                     tournament.tournament_teams.append(team)
-            
             db.session.commit()
             flash("You have successfully registered for " + tournament.tournament_name)
             return redirect(
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
+        # this creates a copy of the list of tournament teams so that the database is not affected - solely for demostration purposes
+        elif request.form.get("add_team") == "Add Fake Team":
+            copy = []
+            for team in tournament_teams:    
+                copy.append(team)
+            fake_team = {"name": "FAKE TEAM", "score": 7, "wins": 5, "losses": 3}
+            copy.append(fake_team)
+            tournament_teams=copy
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
         tournament=tournament,
         league=league,
-        teams=teams,
-        tournament_teams=tournament.tournament_teams
+        teams=all_teams,
+        tournament_teams=tournament_teams
     )
 
 
