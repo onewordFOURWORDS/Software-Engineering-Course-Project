@@ -333,15 +333,18 @@ class UserSettingsForm(FlaskForm):
             raise ValidationError("Invalid phone number")
 
 
+class SelectTeamForm(FlaskForm):
+    team_selection = SelectField("Select Team")
+
+    submit1 = SubmitField("Select")
+
+
 class TeamSettingsForm(FlaskForm):
     teamname = StringField("Team Name", validators=[DataRequired()])
     coach = StringField("Coach", render_kw={"readonly": True})
-    leagues = League.query.all()
-    league_list = []
-    for league in leagues:
-        league_list.append((league.id, league.league_name))
-    league = SelectField("League", validators=[DataRequired()], choices=league_list)
-    submit = SubmitField("Update Settings")
+    league = SelectField("League", validators=[DataRequired()])
+
+    submit2 = SubmitField("Update Settings")
 
     def validate_team_name(self, field):
         team = Team.query.filter_by(team_name=field.data).first()

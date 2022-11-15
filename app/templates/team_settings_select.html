@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Select A Team</h1>
+<form action="" method="post">
+    {{ form.csrf_token }}
+
+    <p>
+        {{ form.team_selection.label }}<br>
+        {{ form.team_selection}}<br>
+        {% for error in form.team_selection.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+
+    <p>{{ form.submit1() }}</p>
+</form>
+{% endblock %}

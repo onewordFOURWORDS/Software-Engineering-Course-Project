@@ -22,6 +22,7 @@ from app.forms import (
     RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
+    SelectTeamForm,
 )
 from flask_login import (
     current_user,
@@ -532,23 +533,61 @@ def user_settings():
 @app.route("/team_settings", methods=["GET", "POST"])
 @login_required
 def team_settings():
-    form = TeamSettingsForm()
+
+    form1 = SelectTeamForm()
+    form2 = TeamSettingsForm()
 
     coach_id = current_user.id
-    team = Team.query.filter_by(coach=coach_id).first()
-    league = League.query.filter_by(id=team.league).first()
+    # All teams owned by the coach
+    teams = Team.query.filter_by(coach=coach_id)
+    team_list = []
+    for t in teams:
+        team_list.append(t.team_name)
 
-    if request.method == "GET":
-        form.coach.data = current_user.first_name + " " + current_user.last_name
-        form.teamname.data = team.team_name
-        # form.league.data = league.league_name
+    form1.team_selection.choices = team_list
 
-    if form.validate_on_submit():
-        try:
-            db.session.commit()
-            flash("User Information Succesfully Updated!")
-            return redirect(url_for("user_settings"))
-        except:
-            flash("An Error Occured. Please try again!")
-            return redirect(url_for("user_settings"))
-    return render_template("team_settings.html", form=form)
+    if (form1.submit1.data and form1.validate()) or (form2.submit2.data):
+        # get the team from the form1 selection
+        team = form1.team_selection.data
+        team = Team.query.filter_by(team_name=team).first()
+
+        if form2.submit2.data:
+            team = Team.query.get(team.team_name)
+            team.team_name = form2.teamname.data
+            # team.league = request.form["league"]
+            print(team)
+            try:
+                db.session.commit()
+                flash("Team Information Succesfully Updated!")
+                return redirect(url_for("team_settings"))
+            except:
+                flash("An Error Occured. Please try again!")
+                return redirect(url_for("team_settings"))
+
+        league_id = team.league
+        current_league = League.query.filter_by(id=league_id).first()
+
+        # Make the first item in the choices list the current team league
+        # Default value of SelectionField is the first value
+        # Kind of weird, seemingly the only way to do this
+        leagues = League.query.all()
+        league_list = []
+        for league in leagues:
+            league_list.append((league.id, league.league_name))
+
+        for i in range(len(league_list)):
+            if league_list[i] == current_league.league_name:
+                temp = league_list[i]
+                league_list.pop(i)
+                league_list.append(temp)
+                break
+
+        form2.league.choices = league_list
+
+        # league = League.query.filter_by(id=team.league)
+
+        form2.coach.data = current_user.first_name + " " + current_user.last_name
+        form2.teamname.data = team.team_name
+
+        return render_template("team_settings_info.html", form=form2)
+    return render_template("team_settings_select.html", form=form1)
