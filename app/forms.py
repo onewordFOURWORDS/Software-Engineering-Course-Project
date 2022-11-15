@@ -252,7 +252,7 @@ class ManualPermissionsForm(FlaskForm):
     pr_actions = SelectField("permission request actions",
                              coerce=int,
                              choices=[(1, 'approve pr'), (2, 'deny pr')])
-    
+
     #pr_actions = SelectField("permission request actions",
     #                         coerce=int)
     submit = SubmitField("Submit changes")
