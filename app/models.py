@@ -120,8 +120,6 @@ class Team(db.Model):
     team_name = db.Column(db.String(140), index=True, unique=True)
     coach = db.Column(db.Integer, db.ForeignKey("user.id"))
     league = db.Column(db.Integer, db.ForeignKey("league.id"))
-    # the cascade delete here only impacts the many to many relationship
-    #users = db.relationship('Following', backref='teams', cascade="delete")
 
     def __repr__(self):
         return "<Team {}>".format(self.team_name)
