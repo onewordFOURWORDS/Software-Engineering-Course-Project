@@ -549,11 +549,19 @@ def team_settings():
     if (form1.submit1.data and form1.validate()) or (form2.submit2.data):
         # get the team from the form1 selection
         team = form1.team_selection.data
+        print("########")
+        print(team)
         team = Team.query.filter_by(team_name=team).first()
+        print("????????????")
+        print(team)
 
         if form2.submit2.data:
-            team = Team.query.get(team.team_name)
-            team.team_name = form2.teamname.data
+            team_to_edit = Team.query.filter_by(team_name=team).first()
+            print(team_to_edit)
+            print(request.form["teamname"])
+            team_to_edit.team_name = request.form["teamname"]
+            print("!!!!!!!!!!!!!!!!!")
+            print(team_to_edit)
             # team.league = request.form["league"]
             print(team)
             try:
@@ -589,5 +597,10 @@ def team_settings():
         form2.coach.data = current_user.first_name + " " + current_user.last_name
         form2.teamname.data = team.team_name
 
-        return render_template("team_settings_info.html", form=form2)
+        team = form1.team_selection.data
+        return render_template(
+            "team_settings_info.html",
+            form=form2,
+            team=team,
+        )
     return render_template("team_settings_select.html", form=form1)
