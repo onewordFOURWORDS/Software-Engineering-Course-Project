@@ -1,5 +1,4 @@
 from app.models import Team, League, Tournament
-from datetime import datetime
 
 # NOTE: Max here, still unsure how we're going to end up structuring the project in the end. These were all originally conceived
 # as class methods, eg myTeam.change_league(new_league) instead of change_league(myTeam, newLeague).

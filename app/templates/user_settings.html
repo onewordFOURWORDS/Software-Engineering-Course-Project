@@ -3,6 +3,7 @@
 {% block content %}
 <h1>User Settings</h1>
 <form action="" method="post">
+    {{ form.csrf_token }}
     <p>
         {{ form.username.label }}<br>
         {{ form.username(size=32)}}<br>
@@ -49,5 +50,11 @@
     </p>
 
     <p>{{ form.submit() }}</p>
+
+    {% for field, errors in form.errors.items() %}
+    <div class="alert alert-error">
+        {{ form[field].label }}: {{ ', '.join(errors) }}
+    </div>
+    {% endfor %}
 </form>
 {% endblock %}

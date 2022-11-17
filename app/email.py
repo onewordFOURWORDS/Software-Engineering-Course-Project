@@ -1,4 +1,3 @@
-from cgitb import html
 from flask_mail import Message
 from app import mail
 from flask import render_template
