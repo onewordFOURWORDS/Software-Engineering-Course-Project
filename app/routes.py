@@ -1,9 +1,4 @@
-from crypt import methods
-from datetime import date, datetime
-from operator import methodcaller
-from tracemalloc import start
-from xml.dom import ValidationErr
-from xmlrpc.client import DateTime
+from datetime import date
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
@@ -29,9 +24,7 @@ from flask_login import (
 )
 from app.models import Tournament, User, League, Team
 from werkzeug.urls import url_parse
-from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
-from app.search import filter_tournaments_by_date
 from app.permissions import *
 from app import db
 
@@ -85,7 +78,7 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            affiliated_team=form.affiliated_team.data,  # <- this is wierd, just saying
+            affiliated_team=form.affiliated_team.data,
         )
         #if form.affiliated_team.data is not None:
         #    user.follow(form.affiliated_team.data)
