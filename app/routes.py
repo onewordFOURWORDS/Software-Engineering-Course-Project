@@ -257,7 +257,7 @@ def tournament_page():
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
         elif request.form.get("un_register_button") == "Un-register":
-            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
+            # Un-Register will take the team the coach has with the same league, and un-register that team inside of the tournament.
             for team in teams:
                 if (
                     team.league == tournament.tournament_league
@@ -300,17 +300,22 @@ def tournament_management():
         if request.method == "POST":
             tournament_state = request.form["state"]
         if form.add_team.data:
+            # If they are adding a team, we get the team name from the form, pull it from the database, and then append it to the tournament
+            # teams table.
             team_string = request.form["adding_team"]
             team = Team.query.filter_by(team_name=team_string).first()
             tournament.tournament_teams.append(team)
             db.session.commit()
             return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
         elif form.remove_team.data:
+            # If they are removing a team, we get the team name from the form, pull it from the database, and then remove it from the tournament
+            # teams table.
             team_id = request.form["removing_team"]
             team = Team.query.filter_by(id=team_id).first()
             tournament.tournament_teams.remove(team)
             db.session.commit()
             return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+        # Updates database based on user input.
         tournament.tournament_name = form.tournament_name.data
         tournament.tournament_date = form.tournament_date.data
         tournament.tournament_city = form.tournament_city.data
@@ -527,6 +532,7 @@ def user_settings():
     else:
         return render_template("user_settings.html", form=form)
 
+# Checks to see if a cooach has an registered teams for a certain tournament. Returns true if they do. False otherwise.
 def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
@@ -539,6 +545,7 @@ def is_registered(tournament:Tournament, coach:User):
             return True
     return False
 
+# Checks to see if a cooach has any registered teams for a certain league based off of tournament. Returns true if they do. False otherwise.
 def has_team_in_league(tournament:Tournament, coach:User):
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
     for team in teams:
