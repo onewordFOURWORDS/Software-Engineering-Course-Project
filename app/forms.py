@@ -1,9 +1,3 @@
-from ast import Str
-from concurrent.futures import process
-from os import remove
-from flask import Flask
-from email.policy import default
-from tracemalloc import start
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -26,12 +20,8 @@ from wtforms.validators import (
     Length,
     InputRequired,
 )
-from app import db
-from app.models import User, Tournament, League, Team
-from flask_wtf.file import FileField
-from datetime import date, datetime
+from app.models import User, League, Team
 from operator import itemgetter
-import re
 
 
 class LoginForm(FlaskForm):
