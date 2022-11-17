@@ -12,10 +12,10 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm,
-    RequestPermissionsForm,
+    dbtestForm, RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
+    TournamentManagementForm
 )
 from flask_login import (
     current_user,
@@ -225,13 +225,14 @@ def tournament_page():
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
+    teams = Team.query.all()
     all_teams = Team.query.all()
     all_tournament_teams = db.session.query(tournament_teams_object).all()
     tournament_teams = []
     for tourney_team in all_tournament_teams:
         # pull out teams registered to this tournament
         if tourney_team[0] == tournament.tournament_id:
-            # need nested for loops to pull out each team's name
+        # need nested for loops to pull out each team's name
             for team in all_teams:
                 # if the ids are the same then you have the right team
                 if tourney_team[1] == team.id:
@@ -282,6 +283,20 @@ def tournament_page():
             fake_team = {"name": "FAKE TEAM", "score": 7, "wins": 5, "losses": 3}
             copy.append(fake_team)
             tournament_teams=copy
+        elif request.form.get("un_register_button") == "Un-register":
+            # Register will take the team the coach has with the same league, and register that team inside of the tournament.
+            for team in teams:
+                if (
+                    team.league == tournament.tournament_league
+                    and team.coach == current_user.id
+                ):
+                    tournament.tournament_teams.remove(team)
+            
+            db.session.commit()
+            flash("You have successfully removed your team from " + tournament.tournament_name)
+            return redirect(
+                url_for("tournament_page", tournament=tournament.tournament_name)
+            )
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
@@ -308,33 +323,28 @@ def tournament_management():
         League.query.filter_by(id=tournament.tournament_league).first()
     ).league_name
     tournament_state = tournament.tournament_state
-    form = TournamentCreationForm(obj=tournament)
+    form = TournamentManagementForm(obj=tournament)
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
 
     if form.validate_on_submit():
         if request.method == "POST":
             tournament_state = request.form["state"]
-            leagueString = request.form["league_choose"]
-            league = League.query.filter_by(league_name=leagueString).first()
-        if form.tournament_league.data == "" and League.query.all():
-            tournament.tournament_name = form.tournament_name.data
-            tournament.tournament_date = form.tournament_date.data
-            tournament.tournament_city = form.tournament_city.data
-            tournament.tournament_state = tournament_state
-            tournament.tournament_league = league.id
+        if form.add_team.data:
+            team_string = request.form["adding_team"]
+            team = Team.query.filter_by(team_name=team_string).first()
+            tournament.tournament_teams.append(team)
             db.session.commit()
-        else:
-            league = League(
-                league_name=form.tournament_league.data,
-            )
-            db.session.add(league)
+            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+        elif form.remove_team.data:
+            team_id = request.form["removing_team"]
+            team = Team.query.filter_by(id=team_id).first()
+            tournament.tournament_teams.remove(team)
             db.session.commit()
-            tournament.tournament_name = form.tournament_name.data
-            tournament.tournament_date = form.tournament_date.data
-            tournament.tournament_city = form.tournament_city.data
-            tournament.tournament_state = tournament_state
-            tournament.tournament_league = league.id
-            db.session.commit()
-
+            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+        tournament.tournament_name = form.tournament_name.data
+        tournament.tournament_date = form.tournament_date.data
+        tournament.tournament_city = form.tournament_city.data
+        tournament.tournament_state = tournament_state
         db.session.commit()
         flash("Congratulations, you have updated your tournament!")
         return redirect(
@@ -345,9 +355,11 @@ def tournament_management():
         "tournament_management.html",
         title="Tournament Management",
         form=form,
+        tournament=tournament,
         leagues=leagues,
         tournament_state=tournament_state,
         tournament_league_name=tournament_league_name,
+        teams=teams
     )
 
 
@@ -355,7 +367,20 @@ def tournament_management():
 # @login_required
 def team(team_ID: int):
     team = get_team_by_id(team_ID)
-    return render_template("team_info.html", title=team.team_name, team=team)
+    tournaments = db.session.query(tournament_teams).all()
+    upcoming_tournaments = []
+    previous_tournaments = []
+    for tournament in tournaments:
+        # Checks to make sure tournament id is the same as team ID
+        if int(tournament[1]) == int(team_ID):
+            newTournament = Tournament.query.filter_by(tournament_id=tournament[0]).first()
+            if newTournament.tournament_date < datetime.now():
+                previous_tournaments.append(newTournament)
+            else:
+                upcoming_tournaments.append(newTournament)
+            
+
+    return render_template("team_info.html", title=team.team_name, team=team, upcoming_tournaments=upcoming_tournaments, previous_tournaments = previous_tournaments)
 
 
 @app.route("/<match_ID>/match", methods=["GET", "POST"])
@@ -599,3 +624,22 @@ def team_settings():
             flash("An Error Occured. Please try again!")
             return redirect(url_for("user_settings"))
     return render_template("team_settings.html", form=form)
+
+def is_registered(tournament:Tournament, coach:User):
+    tournaments = db.session.query(tournament_teams).all()
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
+    coaches_team = None
+    for team in teams:
+        if team.coach == coach.id:
+            coaches_team = team
+    for tournament_team in tournaments:
+        if coaches_team is not None and int(tournament_team[1]) == int(coaches_team.id) and int(tournament_team[0]) == tournament.tournament_id:
+            return True
+    return False
+
+def has_team_in_league(tournament:Tournament, coach:User):
+    teams = Team.query.filter_by(league=tournament.tournament_league).all()
+    for team in teams:
+        if team.coach == coach.id and tournament.tournament_league:
+            return True
+    return False
