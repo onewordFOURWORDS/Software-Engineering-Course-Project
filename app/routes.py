@@ -15,6 +15,7 @@ from app.forms import (
     dbtestForm, RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
+    TournamentManagementForm
 )
 from flask_login import (
     current_user,
@@ -225,6 +226,19 @@ def tournament_page():
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     teams = Team.query.all()
+    all_teams = Team.query.all()
+    all_tournament_teams = db.session.query(tournament_teams_object).all()
+    tournament_teams = []
+    for tourney_team in all_tournament_teams:
+        # pull out teams registered to this tournament
+        if tourney_team[0] == tournament.tournament_id:
+        # need nested for loops to pull out each team's name
+            for team in all_teams:
+                # if the ids are the same then you have the right team
+                if tourney_team[1] == team.id:
+                    # build hashtable with necessary values to display on leaderboard
+                    item = {"name": team.team_name, "score": tourney_team[2], "wins": tourney_team[3], "losses": tourney_team[4]}
+                    tournament_teams.append(item)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
         if request.form.get("edit_button") == "Edit Tournament":
@@ -288,6 +302,8 @@ def tournament_page():
         title="Tournament Page",
         tournament=tournament,
         league=league,
+        teams=all_teams,
+        tournament_teams=tournament_teams
     )
 
 
@@ -582,7 +598,7 @@ def user_settings():
             return redirect(url_for("user_settings"))
     return render_template(
         "user_settings.html", form=form, user=user, current_user=current_user
-    }
+    )
 
 
 @app.route("/team_settings", methods=["GET", "POST"])

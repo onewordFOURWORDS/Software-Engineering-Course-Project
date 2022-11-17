@@ -67,7 +67,15 @@
     <input type="submit" name="register_button" value="Register">
 </form>
 
+{% elif current_user.is_coach and registered_boolean %}
+<form method="POST" onsubmit="return confirm('Are you sure you want remove your team in {{tournament.tournament_name }}');">
+    <input type="submit" name="un_register_button" value="Un-register">
+</form>
+{% else %}
+{% endif %}
+
 <style>
+
     #leaderboard-container {
         width: 600px;
         height: auto;
@@ -122,14 +130,6 @@
     .row:nth-child(3) {
         background: #c0c0c0;
     }
-    {% elif current_user.is_coach and registered_boolean %}
-<form method="POST" onsubmit="return confirm('Are you sure you want remove your team in {{tournament.tournament_name }}');">
-    <input type="submit" name="un_register_button" value="Un-register">
-</form>
-{% else %}
-{% endif %}
-
-
     .row:nth-child(4) {
         background: #cd7f32;
     }
