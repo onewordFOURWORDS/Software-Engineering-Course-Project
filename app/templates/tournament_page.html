@@ -1,28 +1,60 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Tournament Profile Page</h1>
+
 <div>
-    <p>Tournament Name: {{tournament.tournament_name }}</a></b></p>
-</div>
-<div>
-    <p>Tournament Date: {{tournament.tournament_date }}</b></p>
-</div>
-<div>
-    <p>Tournament Location: {{tournament.tournament_city }} , {{tournament.tournament_state }}</b></p>
-</div>
-<div>
-    <p>Tournament League: {{league.league_name }}</b></p>
+    <h2 style="text-align: center;">General Information</h2>
+    <div>
+        <p><b>Tournament Name:</b> {{tournament.tournament_name }}</p>
+        <p><b>Date:</b> {{tournament.tournament_date }}</p>
+        <p><b>Location:</b> {{tournament.tournament_city }}, {{tournament.tournament_state }}</p>
+        <p><b>League:</b> {{league.league_name }}</p>
+    </div>
 </div>
 
 <div>
-    <p>Registered Teams: <br> <br>
-        {% for team_id in tournament.tournament_teams %}
-        {{team_id}} <br> <br>
+    <h2 style="text-align: center;">Leaderboard</h2>
+    <div id="leaderboard-container">
+        <div class="row">
+            <div class="name"><b>Team</b></div><div class="wins"><b>Wins</b></div><div class="losses"><b>Losses</b></div><div class="score"><b>Total Score</b></div>
+        </div>
+        {% for team in tournament_teams %}
+            <div class="row">
+                <div class="name">{{ team.name }}</div><div class="wins">{{ team.wins }}</div><div class="losses">{{ team.losses }}</div><div class="score">{{ team.score }}</div>
+            </div>
         {% endfor %}
-        </b></p>
+    </div>
 </div>
-
+<br>
+<div>
+    <h2 style="text-align: center;">Bracket</h2>
+    <div id="bracket-container">
+        <table>
+            <tbody>
+                {% for team in tournament_teams %}
+                    <tr><td class="bracket"><b>{{ loop.index }}</b> {{ team.name }}</td><td></td></tr>
+                    {% if loop.index is divisibleby 2 and team != tournament_teams[-1] %}
+                        <tr><td class="empty">|</td><td class="line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+                    {% elif loop.index is not divisibleby 2 and team == tournament_teams[-1] %}
+                        <tr><td class="bracket" style="text-align: center;"><i>BYE</i></td><td></td></tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<br>
+<br>
+<br>
+<form method="POST">
+    <input type="submit" name="add_team" value="Add Fake Team">
+</form>
+<form method="POST">
+    <input type="submit" name="remove_team" value="Remove Fake Team">
+</form>
+<br>
+<br>
+<br>
 <form method="POST">
     <input type="submit" name="edit_button" value="Edit Tournament">
 </form>
@@ -32,5 +64,104 @@
 <form method="POST" onsubmit="return confirm('Are you sure you want to register for {{tournament.tournament_name }}');">
     <input type="submit" name="register_button" value="Register">
 </form>
+
+<style>
+    #leaderboard-container {
+        width: 600px;
+        height: auto;
+        margin: auto;
+    }
+  
+    .row {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 40px;
+        border: 1px solid #AFAFAF;
+
+    }
+  
+    .name {
+        position: relative;
+        display: inline-block;
+        width: 50%;
+        line-height: 45px;
+    }
+
+    .wins {
+        position: relative;
+        display: inline-block;
+        width: 15%;
+        text-align: center;
+    }
+
+    .losses {
+        position: relative;
+        display: inline-block;
+        width: 15%;
+        text-align: center;
+    }
+  
+    .score {
+        position: relative;
+        display: inline-block;
+        width: 20%;
+        text-align: center;
+    }
+
+    .row:nth-child(1) {
+        text-align: center;
+    }
+
+    .row:nth-child(2) {
+        background: gold;
+    }
+    
+    .row:nth-child(3) {
+        background: #c0c0c0;
+    }
+    
+    .row:nth-child(4) {
+        background: #cd7f32;
+    }
+
+    #bracket-container {
+        width: 600px;
+        height: auto;
+        margin: auto;
+    }
+
+    .bracket {
+        background-color: navy;
+        color: white;
+        border-right: 3px solid navy;
+    }
+
+    .empty {
+        color: white;
+        border-right: 3px solid navy;
+    }
+
+    .line {
+        color: navy;
+        text-decoration: line-through;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // calculate leaderboard positioning
+        let elements = [];
+        let container = document.querySelector("#leaderboard-container");
+        // add each row to the array
+        container.querySelectorAll(".row").forEach(element => elements.push(element));
+        // clear the container
+        container.innerHTML = "";
+        // sort the array from highest to lowest
+        elements.sort((a, b) => b.querySelector(".wins").textContent - a.querySelector(".wins").textContent);
+        // put the elements back into the container
+        elements.forEach(element => container.appendChild(element));
+    });
+</script>
 
 {% endblock %}

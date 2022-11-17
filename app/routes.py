@@ -1,8 +1,4 @@
-from datetime import date, datetime
-from operator import methodcaller
-from tracemalloc import start
-from xml.dom import ValidationErr
-from xmlrpc.client import DateTime
+from datetime import date
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
@@ -16,9 +12,10 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm, RequestPermissionsForm,
-    UserSettingsForm
-
+    dbtestForm,
+    RequestPermissionsForm,
+    UserSettingsForm,
+    TeamSettingsForm,
 )
 from flask_login import (
     current_user,
@@ -26,11 +23,9 @@ from flask_login import (
     logout_user,
     login_required,
 )
-from app.models import Tournament, User, League, Team
+from app.models import Tournament, User, League, Team, tournament_teams as tournament_teams_object
 from werkzeug.urls import url_parse
-from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
-from app.search import filter_tournaments_by_date
 from app.permissions import *
 from app import db
 
@@ -83,9 +78,9 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            affiliated_team=form.affiliated_team.data,  # <- this is wierd, just saying
+            affiliated_team=form.affiliated_team.data,
         )
-        #if form.affiliated_team.data is not None:
+        # if form.affiliated_team.data is not None:
         #    user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
@@ -202,20 +197,25 @@ def tournament_creation():
 def tournament_dashboard():
     # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
     form = Search()
+    leagues = League.query.all()
     form.validate_on_submit()
     start = form.start_date.data
     end = form.end_date.data
-    name = form.tournament_name.data 
+    name = form.tournament_name.data
     # build query up decorator style to allow precise searching -- NEVERMIND THIS BREAKS EVERYTHING
     tournaments = Tournament.query
 
     # filter tournaments inclusive from start to end
     if type(start) == date and type(end) == date:
-        tournaments = tournaments.filter(Tournament.tournament_date >= start).filter(Tournament.tournament_date <= end).all()
+        tournaments = (
+            tournaments.filter(Tournament.tournament_date >= start)
+            .filter(Tournament.tournament_date <= end)
+            .all()
+        )
     # kind of fuzzy search on tournament name
     elif type(name) == str:
         tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments, leagues = leagues)     
     
 
 @app.route("/tournament_page", methods=["GET", "POST"])
@@ -225,7 +225,19 @@ def tournament_page():
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
-    teams = Team.query.all()
+    all_teams = Team.query.all()
+    all_tournament_teams = db.session.query(tournament_teams_object).all()
+    tournament_teams = []
+    for tourney_team in all_tournament_teams:
+        # pull out teams registered to this tournament
+        if tourney_team[0] == tournament.tournament_id:
+            # need nested for loops to pull out each team's name
+            for team in all_teams:
+                # if the ids are the same then you have the right team
+                if tourney_team[1] == team.id:
+                    # build hashtable with necessary values to display on leaderboard
+                    item = {"name": team.team_name, "score": tourney_team[2], "wins": tourney_team[3], "losses": tourney_team[4]}
+                    tournament_teams.append(item)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
         if request.form.get("edit_button") == "Edit Tournament":
@@ -233,7 +245,7 @@ def tournament_page():
                 url_for("tournament_management", tournament=tournament.tournament_name)
             )
         # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
-        # This will also clear the relations from the teams table. 
+        # This will also clear the relations from the teams table.
         elif request.form.get("delete_button") == "Delete Tournament":
             # if user not coach or admin, deny access by redirect
             if not (current_user.is_coach or current_user.is_admin):
@@ -251,23 +263,32 @@ def tournament_page():
             if not (current_user.is_coach or current_user.is_admin):
                 return redirect(url_for("access_denied"))
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
-            for team in teams:
+            for team in all_teams:
                 if (
                     team.league == tournament.tournament_league
                     and team.coach == current_user.id
                 ):
                     tournament.tournament_teams.append(team)
-            
             db.session.commit()
             flash("You have successfully registered for " + tournament.tournament_name)
             return redirect(
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
+        # this creates a copy of the list of tournament teams so that the database is not affected - solely for demostration purposes
+        elif request.form.get("add_team") == "Add Fake Team":
+            copy = []
+            for team in tournament_teams:    
+                copy.append(team)
+            fake_team = {"name": "FAKE TEAM", "score": 7, "wins": 5, "losses": 3}
+            copy.append(fake_team)
+            tournament_teams=copy
     return render_template(
         "tournament_page.html",
         title="Tournament Page",
         tournament=tournament,
         league=league,
+        teams=all_teams,
+        tournament_teams=tournament_teams
     )
 
 
@@ -361,7 +382,9 @@ def league():
         # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = form.affiliated_team.data  # .data is not actually a team object
+            user.affiliated_team = (
+                form.affiliated_team.data
+            )  # .data is not actually a team object
             # scott: this does not work because flask forms does not appear to be passing objects back through
             # scott: I have this issue in other places as well
             db.session.commit()
@@ -412,8 +435,8 @@ def manual_permissions():
         return redirect(url_for("access_denied"))
 
     form = ManualPermissionsForm()
-    users = db.session.query(User).order_by('id')
-    prs = db.session.query(PermissionRequest).order_by('id')
+    users = db.session.query(User).order_by("id")
+    prs = db.session.query(PermissionRequest).order_by("id")
 
     if form.validate_on_submit():
         pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
@@ -495,7 +518,7 @@ def dbtest():
         "User": User,
         "League": League,
         "Team": Team,
-        "Tournament": Tournament
+        "Tournament": Tournament,
     }
     if form.validate_on_submit():
         clear = models[form.model.data]
@@ -505,32 +528,40 @@ def dbtest():
         if gen is not None:
             gen_db(gen, 10)
 
-    return render_template("dbtest.html",
-                           title="DB Testing",
-                           form=form, users=users,
-                           tval=tval, teams=teams,
-                           leagues=leagues, tournaments=tournaments)
+    return render_template(
+        "dbtest.html",
+        title="DB Testing",
+        form=form,
+        users=users,
+        tval=tval,
+        teams=teams,
+        leagues=leagues,
+        tournaments=tournaments,
+    )
 
 
 @app.route("/user_settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
     form = UserSettingsForm()
-    id = current_user.id
-    user = User.query.get_or_404(id)
-    form.username.data = current_user.username
-    form.firstname.data = current_user.first_name
-    form.lastname.data = current_user.last_name
-    form.address.data = current_user.address
-    form.phonenumber.data = current_user.phone_number
-    form.email.data = current_user.email
+    user = current_user
+    # user = User.query.get_or_404(current_user.id)
 
-    if request.method == "POST":
-        # if form.validate_on_submit():
+    if request.method == "GET":
+        form.username.data = current_user.username
+        form.firstname.data = current_user.first_name
+        form.lastname.data = current_user.last_name
+        form.address.data = current_user.address
+        form.phonenumber.data = current_user.phone_number
+        form.email.data = current_user.email
+
+    if form.validate_on_submit():
         # user.username = request.form["username"]
         user.first_name = request.form["firstname"]
         user.last_name = request.form["lastname"]
-        user.phone_number = request.form["phonenumber"]
+        # Strips everything but numbers, this can be changed depending
+        # on how phone numbers should be stored
+        user.phone_number = re.sub("\D", "", request.form["phonenumber"])
         user.address = request.form["address"]
         user.email = request.form["email"]
         try:
@@ -540,5 +571,31 @@ def user_settings():
         except:
             flash("An Error Occured. Please try again!")
             return redirect(url_for("user_settings"))
-    else:
-        return render_template("user_settings.html", form=form)
+    return render_template(
+        "user_settings.html", form=form, user=user, current_user=current_user
+    )
+
+
+@app.route("/team_settings", methods=["GET", "POST"])
+@login_required
+def team_settings():
+    form = TeamSettingsForm()
+
+    coach_id = current_user.id
+    team = Team.query.filter_by(coach=coach_id).first()
+    league = League.query.filter_by(id=team.league).first()
+
+    if request.method == "GET":
+        form.coach.data = current_user.first_name + " " + current_user.last_name
+        form.teamname.data = team.team_name
+        # form.league.data = league.league_name
+
+    if form.validate_on_submit():
+        try:
+            db.session.commit()
+            flash("User Information Succesfully Updated!")
+            return redirect(url_for("user_settings"))
+        except:
+            flash("An Error Occured. Please try again!")
+            return redirect(url_for("user_settings"))
+    return render_template("team_settings.html", form=form)
