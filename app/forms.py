@@ -7,6 +7,9 @@ from wtforms import (
     IntegerField,
     DateField,
     SelectField,
+    FieldList,
+    FormField,
+    SelectMultipleField,
 )
 from wtforms.validators import (
     ValidationError,
@@ -14,7 +17,8 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Regexp,
-    Length, InputRequired,
+    Length,
+    InputRequired,
 )
 from app.models import User, League, Team
 from operator import itemgetter
@@ -45,6 +49,11 @@ class TeamCreationForm(FlaskForm):
         league_list.append((league.id, league.league_name))
     league = SelectField("Select your league: ", choices=league_list)
     submit = SubmitField("Register")
+
+    def validate_team_name(self, field):
+        team = Team.query.filter_by(team_name=field.data).first()
+        if team is not None:
+            raise ValidationError("Team name is already taken.")
 
 
 # TODO: Figure out nesting forms so this can be reused throughout the site.
@@ -87,7 +96,7 @@ class RegistrationForm(FlaskForm):
             team_list, key=itemgetter(0)
         ),  # sort by ID, the first element in each tuple.
         coerce=int,
-        validate_choice=False
+        validate_choice=False,
     )
     # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
@@ -185,7 +194,6 @@ class TournamentCreationForm(FlaskForm):
 
 
 class RequiredIf(object):
-
     def __init__(self, **kwargs):
         self.conditions = kwargs
 
@@ -197,17 +205,25 @@ class RequiredIf(object):
                 if condition_field not in form.data:
                     continue
                 elif dependent_value == reserved_value:
-                    raise Exception('Invalid value of field "%s". Field is required when %s==%s' % (field.name, condition_field, dependent_value))
+                    raise Exception(
+                        'Invalid value of field "%s". Field is required when %s==%s'
+                        % (field.name, condition_field, dependent_value)
+                    )
 
 
 class Search(FlaskForm):
     """
     A search system to filter tournaments by name and date.
     """
+
     date = BooleanField("Date:")
     name = BooleanField("Name:")
-    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    start_date = DateField(
+        "Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    end_date = DateField(
+        "End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
     tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
     submit = SubmitField("Search")
 
@@ -236,64 +252,88 @@ class ManualPermissionsForm(FlaskForm):
                           coerce=int,
                           choices=[(1, 'approve coach'), (2, 'deny coach'), (3, 'approve admin'), (4, 'deny admin')])
     """
-    pr_actions = SelectField("permission request actions",
-                             coerce=int,
-                             choices=[(1, 'approve pr'), (2, 'deny pr')])
+    pr_actions = SelectField(
+        "permission request actions",
+        coerce=int,
+        choices=[(1, "approve pr"), (2, "deny pr")],
+    )
     submit = SubmitField("Submit changes")
 
 
 class RequestPermissionsForm(FlaskForm):
-    actions = SelectField("permission choices",
-                          coerce=int,
-                          choices=[(1, 'coach'), (2, 'admin')])
+    actions = SelectField(
+        "permission choices", coerce=int, choices=[(1, "coach"), (2, "admin")]
+    )
     submit = SubmitField("Submit changes")
 
 
 class dbtestForm(FlaskForm):
-    model = SelectField("DB models",
-                        choices=[('None', 'None'),
-                                 ('User', 'User'),
-                                 ('League', 'League'),
-                                 ('Team', 'Team'),
-                                 ('Tournament', 'Tournament')],
-                        validators=[InputRequired()], )
+    model = SelectField(
+        "DB models",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
 
-    model_gen = SelectField("DB generations",
-                            choices=[('None', 'None'),
-                                     ('User', 'User'),
-                                     ('League', 'League'),
-                                     ('Team', 'Team'),
-                                     ('Tournament', 'Tournament')],
-                            validators=[InputRequired()])
+    model_gen = SelectField(
+        "DB generations",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
     submit = SubmitField("Clear or gen")
 
 
 class UserSettingsForm(FlaskForm):
-    username = StringField(
-        "Username", validators=[DataRequired()], render_kw={"readonly": True}
-    )
+    username = StringField("Username", render_kw={"readonly": True})
     firstname = StringField(
-        "First Name",
+        "First Name*",
         validators=[DataRequired()],
         render_kw={"placeholder": "First Name"},
     )
-    lastname = StringField("Last Name", validators=[DataRequired()])
-    phonenumber = StringField(
-        "Phone Number",
-        render_kw={"placeholder": "555-555-5555"},
+    lastname = StringField(
+        "Last Name*",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "Last Name"},
     )
+    phonenumber = StringField("Phone Number", render_kw={"placeholder": "555-555-5555"})
     address = StringField("Address", render_kw={"placeholder": "123 Fake St."})
-    email = StringField("Email", validators=[Email(), DataRequired()])
+    email = StringField("Email*", validators=[Email()])
 
     submit = SubmitField("Update Settings")
 
-    # def validate_phonenumber(form, field):
-    #     if len(field.data) > 16:
-    #         raise ValidationError("Invalid phone number.")
+    # Very basic number validation, checks that there are 10 digits
+    def validate_phonenumber(self, field):
+        number = field.data
+        number = re.sub("\D", "", number)
+        print(field.data)
+        if len(number) == 10 or len(number) == 0:
+            return
+        else:
+            raise ValidationError("Invalid phone number")
 
-    # def validate_phonenumber(self, phonenumber):
-    #     number = phonenumber.data
-    #     number = re.sub("\D", "", number)
-    #     print(number)
-    #     if len(number) != 10:
-    #         raise ValidationError("Invalid phone number")
+
+class TeamSettingsForm(FlaskForm):
+    teamname = StringField("Team Name", validators=[DataRequired()])
+    coach = StringField("Coach", render_kw={"readonly": True})
+    leagues = League.query.all()
+    league_list = []
+    for league in leagues:
+        league_list.append((league.id, league.league_name))
+    league = SelectField("League", validators=[DataRequired()], choices=league_list)
+    submit = SubmitField("Update Settings")
+
+    def validate_team_name(self, field):
+        team = Team.query.filter_by(team_name=field.data).first()
+        if team is not None:
+            raise ValidationError("Team name is already taken.")
