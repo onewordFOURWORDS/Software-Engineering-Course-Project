@@ -1,9 +1,4 @@
-from crypt import methods
-from datetime import date, datetime
-from operator import methodcaller
-from tracemalloc import start
-from xml.dom import ValidationErr
-from xmlrpc.client import DateTime
+from datetime import date
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.email import send_password_reset_email
@@ -19,8 +14,7 @@ from app.forms import (
     ManualPermissionsForm,
     dbtestForm, RequestPermissionsForm,
     UserSettingsForm,
-    TournamentManagementForm
-
+    TeamSettingsForm,
 )
 from flask_login import (
     current_user,
@@ -28,14 +22,11 @@ from flask_login import (
     logout_user,
     login_required,
 )
-from app.models import Tournament, User, League, Team
+from app.models import Tournament, User, League, Team, tournament_teams as tournament_teams_object
 from werkzeug.urls import url_parse
-from wtforms.fields.core import Label
 from app.team_management import get_teams_in_league, get_team_by_id
-from app.search import filter_tournaments_by_date
 from app.permissions import *
 from app import db
-
 
 
 @app.route("/")
@@ -86,9 +77,9 @@ def register():
             email=form.email.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            affiliated_team=form.affiliated_team.data,  # <- this is wierd, just saying
+            affiliated_team=form.affiliated_team.data,
         )
-        #if form.affiliated_team.data is not None:
+        # if form.affiliated_team.data is not None:
         #    user.follow(form.affiliated_team.data)
         user.set_password(form.password.data)
         print(user)
@@ -134,6 +125,7 @@ def reset_password(token):
 
 
 @app.route("/tournament_creation", methods=["GET", "POST"])
+@login_required
 def tournament_creation():
     """
     If the league box is blank, we will take whichever league was selected from the dropdown for the
@@ -142,6 +134,9 @@ def tournament_creation():
     off all of the information put in.
 
     """
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     leagues = League.query.all()
     form = TournamentCreationForm()
     if form.validate_on_submit():
@@ -197,34 +192,39 @@ def tournament_creation():
 
 
 @app.route("/tournament_dashboard", methods=["GET", "POST"])
+@login_required
 def tournament_dashboard():
     # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
     form = Search()
+    leagues = League.query.all()
     form.validate_on_submit()
     start = form.start_date.data
     end = form.end_date.data
-    name = form.tournament_name.data 
+    name = form.tournament_name.data
     # build query up decorator style to allow precise searching -- NEVERMIND THIS BREAKS EVERYTHING
     tournaments = Tournament.query
 
     # filter tournaments inclusive from start to end
     if type(start) == date and type(end) == date:
-        tournaments = tournaments.filter(Tournament.tournament_date >= start).filter(Tournament.tournament_date <= end).all()
+        tournaments = (
+            tournaments.filter(Tournament.tournament_date >= start)
+            .filter(Tournament.tournament_date <= end)
+            .all()
+        )
     # kind of fuzzy search on tournament name
     elif type(name) == str:
         tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments)     
+    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments, leagues = leagues)     
     
 
 @app.route("/tournament_page", methods=["GET", "POST"])
+@login_required
 def tournament_page():
     tournament_string = request.args.get("tournament", None)
     tournament = Tournament.query.filter_by(tournament_name=tournament_string).first()
     league_id = tournament.tournament_league
     league = League.query.filter_by(id=league_id).first()
     teams = Team.query.all()
-    registered_boolean = is_registered(tournament,current_user)
-    has_team = has_team_in_league(tournament, current_user)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
         if request.form.get("edit_button") == "Edit Tournament":
@@ -232,8 +232,11 @@ def tournament_page():
                 url_for("tournament_management", tournament=tournament.tournament_name)
             )
         # Delete button will delete the tournament from the database and then return the the tournament dahsboard.
-        # This will also clear the relations from the teams table. 
+        # This will also clear the relations from the teams table.
         elif request.form.get("delete_button") == "Delete Tournament":
+            # if user not coach or admin, deny access by redirect
+            if not (current_user.is_coach or current_user.is_admin):
+                return redirect(url_for("access_denied"))
             tournament.tournament_teams.clear()
             db.session.delete(tournament)
             db.session.commit()
@@ -243,19 +246,29 @@ def tournament_page():
             )
             return redirect(url_for("tournament_dashboard"))
         elif request.form.get("register_button") == "Register":
+            # if user not coach or admin, deny access by redirect
+            if not (current_user.is_coach or current_user.is_admin):
+                return redirect(url_for("access_denied"))
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
-            for team in teams:
+            for team in all_teams:
                 if (
                     team.league == tournament.tournament_league
                     and team.coach == current_user.id
                 ):
                     tournament.tournament_teams.append(team)
-            
             db.session.commit()
             flash("You have successfully registered for " + tournament.tournament_name)
             return redirect(
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
+        # this creates a copy of the list of tournament teams so that the database is not affected - solely for demostration purposes
+        elif request.form.get("add_team") == "Add Fake Team":
+            copy = []
+            for team in tournament_teams:    
+                copy.append(team)
+            fake_team = {"name": "FAKE TEAM", "score": 7, "wins": 5, "losses": 3}
+            copy.append(fake_team)
+            tournament_teams=copy
         elif request.form.get("un_register_button") == "Un-register":
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
             for team in teams:
@@ -275,14 +288,15 @@ def tournament_page():
         title="Tournament Page",
         tournament=tournament,
         league=league,
-        current_user = current_user,
-        registered_boolean = registered_boolean,
-        has_team = has_team,
     )
 
 
 @app.route("/tournament_management", methods=["GET", "POST"])
+@login_required
 def tournament_management():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     # Tournament management essentially does the same thing as the create team, but instead of making new tournament objects,
     # we are just adding on to the current tournament. With the way leagues are right now, I think we might have to remove
     # the option to edit leagues once a tournament is created for simplicity sakes.
@@ -354,11 +368,19 @@ def team(team_ID: int):
 
 
 @app.route("/<match_ID>/match", methods=["GET", "POST"])
+@login_required
 def match(match_ID: int):
     return render_template("match.html")
 
 
+@app.route("/access_denied")
+@login_required
+def access_denied():
+    return render_template("access_denied.html")
+
+
 @app.route("/league", methods=["GET", "POST"])
+@login_required
 def league():
     # if the user doesn't have an affiliated team and league,
     # the template will display a form so they can select one.
@@ -369,7 +391,9 @@ def league():
         # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = form.affiliated_team.data  # .data is not actually a team object
+            user.affiliated_team = (
+                form.affiliated_team.data
+            )  # .data is not actually a team object
             # scott: this does not work because flask forms does not appear to be passing objects back through
             # scott: I have this issue in other places as well
             db.session.commit()
@@ -385,6 +409,9 @@ def league():
 @app.route("/create_team", methods=["GET", "POST"])
 @login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
 def create_team():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     # TODO: Might want to update this later when coach and admin classes are
     # defined/we have a coaches table.
     coaches = User.query.filter_by(is_coach=True)
@@ -410,68 +437,89 @@ def create_team():
 
 
 @app.route("/manual_permissions", methods=["GET", "POST"])
+@login_required
 def manual_permissions():
-    form = ManualPermissionsForm()
-    users = db.session.query(User).order_by('id')
-    prs = db.session.query(PermissionRequest).order_by('id')
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
 
-    tval = prs
+    form = ManualPermissionsForm()
+    users = db.session.query(User).order_by("id")
+    prs = db.session.query(PermissionRequest).order_by("id")
+
     if form.validate_on_submit():
-        #user = User.query.filter_by(id=form.userID.data).first()
         pr = PermissionRequest.query.filter_by(id=form.prID.data).first()
         user = User.query.filter_by(id=pr.user).first()
-        tval = pr.id
-
-        """
-        if form.actions.data == 1:
-            approve_coach(current_user, user)
-        if form.actions.data == 2:
-            deny_coach(current_user, user)
-        if form.actions.data == 3:
-            approve_admin(current_user, user)
-        if form.actions.data == 4:
-            deny_admin(current_user, user)
-        """
-        
-        if form.pr_actions.data == 1:
+        if form.pr_actions.data == 1:  # approve
             if pr.coach_request == 1:
                 approve_coach(current_user, user, pr)
             elif pr.admin_request == 1:
                 approve_admin(current_user, user, pr)
-        if form.pr_actions.data == 2:
+        if form.pr_actions.data == 2:  # deny
             if pr.coach_request == 1:
                 deny_coach(current_user, user, pr)
             elif pr.admin_request == 1:
-                deny_admin(current_user, user, pr)
-
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs, tval=tval)
+                if current_user.id == user.id:
+                    flash("Do not try to remove your own admin permission!")
+                else:
+                    deny_admin(current_user, user, pr)
+    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs)
 
 
 @app.route("/request_permission", methods=["GET", "POST"])
+@login_required
 def request_permission():
     form = RequestPermissionsForm()
-    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
     if form.validate_on_submit():
-        if form.actions.data == 1:
-            # generate new pr object
-            pr = PermissionRequest(coach_request=1, user=current_user.id)
-            db.session.add(pr)
-            db.session.commit()
-        if form.actions.data == 2:
-            pr = PermissionRequest(admin_request=1, user=current_user.id)
-            db.session.add(pr)
-            db.session.commit()
+        # prs = list of permission requests associated with current user
+        prs = PermissionRequest.query.filter_by(user=current_user.id).all()
+        coach_request = 0  # 1 if request already exists
+        admin_request = 0
+        for each in prs:
+            if each.label == 'Coach request':
+                coach_request = 1
+            if each.label == 'Admin request':
+                admin_request = 1
+        if form.request_coach.data:
+            if current_user.is_coach:
+                flash("You are already a Coach!")
+            elif coach_request == 0:
+                # generate new pr object
+                pr = PermissionRequest(coach_request=1,
+                                       user=current_user.id,
+                                       username=current_user.username,
+                                       label='Coach request')
+                db.session.add(pr)
+                db.session.commit()
+            else:
+                flash("You already have a Coach request in!")
+        if form.request_admin.data:
+            if current_user.is_admin:
+                flash("You are already an Admin!")
+            elif admin_request == 0:
+                pr = PermissionRequest(admin_request=1,
+                                       user=current_user.id,
+                                       username=current_user.username,
+                                       label='Admin request')
+                db.session.add(pr)
+                db.session.commit()
+            else:
+                flash("You already have an Admin request in!")
+    prs = PermissionRequest.query.filter_by(user=current_user.id).all()
     return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
 
 
-
 @app.route("/dbtest", methods=["GET", "POST"])
+@login_required
 def dbtest():
+    # if user not coach or admin, deny access by redirect
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
     form = dbtestForm()
     users = db.session.query(User).order_by('id')
     teams = db.session.query(Team).order_by('id')
     leagues = db.session.query(League).order_by('id')
-    tournaments = db.session.query(Tournament).order_by('id')
+    tournaments = db.session.query(Tournament).order_by('tournament_id')
     # test value
     tval = "none"
     models = {
@@ -479,7 +527,7 @@ def dbtest():
         "User": User,
         "League": League,
         "Team": Team,
-        "Tournament": Tournament
+        "Tournament": Tournament,
     }
     if form.validate_on_submit():
         clear = models[form.model.data]
@@ -489,32 +537,40 @@ def dbtest():
         if gen is not None:
             gen_db(gen, 10)
 
-    return render_template("dbtest.html",
-                           title="DB Testing",
-                           form=form, users=users,
-                           tval=tval, teams=teams,
-                           leagues=leagues, tournaments=tournaments)
+    return render_template(
+        "dbtest.html",
+        title="DB Testing",
+        form=form,
+        users=users,
+        tval=tval,
+        teams=teams,
+        leagues=leagues,
+        tournaments=tournaments,
+    )
 
 
 @app.route("/user_settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
     form = UserSettingsForm()
-    id = current_user.id
-    user = User.query.get_or_404(id)
-    form.username.data = current_user.username
-    form.firstname.data = current_user.first_name
-    form.lastname.data = current_user.last_name
-    form.address.data = current_user.address
-    form.phonenumber.data = current_user.phone_number
-    form.email.data = current_user.email
+    user = current_user
+    # user = User.query.get_or_404(current_user.id)
 
-    if request.method == "POST":
-        # if form.validate_on_submit():
+    if request.method == "GET":
+        form.username.data = current_user.username
+        form.firstname.data = current_user.first_name
+        form.lastname.data = current_user.last_name
+        form.address.data = current_user.address
+        form.phonenumber.data = current_user.phone_number
+        form.email.data = current_user.email
+
+    if form.validate_on_submit():
         # user.username = request.form["username"]
         user.first_name = request.form["firstname"]
         user.last_name = request.form["lastname"]
-        user.phone_number = request.form["phonenumber"]
+        # Strips everything but numbers, this can be changed depending
+        # on how phone numbers should be stored
+        user.phone_number = re.sub("\D", "", request.form["phonenumber"])
         user.address = request.form["address"]
         user.email = request.form["email"]
         try:
@@ -524,8 +580,34 @@ def user_settings():
         except:
             flash("An Error Occured. Please try again!")
             return redirect(url_for("user_settings"))
-    else:
-        return render_template("user_settings.html", form=form)
+    return render_template(
+        "user_settings.html", form=form, user=user, current_user=current_user
+    }
+
+
+@app.route("/team_settings", methods=["GET", "POST"])
+@login_required
+def team_settings():
+    form = TeamSettingsForm()
+
+    coach_id = current_user.id
+    team = Team.query.filter_by(coach=coach_id).first()
+    league = League.query.filter_by(id=team.league).first()
+
+    if request.method == "GET":
+        form.coach.data = current_user.first_name + " " + current_user.last_name
+        form.teamname.data = team.team_name
+        # form.league.data = league.league_name
+
+    if form.validate_on_submit():
+        try:
+            db.session.commit()
+            flash("User Information Succesfully Updated!")
+            return redirect(url_for("user_settings"))
+        except:
+            flash("An Error Occured. Please try again!")
+            return redirect(url_for("user_settings"))
+    return render_template("team_settings.html", form=form)
 
 def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()

@@ -6,13 +6,13 @@
         <br> admin status: {{ current_user.is_admin }}</h1>
     <p>see list of your permission requests</p>
     {% for prs in prs %}
-    <div><p>user: <b>{{ prs.user }}</b> request ID: {{ prs.id }}, coach: {{ prs.coach_request }}, admin: {{ prs.admin_request }}</p></div>
+    <div><p>user: <b>{{ prs.username }}</b> request ID: {{ prs.id }}, {{ prs.label }}</p></div>
     {% endfor %}
     <p>request a permissions change</p>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
-        <p>{{ form.actions() }} {{ form.actions.label }}</p>
-        <p>{{ form.submit() }}</p>
+        <p>{{ form.request_coach() }}</p>
+        <p>{{ form.request_admin() }}</p>
     </form>
     <p>{{ tval }}</p>
 

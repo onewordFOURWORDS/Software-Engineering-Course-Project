@@ -48,9 +48,9 @@
 <p>          see list of all tournaments</p>
 <div class="scrollmenu">
     {% for tournaments in tournaments %}
-    <a href="{{ url_for("TournamentDashboard")}}">
+    <a href="{{ url_for("tournament_dashboard")}}">
     <p><b>{{ tournaments.tournament_name }}</b></p>
-    <p>ID: {{ tournaments.id }} Date: {{ tournaments.tournament_date }}</p>
+    <p>ID: {{ tournaments.tournament_id }} Date: {{ tournaments.tournament_date }}</p>
     </a>
     {% endfor %}
 </div>
