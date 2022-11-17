@@ -16,7 +16,7 @@ the resulting db is testable in shell and saved to a local file, no need for hos
 tournament_teams = db.Table(
     "tournament_teams",
     db.Column("tournament_id", db.Integer, db.ForeignKey("tournament.tournament_id")),
-    db.Column("team_id", db.Integer, db.ForeignKey("team.id")),
+    db.Column("team_id", db.Integer, db.ForeignKey("team.id")),    
     db.Column(("score"), db.Integer),
     db.Column(("wins"), db.Integer),
     db.Column(("losses"), db.Integer)

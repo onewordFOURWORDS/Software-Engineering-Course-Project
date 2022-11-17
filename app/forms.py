@@ -218,13 +218,9 @@ class Search(FlaskForm):
 
     date = BooleanField("Date:")
     name = BooleanField("Name:")
-    start_date = DateField(
-        "Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
-    )
-    end_date = DateField(
-        "End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
-    )
-    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True)])
+    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
+    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True), Regexp(regex=r"[ \'A-Za-z0-9]*$", message="Tournament names never contain any special characters.")])
     submit = SubmitField("Search")
 
 
