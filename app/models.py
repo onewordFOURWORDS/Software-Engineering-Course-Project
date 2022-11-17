@@ -17,6 +17,9 @@ tournament_teams = db.Table(
     "tournament_teams",
     db.Column("tournament_id", db.Integer, db.ForeignKey("tournament.tournament_id")),
     db.Column("team_id", db.Integer, db.ForeignKey("team.id")),
+    db.Column(("score"), db.Integer),
+    db.Column(("wins"), db.Integer),
+    db.Column(("losses"), db.Integer)
 )
 
 
@@ -219,3 +222,4 @@ def gen_db(model, num):
             t = Tournament(tournament_name=name, tournament_location=name, tournament_league=league.id)
             db.session.add(t)
             db.session.commit()
+
