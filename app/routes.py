@@ -530,46 +530,6 @@ def request_permission():
     return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
 
 
-@app.route("/dbtest", methods=["GET", "POST"])
-@login_required
-def dbtest():
-    # if user not coach or admin, deny access by redirect
-    if not (current_user.is_coach or current_user.is_admin):
-        return redirect(url_for("access_denied"))
-    form = dbtestForm()
-    users = db.session.query(User).order_by('id')
-    teams = db.session.query(Team).order_by('id')
-    leagues = db.session.query(League).order_by('id')
-    tournaments = db.session.query(Tournament).order_by('tournament_id')
-    # test value
-    tval = "none"
-    models = {
-        "None": None,
-        "User": User,
-        "League": League,
-        "Team": Team,
-        "Tournament": Tournament,
-    }
-    if form.validate_on_submit():
-        clear = models[form.model.data]
-        gen = models[form.model_gen.data]
-        if clear is not None:
-            clear_db(clear)
-        if gen is not None:
-            gen_db(gen, 10)
-
-    return render_template(
-        "dbtest.html",
-        title="DB Testing",
-        form=form,
-        users=users,
-        tval=tval,
-        teams=teams,
-        leagues=leagues,
-        tournaments=tournaments,
-    )
-
-
 @app.route("/user_settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
