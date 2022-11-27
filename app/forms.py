@@ -263,33 +263,6 @@ class RequestPermissionsForm(FlaskForm):
     request_admin = SubmitField("Admin request")
 
 
-class dbtestForm(FlaskForm):
-    model = SelectField(
-        "DB models",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-
-    model_gen = SelectField(
-        "DB generations",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-    submit = SubmitField("Clear or gen")
-
-
 class UserSettingsForm(FlaskForm):
     username = StringField("Username", render_kw={"readonly": True})
     firstname = StringField(
@@ -307,6 +280,7 @@ class UserSettingsForm(FlaskForm):
     email = StringField("Email*", validators=[Email()])
 
     submit = SubmitField("Update Settings")
+
 
 class TournamentManagementForm(FlaskForm):
     tournament_name = StringField(

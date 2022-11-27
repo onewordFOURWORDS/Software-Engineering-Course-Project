@@ -1,14 +1,37 @@
 from app.routes import *
 from app.models import *
+from app.forms import *
 
-# from _init_
 
-from app.models import *
-with app.app_context():
-    db.create_all()
+# from forms
+class dbtestForm(FlaskForm):
+    model = SelectField(
+        "DB models",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
+
+    model_gen = SelectField(
+        "DB generations",
+        choices=[
+            ("None", "None"),
+            ("User", "User"),
+            ("League", "League"),
+            ("Team", "Team"),
+            ("Tournament", "Tournament"),
+        ],
+        validators=[InputRequired()],
+    )
+    submit = SubmitField("Clear or gen")
+
 
 # from routes
-
 @app.route("/dbtest", methods=["GET", "POST"])
 @login_required
 def dbtest():
@@ -60,6 +83,7 @@ def clear_db(model):
         rebuild_users()
     return
 
+
 # TODO: other dev team members- add your info here and a hashed password if you want one in order to auto generate
 def rebuild_users():
     pw = 'pbkdf2:sha256:260000$Q2JJAaHpYOxsdPFx$fc0919f2eb018351b9c55e748ab1f69f2731b560f42e285b625046c45170b70e'
@@ -68,7 +92,7 @@ def rebuild_users():
                  hashed_password=pw,
                  first_name='admin',
                  last_name='support',
-                 is_admin=1
+                 is_admin=1,
                  )
     Scott = User(username='Scott_Gere',
                  email='sgman0997@gmail.com',
@@ -76,7 +100,7 @@ def rebuild_users():
                  first_name='Scott',
                  last_name='Gere',
                  is_admin=1,
-                 is_coach=1
+                 is_coach=1,
                  )
     db.session.add_all([admin, Scott])
     db.session.commit()
@@ -85,15 +109,15 @@ def rebuild_users():
 
 def gen_db(model, num):
     # must be coach to generate teams
-    league = League.query.first()
-    if not league:
-        league = League(league_name='test league')
-        db.session.add(league)
+    league_gen = League.query.first()
+    if not league_gen:
+        league_gen = League(league_name='test league')
+        db.session.add(league_gen)
         db.session.commit()
     if model is Team:
         for i in range(num):
             name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
-            t = Team(team_name=name, coach=current_user.id, league=league.id)
+            t = Team(team_name=name, coach=current_user.id, league=league_gen.id)
             db.session.add(t)
             db.session.commit()
     elif model is League:
@@ -105,10 +129,14 @@ def gen_db(model, num):
     elif model is Tournament:
         for i in range(num):
             name = (''.join(random.choice(string.ascii_letters) for j in range(5)))
-            t = Tournament(tournament_name=name, tournament_state='NC', tournament_league=league.id)
+            t = Tournament(tournament_name=name, tournament_state='NC', tournament_league=league_gen.id)
             db.session.add(t)
             db.session.commit()
 
+
+# from _init_
+with app.app_context():
+    db.create_all()
 
 user = User.query.filter_by(username='admin').first()
 if not user:

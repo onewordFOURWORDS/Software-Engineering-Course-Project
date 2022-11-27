@@ -590,6 +590,7 @@ def team_settings():
             return redirect(url_for("user_settings"))
     return render_template("team_settings.html", form=form)
 
+
 def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()
     
@@ -602,6 +603,7 @@ def is_registered(tournament:Tournament, coach:User):
         if coaches_team is not None and int(tournament_team[1]) == int(coaches_team.id) and int(tournament_team[0]) == tournament.tournament_id:
             return True
     return False
+
 
 def has_team_in_league(tournament:Tournament, coach:User):
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
