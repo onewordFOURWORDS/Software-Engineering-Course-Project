@@ -6,7 +6,8 @@
     {{ form.hidden_tag() }}
     <p>
         {{ form.username.label }}<br>
-        {{ form.username(size=32) }}<br>
+        {{ form.username(size=32) }}
+        <span style="color: darkgray;">Length 3-32 characters</span><br>
         {% for error in form.username.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}

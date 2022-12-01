@@ -77,7 +77,9 @@ class TeamCreationForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
+    username = StringField(
+        "Username", validators=[DataRequired(), Length(min=3, max=32)]
+    )
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField(
         "Password", validators=[DataRequired(), Length(min=12, max=64)]
