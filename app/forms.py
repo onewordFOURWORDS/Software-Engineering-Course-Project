@@ -372,3 +372,11 @@ class TeamSettingsForm(FlaskForm):
         team = Team.query.filter_by(team_name=field.data).first()
         if team is not None:
             raise ValidationError("Team name is already taken.")
+
+class TeamScore(FlaskForm):
+    total_score = IntegerField("Total Score")
+    total_wins = IntegerField("Total Wins")
+    total_losses = IntegerField("Total Losses")
+    submit = SubmitField("Submit")
+    
+
