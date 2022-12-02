@@ -7,6 +7,8 @@ from selenium.webdriver.common.by import By
 from time import sleep
 import random
 import string
+import os
+from app import app
 
 """
 This file is testing the user registration page. Issue #15.
@@ -73,7 +75,7 @@ def init_driver():
     """
     Initlize a webdriver
     """
-    PATH = "/usr/bin/chromedriver"
+    PATH = app.config["SEL_PATH"]
     driver = webdriver.Chrome(PATH)
     driver.get("http://127.0.0.1:5000/register")
     return driver

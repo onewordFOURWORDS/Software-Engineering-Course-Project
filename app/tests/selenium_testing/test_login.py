@@ -48,7 +48,7 @@ def init_driver():
     """
     Initlize a webdriver
     """
-    PATH = "/usr/bin/chromedriver"
+    PATH = app.config["SEL_PATH"]
     driver = webdriver.Chrome(PATH)
     driver.get("http://127.0.0.1:5000/login")
     return driver
