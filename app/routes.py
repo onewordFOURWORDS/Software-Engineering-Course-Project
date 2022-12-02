@@ -12,10 +12,11 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm, RequestPermissionsForm,
+    dbtestForm,
+    RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
-    TournamentManagementForm
+    TournamentManagementForm,
 )
 from flask_login import (
     current_user,
@@ -23,11 +24,18 @@ from flask_login import (
     logout_user,
     login_required,
 )
-from app.models import Tournament, User, League, Team, tournament_teams as tournament_teams_object
+from app.models import (
+    Tournament,
+    User,
+    League,
+    Team,
+    tournament_teams as tournament_teams_object,
+)
 from werkzeug.urls import url_parse
 from app.team_management import get_teams_in_league, get_team_by_id
 from app.permissions import *
 from app import db
+import re
 
 
 @app.route("/")
@@ -214,9 +222,17 @@ def tournament_dashboard():
         )
     # kind of fuzzy search on tournament name
     elif type(name) == str:
-        tournaments = tournaments.filter(Tournament.tournament_name.contains(name)).all()
-    return render_template("tournament_dashboard.html", title="Tournament Dashboard", form = form, tournaments = tournaments, leagues = leagues)     
-    
+        tournaments = tournaments.filter(
+            Tournament.tournament_name.contains(name)
+        ).all()
+    return render_template(
+        "tournament_dashboard.html",
+        title="Tournament Dashboard",
+        form=form,
+        tournaments=tournaments,
+        leagues=leagues,
+    )
+
 
 @app.route("/tournament_page", methods=["GET", "POST"])
 @login_required
@@ -232,12 +248,17 @@ def tournament_page():
     for tourney_team in all_tournament_teams:
         # pull out teams registered to this tournament
         if tourney_team[0] == tournament.tournament_id:
-        # need nested for loops to pull out each team's name
+            # need nested for loops to pull out each team's name
             for team in all_teams:
                 # if the ids are the same then you have the right team
                 if tourney_team[1] == team.id:
                     # build hashtable with necessary values to display on leaderboard
-                    item = {"name": team.team_name, "score": tourney_team[2], "wins": tourney_team[3], "losses": tourney_team[4]}
+                    item = {
+                        "name": team.team_name,
+                        "score": tourney_team[2],
+                        "wins": tourney_team[3],
+                        "losses": tourney_team[4],
+                    }
                     tournament_teams.append(item)
     if request.method == "POST":
         # Edit button will take them to tournament management page.
@@ -278,11 +299,11 @@ def tournament_page():
         # this creates a copy of the list of tournament teams so that the database is not affected - solely for demostration purposes
         elif request.form.get("add_team") == "Add Fake Team":
             copy = []
-            for team in tournament_teams:    
+            for team in tournament_teams:
                 copy.append(team)
             fake_team = {"name": "FAKE TEAM", "score": 7, "wins": 5, "losses": 3}
             copy.append(fake_team)
-            tournament_teams=copy
+            tournament_teams = copy
         elif request.form.get("un_register_button") == "Un-register":
             # Register will take the team the coach has with the same league, and register that team inside of the tournament.
             for team in teams:
@@ -291,9 +312,12 @@ def tournament_page():
                     and team.coach == current_user.id
                 ):
                     tournament.tournament_teams.remove(team)
-            
+
             db.session.commit()
-            flash("You have successfully removed your team from " + tournament.tournament_name)
+            flash(
+                "You have successfully removed your team from "
+                + tournament.tournament_name
+            )
             return redirect(
                 url_for("tournament_page", tournament=tournament.tournament_name)
             )
@@ -303,7 +327,7 @@ def tournament_page():
         tournament=tournament,
         league=league,
         teams=all_teams,
-        tournament_teams=tournament_teams
+        tournament_teams=tournament_teams,
     )
 
 
@@ -334,13 +358,17 @@ def tournament_management():
             team = Team.query.filter_by(team_name=team_string).first()
             tournament.tournament_teams.append(team)
             db.session.commit()
-            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+            return redirect(
+                url_for("tournament_management", tournament=tournament.tournament_name)
+            )
         elif form.remove_team.data:
             team_id = request.form["removing_team"]
             team = Team.query.filter_by(id=team_id).first()
             tournament.tournament_teams.remove(team)
             db.session.commit()
-            return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+            return redirect(
+                url_for("tournament_management", tournament=tournament.tournament_name)
+            )
         tournament.tournament_name = form.tournament_name.data
         tournament.tournament_date = form.tournament_date.data
         tournament.tournament_city = form.tournament_city.data
@@ -359,7 +387,7 @@ def tournament_management():
         leagues=leagues,
         tournament_state=tournament_state,
         tournament_league_name=tournament_league_name,
-        teams=teams
+        teams=teams,
     )
 
 
@@ -373,14 +401,21 @@ def team(team_ID: int):
     for tournament in tournaments:
         # Checks to make sure tournament id is the same as team ID
         if int(tournament[1]) == int(team_ID):
-            newTournament = Tournament.query.filter_by(tournament_id=tournament[0]).first()
+            newTournament = Tournament.query.filter_by(
+                tournament_id=tournament[0]
+            ).first()
             if newTournament.tournament_date < datetime.now():
                 previous_tournaments.append(newTournament)
             else:
                 upcoming_tournaments.append(newTournament)
-            
 
-    return render_template("team_info.html", title=team.team_name, team=team, upcoming_tournaments=upcoming_tournaments, previous_tournaments = previous_tournaments)
+    return render_template(
+        "team_info.html",
+        title=team.team_name,
+        team=team,
+        upcoming_tournaments=upcoming_tournaments,
+        previous_tournaments=previous_tournaments,
+    )
 
 
 @app.route("/<match_ID>/match", methods=["GET", "POST"])
@@ -400,18 +435,12 @@ def access_denied():
 def league():
     # if the user doesn't have an affiliated team and league,
     # the template will display a form so they can select one.
-    if current_user.league_id is None:
+    if current_user.affiliated_team is None:
         teams = None
         form = LeaguePageTeamSelectForm()
-        # TODO: Resume here. This is never returning true. hmmm...
-        # was not returning true
         if request.method == "POST" and form.validate_on_submit():
             user = current_user
-            user.affiliated_team = (
-                form.affiliated_team.data
-            )  # .data is not actually a team object
-            # scott: this does not work because flask forms does not appear to be passing objects back through
-            # scott: I have this issue in other places as well
+            user.affiliated_team = form.affiliated_team.data
             db.session.commit()
             return redirect(url_for("league"))
     # otherwise, it will display the teams in their league.
@@ -423,13 +452,11 @@ def league():
 
 
 @app.route("/create_team", methods=["GET", "POST"])
-@login_required  # TODO: It would be nice to have coach_required and admin_required decorators for these pages.
+@login_required
 def create_team():
     # if user not coach or admin, deny access by redirect
     if not (current_user.is_coach or current_user.is_admin):
         return redirect(url_for("access_denied"))
-    # TODO: Might want to update this later when coach and admin classes are
-    # defined/we have a coaches table.
     coaches = User.query.filter_by(is_coach=True)
     form = TeamCreationForm()
     if form.validate_on_submit():
@@ -479,7 +506,9 @@ def manual_permissions():
                     flash("Do not try to remove your own admin permission!")
                 else:
                     deny_admin(current_user, user, pr)
-    return render_template("manual_permissions.html", title="Permissions", form=form, users=users, prs=prs)
+    return render_template(
+        "manual_permissions.html", title="Permissions", form=form, users=users, prs=prs
+    )
 
 
 @app.route("/request_permission", methods=["GET", "POST"])
@@ -492,19 +521,21 @@ def request_permission():
         coach_request = 0  # 1 if request already exists
         admin_request = 0
         for each in prs:
-            if each.label == 'Coach request':
+            if each.label == "Coach request":
                 coach_request = 1
-            if each.label == 'Admin request':
+            if each.label == "Admin request":
                 admin_request = 1
         if form.request_coach.data:
             if current_user.is_coach:
                 flash("You are already a Coach!")
             elif coach_request == 0:
                 # generate new pr object
-                pr = PermissionRequest(coach_request=1,
-                                       user=current_user.id,
-                                       username=current_user.username,
-                                       label='Coach request')
+                pr = PermissionRequest(
+                    coach_request=1,
+                    user=current_user.id,
+                    username=current_user.username,
+                    label="Coach request",
+                )
                 db.session.add(pr)
                 db.session.commit()
             else:
@@ -513,16 +544,20 @@ def request_permission():
             if current_user.is_admin:
                 flash("You are already an Admin!")
             elif admin_request == 0:
-                pr = PermissionRequest(admin_request=1,
-                                       user=current_user.id,
-                                       username=current_user.username,
-                                       label='Admin request')
+                pr = PermissionRequest(
+                    admin_request=1,
+                    user=current_user.id,
+                    username=current_user.username,
+                    label="Admin request",
+                )
                 db.session.add(pr)
                 db.session.commit()
             else:
                 flash("You already have an Admin request in!")
     prs = PermissionRequest.query.filter_by(user=current_user.id).all()
-    return render_template("request_permission.html", title="Request Permission", form=form, prs=prs)
+    return render_template(
+        "request_permission.html", title="Request Permission", form=form, prs=prs
+    )
 
 
 @app.route("/dbtest", methods=["GET", "POST"])
@@ -532,10 +567,10 @@ def dbtest():
     if not (current_user.is_coach or current_user.is_admin):
         return redirect(url_for("access_denied"))
     form = dbtestForm()
-    users = db.session.query(User).order_by('id')
-    teams = db.session.query(Team).order_by('id')
-    leagues = db.session.query(League).order_by('id')
-    tournaments = db.session.query(Tournament).order_by('tournament_id')
+    users = db.session.query(User).order_by("id")
+    teams = db.session.query(Team).order_by("id")
+    leagues = db.session.query(League).order_by("id")
+    tournaments = db.session.query(Tournament).order_by("tournament_id")
     # test value
     tval = "none"
     models = {
@@ -625,7 +660,8 @@ def team_settings():
             return redirect(url_for("user_settings"))
     return render_template("team_settings.html", form=form)
 
-def is_registered(tournament:Tournament, coach:User):
+
+def is_registered(tournament: Tournament, coach: User):
     tournaments = db.session.query(tournament_teams).all()
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
     coaches_team = None
@@ -633,11 +669,16 @@ def is_registered(tournament:Tournament, coach:User):
         if team.coach == coach.id:
             coaches_team = team
     for tournament_team in tournaments:
-        if coaches_team is not None and int(tournament_team[1]) == int(coaches_team.id) and int(tournament_team[0]) == tournament.tournament_id:
+        if (
+            coaches_team is not None
+            and int(tournament_team[1]) == int(coaches_team.id)
+            and int(tournament_team[0]) == tournament.tournament_id
+        ):
             return True
     return False
 
-def has_team_in_league(tournament:Tournament, coach:User):
+
+def has_team_in_league(tournament: Tournament, coach: User):
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
     for team in teams:
         if team.coach == coach.id and tournament.tournament_league:

@@ -3,15 +3,17 @@
 {% block content %}
     <h1>{{ team.team_name }}</h1>
     
-    Upcoming Tournaments <br><br>
-    {% for tournament in upcoming_tournaments %}
-    <a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
-        <br><br>
+    <h3>Upcoming Tournaments</h3>
+    <ul class="list-group">
+        {% for tournament in upcoming_tournaments %}
+            <li class="list-group-item"><a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name}}</a></li>
         {% endfor %}
+    </ul>
     
-    Previous Tournaments <br><br>
-    {% for tournament in previous_tournaments %}
-    <a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
-        <br><br>
+    <h3>Previous Tournaments</h3>
+    <ul class="list-group">
+        {% for tournament in previous_tournaments %}
+            <li class="list-group-item"><a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name}}</a></li>
         {% endfor %}
+    </ul>
 {% endblock %}

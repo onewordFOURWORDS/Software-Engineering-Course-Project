@@ -6,12 +6,10 @@
         <div class="container" id="league_page_body_container">
         {# If user has affiliated league, render teams in league #}
         {% for team in teams %}
-            <div>
-                {# TODO: take if out if we figure out a better
-                way to deal with the None option on registration #}
+            <div class="cardRow">
                 {% if team.team_name != None %}
-                    <div class="card mx-3" style="width: 18rem;">
-                        {# TODO: Make this img dynamic once I implement img uploads. #}
+                    <div class="card mx-3 teamCard">
+                        {# Image is static, image uploading coming ~soon~ (never). #}
                         <img class="card-img-top" src="{{ url_for('static', filename='user_uploads/wizard.png') }}" alt="Team Logo">
                         <div class="card-body">
                             <h5 class="card-title">{{ team.team_name }}</h5>
