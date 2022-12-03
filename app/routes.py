@@ -16,6 +16,7 @@ from app.forms import (
     UserSettingsForm,
     TeamSettingsForm,
     TournamentManagementForm,
+    TeamScore
 )
 from flask_login import (
     current_user,
@@ -633,7 +634,30 @@ def team_settings():
     return render_template("team_settings.html", form=form)
 
 
-def is_registered(tournament: Tournament, coach: User):
+@app.route("/team_score", methods=["GET", "POST"])
+@login_required
+def team_score():
+    form = TeamScore()
+    team_string = request.args.get("team", None)
+    team = Team.query.filter_by(id=team_string).first()
+    tournament_string = request.args.get("tournament", None)
+    tournament= Tournament.query.filter_by(tournament_id=tournament_string).first()
+    tournaments = db.session.query(tournament_teams).all()
+
+    if form.validate_on_submit():
+        for tournament_team in tournaments:
+            if int(tournament_team[0]) == int(tournament_string) and int(tournament_team[1]) == int(team_string):
+                print(tournament_team[0], tournament_team[1], tournament_team[2], tournament_team[3], tournament_team[4])
+                tournaments.append(1)
+                db.session.commit()
+                return redirect(url_for("tournament_management", tournament=tournament.tournament_name))
+    
+            
+    return render_template(
+        "team_score.html", form=form, current_user=current_user, team = team, tournament=tournament
+    )
+
+def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()
 
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
