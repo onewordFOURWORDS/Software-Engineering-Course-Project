@@ -657,6 +657,7 @@ def team_score():
         "team_score.html", form=form, current_user=current_user, team = team, tournament=tournament
     )
 
+
 def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()
 
