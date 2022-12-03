@@ -12,7 +12,7 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
-    dbtestForm, RequestPermissionsForm,
+    RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
     TournamentManagementForm
