@@ -202,7 +202,7 @@ def tournament_dashboard():
     start = form.start_date.data
     end = form.end_date.data
     name = form.tournament_name.data
-    # build query up decorator style to allow precise searching -- NEVERMIND THIS BREAKS EVERYTHING
+    # no filters display all tournaments
     tournaments = Tournament.query
 
     # filter tournaments inclusive from start to end
