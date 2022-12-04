@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from time import sleep
 import random
 import string
+from app import app
 
 def init_driver():
     """
