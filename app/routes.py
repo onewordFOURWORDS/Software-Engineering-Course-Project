@@ -229,6 +229,8 @@ def tournament_page():
     all_teams = Team.query.all()
     all_tournament_teams = db.session.query(tournament_teams_object).all()
     tournament_teams = []
+    registered_boolean = is_registered(tournament, current_user)
+    has_team = has_team_in_league(tournament, current_user)
     for tourney_team in all_tournament_teams:
         # pull out teams registered to this tournament
         if tourney_team[0] == tournament.tournament_id:
@@ -303,7 +305,10 @@ def tournament_page():
         tournament=tournament,
         league=league,
         teams=all_teams,
-        tournament_teams=tournament_teams
+        tournament_teams=tournament_teams,
+        registered_boolean = registered_boolean,
+        has_team = has_team,
+        current_user =current_user
     )
 
 
@@ -627,6 +632,7 @@ def team_settings():
 
 def is_registered(tournament:Tournament, coach:User):
     tournaments = db.session.query(tournament_teams).all()
+    
     teams = Team.query.filter_by(league=tournament.tournament_league).all()
     coaches_team = None
     for team in teams:
