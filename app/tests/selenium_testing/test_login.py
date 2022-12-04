@@ -1,3 +1,4 @@
+from app import app
 import pytest
 from selenium import webdriver
 import sys
@@ -7,6 +8,7 @@ from selenium.webdriver.common.by import By
 from time import sleep
 import random
 import string
+
 
 """
 This file is testing the user login page. Issue #1.
