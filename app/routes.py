@@ -17,6 +17,7 @@ from app.forms import (
     TeamSettingsForm,
     TournamentManagementForm,
     TeamScore
+
 )
 from flask_login import (
     current_user,

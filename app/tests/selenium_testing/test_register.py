@@ -71,6 +71,27 @@ def fill_registration_form(
         pass2.send_keys(rpass)
 
 
+def fill_registration_form_default(driver):
+    """
+    Fills all the True fields with valid data
+    """
+    user = driver.find_element(By.ID, "username")
+    user.send_keys("username")
+    email = driver.find_element(By.ID, "email")
+    email.send_keys("email@email.com")
+    fname = driver.find_element(By.ID, "first_name")
+    fname.send_keys("firstname")
+    lname = driver.find_element(By.ID, "last_name")
+    lname.send_keys("lastname")
+    rpass = "passpasspass"
+
+    pass1 = driver.find_element(By.ID, "password")
+    pass1.send_keys(rpass)
+
+    pass2 = driver.find_element(By.ID, "password2")
+    pass2.send_keys(rpass)
+
+
 def init_driver():
     """
     Initlize a webdriver
@@ -84,6 +105,16 @@ def init_driver():
 def submit_form(driver):
     submit = driver.find_element(By.ID, "submit")
     submit.click()
+
+
+class TestCreateTestUser:
+    def test_create_test_user(self):
+        driver = init_driver()
+        fill_registration_form_default(driver)
+
+        submit_form(driver)
+
+        pass
 
 
 class TestUsername:
@@ -226,7 +257,7 @@ class TestUsername:
         user = driver.find_element(By.ID, "username")
         user.send_keys("username")
 
-        submit_form
+        submit_form(driver)
         new_url = driver.current_url
 
         assert new_url == url
