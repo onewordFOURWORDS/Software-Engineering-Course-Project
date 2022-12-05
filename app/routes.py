@@ -12,6 +12,7 @@ from app.forms import (
     LeaguePageTeamSelectForm,
     TeamCreationForm,
     ManualPermissionsForm,
+    dbtestForm,
     RequestPermissionsForm,
     UserSettingsForm,
     TeamSettingsForm,
