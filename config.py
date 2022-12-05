@@ -3,8 +3,6 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-# TODO: Figure out best practice for managing the config file/making sure we keep keys etc out of the repo.
-# This is fine for now.
 # Need to set ENV VARIABLES on Heroku, this approach should more or less still worK?
 # and this file can be in the repo then, that's fine?
 class Config(object):
