@@ -8,15 +8,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     SECRET_KEY = os.environ.get("SSBM_SECRET_KEY")
     # postgres 15 defaults to 5433, postgres 14 to 5432, I believe.
-    # PORT_NUMBER = os.environ.get("SSBM_DB_PORT_NUMBER")
-    # DB_NAME = "app"
+    PORT_NUMBER = os.environ.get("SSBM_DB_PORT_NUMBER")
+    DB_NAME = "app"
     # DB_NAME = os.environ.get("DB_NAME")
-    # DB_USER = "postgres"
+    DB_USER = "postgres"
     # DB_USER = os.environ.get("DB_USER")
 
     SQLALCHEMY_DATABASE_URI = (
-        # f"postgresql://{DB_USER}:{SECRET_KEY}@localhost:{PORT_NUMBER}/{DB_NAME}"
-        os.environ.get("DATABASE_URL")
+        f"postgresql://{DB_USER}:{SECRET_KEY}@localhost:{PORT_NUMBER}/{DB_NAME}"
+        # os.environ.get("DATABASE_URL")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Email Configuration
