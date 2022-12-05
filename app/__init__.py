@@ -1,5 +1,5 @@
 from flask import Flask
-from config import Config
+from config import DevConfig, ProdConfig
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from flask_mail import Mail
 
 app = Flask(__name__)
-app.config.from_object(Config)
+app.config.from_object(ProdConfig)  # toggle me for dev vs prod.
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
