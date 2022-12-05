@@ -22,13 +22,10 @@
         <li class="nav-item">
             <a class="nav-link" id="user_settings" href="{{ url_for("user_settings")}}">User Settings</a>
         </li>
-        {# TODO: Modify this later to also check to see if they already have a team? #}
-        {% if current_user.is_admin%}
+        {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
             <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
         </li>
-        {% endif %}
-        {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
             <a class="nav-link" id="team_creation_link" href="{{ url_for("create_team")}}">Create a New Team</a>
         </li>

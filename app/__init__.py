@@ -10,7 +10,7 @@ import sqlalchemy
 try:
     app = Flask(__name__)
     app.config.from_object(
-        ProdConfig
+        DevConfig
     )  # ProdConfig for prod, DevConfig for dev. see config.py.
     db = SQLAlchemy(app)
     migrate = Migrate(app, db)
