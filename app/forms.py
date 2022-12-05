@@ -77,10 +77,12 @@ class TeamCreationForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
+    username = StringField(
+        "Username", validators=[DataRequired(), Length(min=3, max=32)]
+    )
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField(
-        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+        "Password", validators=[DataRequired(), Length(min=12, max=64)]
     )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
@@ -219,9 +221,22 @@ class Search(FlaskForm):
 
     date = BooleanField("Date:")
     name = BooleanField("Name:")
-    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True), Regexp(regex=r"[ \'A-Za-z0-9]*$", message="Tournament names never contain any special characters.")])
+    start_date = DateField(
+        "Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    end_date = DateField(
+        "End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    tournament_name = StringField(
+        "Tournament Name",
+        validators=[
+            RequiredIf(name=True),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="Tournament names never contain any special characters.",
+            ),
+        ],
+    )
     submit = SubmitField("Search")
 
 
@@ -232,7 +247,7 @@ class ResetPasswordRequestForm(FlaskForm):
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField(
-        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+        "Password", validators=[DataRequired(), Length(min=12, max=64)]
     )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
@@ -263,33 +278,6 @@ class RequestPermissionsForm(FlaskForm):
     request_admin = SubmitField("Admin request")
 
 
-class dbtestForm(FlaskForm):
-    model = SelectField(
-        "DB models",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-
-    model_gen = SelectField(
-        "DB generations",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-    submit = SubmitField("Clear or gen")
-
-
 class UserSettingsForm(FlaskForm):
     username = StringField("Username", render_kw={"readonly": True})
     firstname = StringField(
@@ -307,6 +295,7 @@ class UserSettingsForm(FlaskForm):
     email = StringField("Email*", validators=[Email()])
 
     submit = SubmitField("Update Settings")
+
 
 class TournamentManagementForm(FlaskForm):
     tournament_name = StringField(
@@ -329,7 +318,7 @@ class TournamentManagementForm(FlaskForm):
             ),
         ],
     )
-    
+
     tournament_date = DateField(
         "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
@@ -344,6 +333,7 @@ class TournamentManagementForm(FlaskForm):
             raise ValidationError(
                 "League already exists. Choose existing league or create a unique league."
             )
+
     add_team = SubmitField("Add Team")
     remove_team = SubmitField("Remove Team")
     submit = SubmitField("Submit")
@@ -372,3 +362,11 @@ class TeamSettingsForm(FlaskForm):
         team = Team.query.filter_by(team_name=field.data).first()
         if team is not None:
             raise ValidationError("Team name is already taken.")
+
+class TeamScore(FlaskForm):
+    total_score = IntegerField("Total Score")
+    total_wins = IntegerField("Total Wins")
+    total_losses = IntegerField("Total Losses")
+    submit = SubmitField("Submit")
+    
+

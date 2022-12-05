@@ -32,17 +32,33 @@
         <p>{{ form.submit() }}</p>
     </form>
     {% for tournament in tournaments %}
-    <div><p>Tournament Name: <a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p></div>
-    <div><p>Tournament Date: {{tournament.tournament_date }}</b></p></div>
-    <div><p>Tournament Location: {{tournament.tournament_city }}, {{ tournament.tournament_state }}</b></p></div>
-    {% for league in leagues %}
-        {% if league.id == tournament.tournament_league %}
-            <div><p>Tournament League: {{league.league_name}}</b></p></div>
-
-        {% endif %}
-    </b>
+    <div class="tournament">
+        <div>
+            <p>Tournament Name: <a href="{{ url_for('tournament_page', tournament=tournament.tournament_name) }}">{{tournament.tournament_name }}</a></b></p>
+        </div>
+        <div>
+            <p>Tournament Date: {{tournament.tournament_date }}</b></p>
+        </div>
+        <div>
+            <p>Tournament Location: {{tournament.tournament_city }}, {{ tournament.tournament_state }}</b></p>
+        </div>
+        {% for league in leagues %}
+            {% if league.id == tournament.tournament_league %}
+                <div>
+                    <p>Tournament League: {{league.league_name}}</b></p>
+                </div>
+            {% endif %}
+        </b>
+        {% endfor %}
+    </div>
     {% endfor %}
-    {% endfor %}
+    <style>
+        .tournament {
+            margin: auto;
+            padding-top: 3px;
+            width: 300px;
+        }
+    </style>
     <script>
         document.querySelector("#tournament_dashboard_link").classList.toggle("active");
 
