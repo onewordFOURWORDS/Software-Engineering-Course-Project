@@ -23,3 +23,5 @@ class Config(object):
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     ADMINS = ["support@supersickbracketmaker.tech"]
+    # Selenium configuration
+    SEL_PATH = os.environ.get("SEL_PATH")

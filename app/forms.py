@@ -77,10 +77,12 @@ class TeamCreationForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField("Username", validators=[DataRequired()])
+    username = StringField(
+        "Username", validators=[DataRequired(), Length(min=3, max=32)]
+    )
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField(
-        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+        "Password", validators=[DataRequired(), Length(min=12, max=64)]
     )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
@@ -219,9 +221,22 @@ class Search(FlaskForm):
 
     date = BooleanField("Date:")
     name = BooleanField("Name:")
-    start_date = DateField("Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    end_date = DateField("End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)])
-    tournament_name = StringField("Tournament Name", validators=[RequiredIf(name=True), Regexp(regex=r"[ \'A-Za-z0-9]*$", message="Tournament names never contain any special characters.")])
+    start_date = DateField(
+        "Start Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    end_date = DateField(
+        "End Date:", format="%Y-%m-%d", validators=[RequiredIf(date=True)]
+    )
+    tournament_name = StringField(
+        "Tournament Name",
+        validators=[
+            RequiredIf(name=True),
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="Tournament names never contain any special characters.",
+            ),
+        ],
+    )
     submit = SubmitField("Search")
 
 
@@ -232,7 +247,7 @@ class ResetPasswordRequestForm(FlaskForm):
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField(
-        "Password", validators=[DataRequired(), Length(min=8, max=64)]
+        "Password", validators=[DataRequired(), Length(min=12, max=64)]
     )
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
@@ -308,6 +323,7 @@ class UserSettingsForm(FlaskForm):
 
     submit = SubmitField("Update Settings")
 
+
 class TournamentManagementForm(FlaskForm):
     tournament_name = StringField(
         "Tournament Name",
@@ -329,7 +345,7 @@ class TournamentManagementForm(FlaskForm):
             ),
         ],
     )
-    
+
     tournament_date = DateField(
         "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
@@ -344,6 +360,7 @@ class TournamentManagementForm(FlaskForm):
             raise ValidationError(
                 "League already exists. Choose existing league or create a unique league."
             )
+
     add_team = SubmitField("Add Team")
     remove_team = SubmitField("Remove Team")
     submit = SubmitField("Submit")
