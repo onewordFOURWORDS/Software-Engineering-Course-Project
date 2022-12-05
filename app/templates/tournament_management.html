@@ -82,8 +82,8 @@
     </p>
 
     Registered Teams: <br> <br>
-        {% for team_id in tournament.tournament_teams %}
-        {{team_id}} 
+        {% for team in tournament.tournament_teams %}
+        <a href="{{ url_for('team_score', team=team.id, tournament=tournament.tournament_id )}}">  {{team.team_name}}</a>
         <br><br>
         {% endfor %}
     </div>
@@ -97,8 +97,8 @@
     <p>{{ form.add_team() }} </p>
 
     <select name="removing_team" method="POST" action="/">
-        {% for team_id in tournament.tournament_teams %}
-            <option value="{{team_id.id}}">{{team_id}}</option> 
+        {% for team in tournament.tournament_teams %}
+            <option value="{{team.id}}">{{team.team_name}}</option> 
         {% endfor %}
         <p>{{ form.remove_team() }} </p>
     

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="POST" novalidate>
+<h3>Stats for {{team.team_name}} in {{tournament.tournament_name}}</h3>
+<p>
+    {{ form.total_score.label }}<br>
+    {{ form.total_score(size=32) }}<br>
+    {{ form.hidden_tag() }}
+    {% for error in form.total_score.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+
+<p>
+    {{ form.total_wins.label }}<br>
+    {{ form.total_wins(size=32) }}<br>
+    {% for error in form.total_wins.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+
+<p>
+    {{ form.total_losses.label }}<br>
+    {{ form.total_losses(size=32) }}<br>
+    {% for error in form.total_losses.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+</p>
+
+{{ form.submit() }}
+</form>
+{% endblock %}
+

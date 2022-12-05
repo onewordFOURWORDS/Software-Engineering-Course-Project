@@ -573,46 +573,6 @@ def request_permission():
     )
 
 
-@app.route("/dbtest", methods=["GET", "POST"])
-@login_required
-def dbtest():
-    # if user not coach or admin, deny access by redirect
-    if not (current_user.is_coach or current_user.is_admin):
-        return redirect(url_for("access_denied"))
-    form = dbtestForm()
-    users = db.session.query(User).order_by("id")
-    teams = db.session.query(Team).order_by("id")
-    leagues = db.session.query(League).order_by("id")
-    tournaments = db.session.query(Tournament).order_by("tournament_id")
-    # test value
-    tval = "none"
-    models = {
-        "None": None,
-        "User": User,
-        "League": League,
-        "Team": Team,
-        "Tournament": Tournament,
-    }
-    if form.validate_on_submit():
-        clear = models[form.model.data]
-        gen = models[form.model_gen.data]
-        if clear is not None:
-            clear_db(clear)
-        if gen is not None:
-            gen_db(gen, 10)
-
-    return render_template(
-        "dbtest.html",
-        title="DB Testing",
-        form=form,
-        users=users,
-        tval=tval,
-        teams=teams,
-        leagues=leagues,
-        tournaments=tournaments,
-    )
-
-
 @app.route("/user_settings", methods=["GET", "POST"])
 @login_required
 def user_settings():
@@ -672,6 +632,45 @@ def team_settings():
             flash("An Error Occured. Please try again!")
             return redirect(url_for("user_settings"))
     return render_template("team_settings.html", form=form)
+
+
+@app.route("/team_score", methods=["GET", "POST"])
+@login_required
+def team_score():
+    form = TeamScore()
+    team_string = request.args.get("team", None)
+    team = Team.query.filter_by(id=team_string).first()
+    tournament_string = request.args.get("tournament", None)
+    tournament = Tournament.query.filter_by(tournament_id=tournament_string).first()
+    tournaments = db.session.query(tournament_teams).all()
+
+    if form.validate_on_submit():
+        for tournament_team in tournaments:
+            if int(tournament_team[0]) == int(tournament_string) and int(
+                tournament_team[1]
+            ) == int(team_string):
+                print(
+                    tournament_team[0],
+                    tournament_team[1],
+                    tournament_team[2],
+                    tournament_team[3],
+                    tournament_team[4],
+                )
+                tournaments.append(1)
+                db.session.commit()
+                return redirect(
+                    url_for(
+                        "tournament_management", tournament=tournament.tournament_name
+                    )
+                )
+
+    return render_template(
+        "team_score.html",
+        form=form,
+        current_user=current_user,
+        team=team,
+        tournament=tournament,
+    )
 
 
 def is_registered(tournament: Tournament, coach: User):

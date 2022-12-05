@@ -278,33 +278,6 @@ class RequestPermissionsForm(FlaskForm):
     request_admin = SubmitField("Admin request")
 
 
-class dbtestForm(FlaskForm):
-    model = SelectField(
-        "DB models",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-
-    model_gen = SelectField(
-        "DB generations",
-        choices=[
-            ("None", "None"),
-            ("User", "User"),
-            ("League", "League"),
-            ("Team", "Team"),
-            ("Tournament", "Tournament"),
-        ],
-        validators=[InputRequired()],
-    )
-    submit = SubmitField("Clear or gen")
-
-
 class UserSettingsForm(FlaskForm):
     username = StringField("Username", render_kw={"readonly": True})
     firstname = StringField(
@@ -389,3 +362,11 @@ class TeamSettingsForm(FlaskForm):
         team = Team.query.filter_by(team_name=field.data).first()
         if team is not None:
             raise ValidationError("Team name is already taken.")
+
+class TeamScore(FlaskForm):
+    total_score = IntegerField("Total Score")
+    total_wins = IntegerField("Total Wins")
+    total_losses = IntegerField("Total Losses")
+    submit = SubmitField("Submit")
+    
+
