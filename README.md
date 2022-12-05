@@ -31,3 +31,16 @@ Nick Perfetuo
   export MAIL_USE_TLS=1  
   export MAIL_USERNAME=support@supersickbracketmaker.tech  
   export MAIL_PASSWORD=jpk7bfb-ben1HDR-kay
+
+* Selenium Tests Setup
+  You will need to have chrome/chromium installed.
+
+  Download and install the ChromeDriver version for your version of Chrome.
+  * Linux: sudo apt install chromedriver
+  * Windows: https://chromedriver.chromium.org/home
+  * Mac: https://chromedriver.chromium.org/home
+
+  Export the following enviroment variable
+  export SEL_PATH -> The path to the chrome driver exectuable
+
+  Note: You may need to rerun 'pip install -r requirments.txt' to get the new packages.
