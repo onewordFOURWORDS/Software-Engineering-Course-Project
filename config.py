@@ -26,7 +26,13 @@ class DevConfig(object):
 
 
 class ProdConfig(object):
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # Can't edit this in Heroku Dashboard but apparently you must use
+    # postgres instead of postgresql as of sqlalchemy v1.40
+    # see https://stackoverflow.com/questions/66690321/flask-and-heroku-sqlalchemy-exc-nosuchmoduleerror-cant-load-plugin-sqlalchemy
+    # for details
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL").replace(
+        "postgres://", "postgresql://", 1
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Email Configuration
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
