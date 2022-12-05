@@ -26,13 +26,18 @@ class DevConfig(object):
 
 
 class ProdConfig(object):
+    # "Heroku rotates credentials periodically and updates applications where this database is attached."
+    # So we have to do a bit of string processing here:
+    db_url = os.environ.get("DATABASE_URL")
+    # grab everything between $username: and @ec2..., that's your password
+    username_terminator = ":"
+    host_string_start = "@"
+    SECRET_KEY = db_url.split(username_terminator)[1].split(host_string_start)[0]
     # Can't edit this in Heroku Dashboard but apparently you must use
     # postgres instead of postgresql as of sqlalchemy v1.40
     # see https://stackoverflow.com/questions/66690321/flask-and-heroku-sqlalchemy-exc-nosuchmoduleerror-cant-load-plugin-sqlalchemy
     # for details
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL").replace(
-        "postgres://", "postgresql://", 1
-    )
+    SQLALCHEMY_DATABASE_URI = db_url.replace("postgres://", "postgresql://", 1)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Email Configuration
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
