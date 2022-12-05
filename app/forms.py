@@ -34,12 +34,7 @@ class LoginForm(FlaskForm):
 
 class TeamCreationForm(FlaskForm):
     team_name = StringField("Team Name", validators=[DataRequired()])
-    # TODO: probably write a get_coaches(league) fcn, 2nd time I've done this.
-    # waiting on decisions as to how we're handling Leagues.
     coaches = User.query.filter_by(is_coach=True)
-    # TODO: Figure out a better way to do this. I want the current user to be the top option.
-    # or to have a checkbox "I'm coaching this team" and then show/hide the dropdown with the other options.
-    # but I've been fussing with this for ages and it's not working, so just keep going for now as is...
     coaches_list = []
     for coach in coaches:
         coaches_list.append((coach.id, coach.full_name))
@@ -55,25 +50,6 @@ class TeamCreationForm(FlaskForm):
         team = Team.query.filter_by(team_name=field.data).first()
         if team is not None:
             raise ValidationError("Team name is already taken.")
-
-
-# TODO: Figure out nesting forms so this can be reused throughout the site.
-# For now just have a separate form for the league page.
-# class TeamSelectForm(FlaskForm):
-#     class Meta:
-#         csrf = False
-
-#     teams = Team.query.all()
-#     print("TeamSelectForm is at least being included.")
-#     team_list = []
-#     for team in teams:
-#         team_list.append((team.id, team.team_name))
-#     print(team_list)
-#     affiliated_team = SelectField(
-#         "Choose a team to be affiliated with, or select None to set this up later: ",
-#         choices=team_list.sort(),
-#         coerce=int,
-#     )
 
 
 class RegistrationForm(FlaskForm):
@@ -101,7 +77,6 @@ class RegistrationForm(FlaskForm):
         coerce=int,
         validate_choice=False,
     )
-    # affiliated_team = FieldList(FormField(TeamSelectForm))
     submit = SubmitField("Register")
 
     def validate_username(self, username):
@@ -128,9 +103,6 @@ class LeaguePageTeamSelectForm(FlaskForm):
     teams = Team.query.all()
     team_list = []
     for team in teams:
-        # don't include None in this list, doesn't make any sense on this page.
-        # this might be an argument for keeping this form as a separate form, but we'll see.
-        # TODO: can still factor the team bit out into a get_all_teams or something
         if team.id != 0:
             team_list.append((team.id, team.team_name))
     affiliated_team = SelectField(
@@ -143,6 +115,26 @@ class LeaguePageTeamSelectForm(FlaskForm):
         validate_choice=False,
     )
     submit = SubmitField("Select Team")
+
+
+class LeagueCreationForm(FlaskForm):
+    league = StringField(
+        "Create A New League",
+        validators=[
+            Regexp(
+                regex=r"[ \'A-Za-z0-9]*$",
+                message="League name must not contain any special characters.",
+            ),
+        ],
+        render_kw={"placeholder": "Enter a name for your league."},
+    )
+
+    def validate_league(self, league):
+        print("validate_league is being called....")
+        if League.query.filter_by(league_name=league.data).first():
+            raise ValidationError("League already exists. Select a new name.")
+
+    submit = SubmitField("Create League")
 
 
 class TournamentCreationForm(FlaskForm):
@@ -166,32 +158,10 @@ class TournamentCreationForm(FlaskForm):
             ),
         ],
     )
-    tournament_league = StringField(
-        "Or Create A New League",
-        validators=[
-            Regexp(
-                regex=r"[ \'A-Za-z0-9]*$",
-                message="League name must not contain any special characters.",
-            )
-        ],
-        render_kw={
-            "placeholder": "Please leave empty if you do not wish to create a league!"
-        },
-    )
+
     tournament_date = DateField(
         "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
-
-    # def validate_tournament_date(form, tournament_date):
-    #     if datetime.strptime(tournament_date.data.strip(), '%Y-%m-%d') < date.today():
-    #         raise ValidationError("Date must be set in the future.")
-
-    def validate_tournament_league(form, tournament_league):
-        league_string = tournament_league
-        if League.query.filter_by(league_name=league_string.data).first():
-            raise ValidationError(
-                "League already exists. Choose existing league or create a unique league."
-            )
 
     submit = SubmitField("Submit")
 
@@ -323,10 +293,6 @@ class TournamentManagementForm(FlaskForm):
         "Tournament Date", format="%Y-%m-%d", validators=[DataRequired()]
     )
 
-    # def validate_tournament_date(form, tournament_date):
-    #     if datetime.strptime(tournament_date.data.strip(), '%Y-%m-%d') < date.today():
-    #         raise ValidationError("Date must be set in the future.")
-
     def validate_tournament_league(form, tournament_league):
         league_string = tournament_league
         if League.query.filter_by(league_name=league_string.data).first():
@@ -363,10 +329,9 @@ class TeamSettingsForm(FlaskForm):
         if team is not None:
             raise ValidationError("Team name is already taken.")
 
+
 class TeamScore(FlaskForm):
     total_score = IntegerField("Total Score")
     total_wins = IntegerField("Total Wins")
     total_losses = IntegerField("Total Losses")
     submit = SubmitField("Submit")
-    
-

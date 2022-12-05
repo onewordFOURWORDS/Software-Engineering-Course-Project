@@ -24,6 +24,9 @@
         </li>
         {% if current_user.is_admin or current_user.is_coach %}
         <li class="nav-item">
+            <a class="nav-link" id="create_league_link" href="{{ url_for("league_creation")}}">Create League</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" id="create_tournament_link" href="{{ url_for("tournament_creation")}}">Create Tournament</a>
         </li>
         <li class="nav-item">

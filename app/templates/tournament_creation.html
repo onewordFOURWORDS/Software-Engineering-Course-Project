@@ -73,19 +73,13 @@
         <option value="WY">Wyoming</option>
     </select>
     <br> <br>
-    Choose A Pre-Existing League
+    <h3>Select an existing league</h3>
+    <p>(or visit the <a href="{{url_for("league_creation")}}">League Creation Page</a>)</p>
     <select name="league" method="POST" action="/">
         {% for league in leagues %}
         <option value="{{league.league_name}}" SELECTED>{{league.league_name}}</option>"
         {% endfor %}
     </select>
-    <p>
-        {{ form.tournament_league.label }}<br>
-        {{ form.tournament_league(size=64) }}<br>
-        {% for error in form.tournament_league.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
     <p>
         {{ form.tournament_date.label }}<br>
         {{ form.tournament_date(size=32) }}<br>

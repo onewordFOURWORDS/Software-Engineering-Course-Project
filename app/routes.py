@@ -17,6 +17,7 @@ from app.forms import (
     TeamSettingsForm,
     TournamentManagementForm,
     TeamScore,
+    LeagueCreationForm,
 )
 from flask_login import (
     current_user,
@@ -133,6 +134,21 @@ def reset_password(token):
     return render_template("reset_password.html", form=form)
 
 
+@app.route("/league_creation", methods=["GET", "POST"])
+@login_required
+def league_creation():
+    if not (current_user.is_coach or current_user.is_admin):
+        return redirect(url_for("access_denied"))
+
+    form = LeagueCreationForm()
+    if request.method == "POST" and form.validate_on_submit():
+        league = League(league_name=form.league.data)
+        db.session.add(league)
+        db.session.commit()
+        flash("League created!")
+    return render_template("league_creation.html", form=form)
+
+
 @app.route("/tournament_creation", methods=["GET", "POST"])
 @login_required
 def tournament_creation():
@@ -203,7 +219,6 @@ def tournament_creation():
 @app.route("/tournament_dashboard", methods=["GET", "POST"])
 @login_required
 def tournament_dashboard():
-    # TODO: rework the decorator style again by checking all filters and doing one big query instead of trying to make many small ones
     form = Search()
     leagues = League.query.all()
     form.validate_on_submit()
@@ -421,12 +436,6 @@ def team(team_ID: int):
         upcoming_tournaments=upcoming_tournaments,
         previous_tournaments=previous_tournaments,
     )
-
-
-@app.route("/<match_ID>/match", methods=["GET", "POST"])
-@login_required
-def match(match_ID: int):
-    return render_template("match.html")
 
 
 @app.route("/access_denied")
