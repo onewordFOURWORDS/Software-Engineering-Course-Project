@@ -1,1 +1,1 @@
-web: gunicorn ssbm.wsgi
+web: gunicorn app:app
