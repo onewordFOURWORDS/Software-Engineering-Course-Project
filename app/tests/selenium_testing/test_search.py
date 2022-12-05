@@ -68,8 +68,10 @@ class TestTournamentName:
 
         submit_form(driver)
 
+        # throws NoSuchElementException if no element is found
         returned = driver.find_element(By.CLASS_NAME, "tournament")
 
+        # test should fail if no element if found
         assert returned != "NoSuchElementException", f'Expected "tournament 1", got: {returned}'
 
     def test_name_non_matching(self):
@@ -88,6 +90,7 @@ class TestTournamentName:
         # throws NoSuchElementException if no element is found
         returned = driver.find_element(By.CLASS_NAME, "tournament")
 
+        # test should pass if no element is found
         assert returned == "NoSuchElementException", f"Expected no tournament, got: {returned}"
 
     def test_name_empty(self):
@@ -106,5 +109,7 @@ class TestTournamentName:
         # pull all tournaments in database and compare if that array is equal to the one returned
         displayed = driver.find_elements(By.CLASS_NAME, "tournament")
         database = Tournament.query.all()
+
+        # insert logic to loop through and match up each tournament here
 
         assert displayed == database, f"Expected all tournaments, got: {displayed}"
