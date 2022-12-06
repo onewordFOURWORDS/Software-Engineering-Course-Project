@@ -80,6 +80,15 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
     form = RegistrationForm()
+
+    teams = Team.query.all()
+    team_list = []
+    for team in teams:
+        team_list.append((team.id, team.team_name))
+    form.affiliated_team.choices = team_list
+
+    
+
     if form.validate_on_submit():
         user = User(
             username=form.username.data,

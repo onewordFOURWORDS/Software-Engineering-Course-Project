@@ -89,15 +89,11 @@ class RegistrationForm(FlaskForm):
     )
     first_name = StringField("First Name:", validators=[DataRequired()])
     last_name = StringField("Last Name:", validators=[DataRequired()])
-    teams = Team.query.all()
-    team_list = []
-    for team in teams:
-        team_list.append((team.id, team.team_name))
+    # teams = Team.query.all()
+    # team_list = []
+    # for team in teams:
+    #     team_list.append((team.id, team.team_name))
     affiliated_team = SelectField(
-        "Choose a team to be affiliated with, or select None to set this up later: ",
-        choices=sorted(
-            team_list, key=itemgetter(0)
-        ),  # sort by ID, the first element in each tuple.
         coerce=int,
         validate_choice=False,
     )
